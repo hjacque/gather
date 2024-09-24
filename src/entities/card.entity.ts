@@ -1,0 +1,48 @@
+import { z } from "zod";
+
+export const CardEntitySchema = z.object({
+  id: z.string(),
+  number: z.number(),
+  name: z.string(),
+  set: z.union([
+    z.literal("alpha"),
+    z.literal("beta"),
+    z.literal("unlimited"),
+    z.literal("arabian_nights"),
+    z.literal("antiquities"),
+    z.literal("legends"),
+    z.literal("the_dark"),
+    z.literal("fallen_empires"),
+    z.literal("ice_age"),
+    z.literal("chronicles"),
+    z.literal("homelands"),
+    z.literal("alliances"),
+    z.literal("mirage"),
+    z.literal("visions"),
+    z.literal("weatherlight"),
+    z.literal("portal"),
+    z.literal("stronghold"),
+    z.literal("exodus"),
+    z.literal("urzas_saga"),
+    z.literal("urzas_legacy"),
+    z.literal("urzas_destiny"),
+  ]),
+  // setId: z.string(),
+  rarity: z.union([
+    z.literal("common"),
+    z.literal("uncommon"),
+    z.literal("rare"),
+  ]),
+  // imageUrl: z.string(),
+  cardMarketPrice: z.number(),
+  cardMarketLink: z.string(),
+  priceChartingPrice: z.number(),
+  priceChartingLink: z.string(),
+  ckBuyListPrice: z.number(),
+  ckBuyListLink: z.string(),
+  abugamesBuyListPrice: z.number(),
+  abugamesBuyListLink: z.string(),
+  marketPrice: z.number(),
+});
+
+export type CardEntity = z.infer<typeof CardEntitySchema>;
