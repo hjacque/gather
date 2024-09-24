@@ -8,7 +8,10 @@ require("express-async-errors");
 const app = express();
 const port = 3000;
 
-export const http = async (usecases: Usecases) => {
+export const http = async ({
+  syncUsecase,
+  getOpportunitiesUsecase,
+}: Usecases) => {
   // middlewares
   app.use(express.json());
 
@@ -16,7 +19,14 @@ export const http = async (usecases: Usecases) => {
   app.use(errorHandler);
 
   app.get("/sync", async (req, res) => {
-    const result = await usecases.syncUsecase.execute();
+    const result = await syncUsecase.execute();
+
+    res.status(200);
+    res.json(result);
+  });
+
+  app.get("/opportunities", async (req, res) => {
+    const result = await getOpportunitiesUsecase.execute();
 
     res.status(200);
     res.json(result);
