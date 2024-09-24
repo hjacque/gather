@@ -5,11 +5,11 @@ export abstract class CardRepositoryPort {
   abstract updateCardPrices(
     id: string,
     prices: {
-      priceChartingPrice: number;
-      cardMarketPrice: number;
-      ckBuyListPrice: number;
-      abugamesBuyListPrice: number;
-      marketPrice: number;
+      priceChartingPrice: number | undefined;
+      cardMarketPrice: number | undefined;
+      ckBuyListPrice: number | undefined;
+      abugamesBuyListPrice: number | undefined;
+      marketPrice: number | undefined;
     }
   ): Promise<void>;
 }

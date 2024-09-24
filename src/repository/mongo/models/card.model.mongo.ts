@@ -27,11 +27,11 @@ export type CardModel = {
     | "urzas_legacy"
     | "urzas_destiny";
   rarity: "common" | "uncommon" | "rare";
-  cardMarketPrice: number;
-  priceChartingPrice: number;
-  ckBuyListPrice: number;
-  abugamesBuyListPrice: number;
-  marketPrice: number;
+  cardMarketPrice: number | null;
+  priceChartingPrice: number | null;
+  ckBuyListPrice: number | null;
+  abugamesBuyListPrice: number | null;
+  marketPrice: number | null;
   cardMarketLink: string;
   priceChartingLink: string;
   ckBuyListLink: string;

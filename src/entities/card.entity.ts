@@ -34,15 +34,15 @@ export const CardEntitySchema = z.object({
     z.literal("rare"),
   ]),
   // imageUrl: z.string(),
-  cardMarketPrice: z.number(),
+  cardMarketPrice: z.number().nullable(),
   cardMarketLink: z.string(),
-  priceChartingPrice: z.number(),
+  priceChartingPrice: z.number().nullable(),
   priceChartingLink: z.string(),
-  ckBuyListPrice: z.number(),
+  ckBuyListPrice: z.number().nullable(),
   ckBuyListLink: z.string(),
-  abugamesBuyListPrice: z.number(),
+  abugamesBuyListPrice: z.number().nullable(),
   abugamesBuyListLink: z.string(),
-  marketPrice: z.number(),
+  marketPrice: z.number().nullable(),
 });
 
 export type CardEntity = z.infer<typeof CardEntitySchema>;
