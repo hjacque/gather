@@ -1,4 +1,4 @@
-import puppeteer from "puppeteer";
+import puppeteer, { Browser, Page } from "puppeteer";
 import puppeteerExtra from "puppeteer-extra";
 import Stealth from "puppeteer-extra-plugin-stealth";
 import { CardEntity } from "../../entities/card.entity";
@@ -16,8 +16,20 @@ export class SyncUsecase {
       throw new Error("No cards found"); // todo handle custom error
     }
 
+    puppeteerExtra.use(Stealth());
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1920, height: 1080 });
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+    );
+
     for (const card of cards) {
       console.log(card.name);
+
+      if (card.cardMarketPrice) {
+        continue;
+      }
 
       const [
         cardMarketPrice,
@@ -25,8 +37,8 @@ export class SyncUsecase {
         ckBuyListPrice,
         abugamesBuyListPrice,
       ] = [
-        await this.syncCardMarket(card),
-        await this.syncPriceCharting(card),
+        await this.syncCardMarket(card, page),
+        await this.syncPriceCharting(card, page),
         0, //await this.syncCKBuyList(card),
         0, //await this.syncAbugamesBuyList(card),
       ];
@@ -51,22 +63,17 @@ export class SyncUsecase {
         await this.cardRepository.updateCardPrices(card.id, prices);
       }
     }
+
+    await browser.close();
     console.log("end");
   }
 
   // todo - implement factory pattern
-  async syncCardMarket(card: CardEntity): Promise<number | undefined> {
+  async syncCardMarket(
+    card: CardEntity,
+    page: Page
+  ): Promise<number | undefined> {
     try {
-      puppeteerExtra.use(Stealth());
-
-      const browser = await puppeteer.launch();
-      const page = await browser.newPage();
-
-      await page.setViewport({ width: 1920, height: 1080 });
-      await page.setUserAgent(
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
-      );
-
       await page.goto(
         card.cardMarketLink +
           "?language=1&minCondition=2&isSigned=N&isAltered=N"
@@ -82,8 +89,6 @@ export class SyncUsecase {
 
       // console.log("data", data); // exemple: [ '3', 'K', 'menor-com', 'NM', 'nm+', '420,00 €', '1' ]
 
-      await browser.close();
-
       const price =
         parseFloat(data[data.length - 2].replace(".", "")) *
         (1 - CARDMARKET_FEE);
@@ -95,18 +100,8 @@ export class SyncUsecase {
     }
   }
 
-  async syncPriceCharting(card: CardEntity) {
+  async syncPriceCharting(card: CardEntity, page: Page) {
     try {
-      puppeteerExtra.use(Stealth());
-
-      const browser = await puppeteer.launch();
-      const page = await browser.newPage();
-
-      await page.setViewport({ width: 1920, height: 1080 });
-      await page.setUserAgent(
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
-      );
-
       await page.goto(card.priceChartingLink);
 
       await page.waitForNetworkIdle();
@@ -126,8 +121,6 @@ export class SyncUsecase {
             .replace(/\.\w{2}/g, "")
             .replace(",", "")
         );
-
-      await browser.close();
 
       const price =
         ((parseFloat(grade8Price) + parseFloat(grade9Price)) / 2) *
