@@ -14,11 +14,14 @@ export class CardRepositoryMongo implements CardRepositoryPort {
   async updateCardPrices(
     cardId: string,
     prices: {
-      priceChartingPrice: number;
-      cardMarketPrice: number;
-      ckBuyListPrice: number;
-      abugamesBuyListPrice: number;
-      marketPrice: number;
+      priceChartingPrice: number | undefined;
+      cardMarketPrice: number | undefined;
+      ckBuyListPrice: number | undefined;
+      abugamesBuyListPrice: number | undefined;
+      starcitygamesBuyListPrice: number | undefined;
+      marketPrice: number | undefined;
+      buylistPrice: number | undefined;
+      estimatedValue: number | undefined;
     }
   ): Promise<void> {
     await this.cardCollection.updateOne(
@@ -29,7 +32,10 @@ export class CardRepositoryMongo implements CardRepositoryPort {
           cardMarketPrice: prices.cardMarketPrice,
           ckBuyListPrice: prices.ckBuyListPrice,
           abugamesBuyListPrice: prices.abugamesBuyListPrice,
+          starcitygamesBuyListPrice: prices.starcitygamesBuyListPrice,
           marketPrice: prices.marketPrice,
+          buylistPrice: prices.buylistPrice,
+          estimatedValue: prices.estimatedValue,
         },
       }
     );

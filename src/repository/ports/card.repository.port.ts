@@ -9,7 +9,10 @@ export abstract class CardRepositoryPort {
       cardMarketPrice: number | undefined;
       ckBuyListPrice: number | undefined;
       abugamesBuyListPrice: number | undefined;
+      starcitygamesBuyListPrice: number | undefined;
       marketPrice: number | undefined;
+      buylistPrice: number | undefined;
+      estimatedValue: number | undefined;
     }
   ): Promise<void>;
 }

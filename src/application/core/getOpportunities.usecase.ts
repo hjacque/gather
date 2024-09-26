@@ -71,31 +71,40 @@ export class GetOpportunitiesUsecase {
           "Uncle Istvan",
         ].includes(card.name)
       )
-      .map((card) => {
-        if (
-          !card.cardMarketPrice ||
-          !card.marketPrice ||
-          (card.cardMarketPrice && card.cardMarketPrice < 15)
-        ) {
-          return;
+      .map(
+        ({
+          marketPrice,
+          estimatedValue,
+          buylistPrice,
+          name,
+          cardMarketLink,
+        }) => {
+          if (
+            !marketPrice ||
+            !estimatedValue ||
+            !buylistPrice ||
+            (marketPrice && marketPrice < 15)
+          ) {
+            return;
+          }
+          const buyPrice = marketPrice / (1 - CARDMARKET_FEE);
+          const sellPrice = estimatedValue;
+          const profit = sellPrice - buyPrice;
+          if (profit < 0) {
+            return;
+          }
+          return {
+            cardName: name,
+            set: set,
+            buyPrice,
+            sellPrice,
+            profit,
+            link:
+              cardMarketLink +
+              "?language=1&minCondition=2&isSigned=N&isAltered=N",
+          };
         }
-        const buyPrice = card.cardMarketPrice / (1 - CARDMARKET_FEE);
-        const sellPrice = card.marketPrice;
-        const profit = sellPrice - buyPrice;
-        if (profit < 0) {
-          return;
-        }
-        return {
-          cardName: card.name,
-          set: card.set,
-          buyPrice,
-          sellPrice,
-          profit,
-          link:
-            card.cardMarketLink +
-            "?language=1&minCondition=2&isSigned=N&isAltered=N",
-        };
-      })
+      )
       .filter(Boolean)
       .sort((a, b) => a!.profit - b!.profit);
     if (opportunities.length) {

@@ -39,10 +39,14 @@ export const CardEntitySchema = z.object({
   priceChartingPrice: z.number().nullable(),
   priceChartingLink: z.string(),
   ckBuyListPrice: z.number().nullable(),
-  ckBuyListLink: z.string(),
+  cardkingdomBuyListLink: z.string(),
   abugamesBuyListPrice: z.number().nullable(),
   abugamesBuyListLink: z.string(),
+  starcitygamesBuyListPrice: z.number().nullable(),
+  starcitygamesBuyListLink: z.string(),
+  buylistPrice: z.number().nullable(),
   marketPrice: z.number().nullable(),
+  estimatedValue: z.number().nullable(),
 });
 
 export type CardEntity = z.infer<typeof CardEntitySchema>;

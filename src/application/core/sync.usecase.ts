@@ -25,43 +25,53 @@ export class SyncUsecase {
     );
 
     for (const card of cards) {
+      console.log("--------------");
       console.log(card.name);
 
-      if (card.cardMarketPrice) {
-        continue;
-      }
+      // if (card.cardMarketPrice) {
+      //   continue;
+      // }
 
       const [
         cardMarketPrice,
         priceChartingPrice,
         ckBuyListPrice,
         abugamesBuyListPrice,
+        starcitygamesBuyListPrice,
       ] = [
         await this.syncCardMarket(card, page),
-        await this.syncPriceCharting(card, page),
-        0, //await this.syncCKBuyList(card),
-        0, //await this.syncAbugamesBuyList(card),
+        undefined, // await this.syncPriceCharting(card, page),
+        await this.syncCardkingdomBuyList(card, page),
+        await this.syncAbugamesBuyList(card, page),
+        undefined, // await this.syncStarcitygamesBuyList(card),
       ];
 
-      const marketPrice = await this.syncMarketPrice(
-        card,
-        cardMarketPrice,
-        priceChartingPrice,
-        ckBuyListPrice,
-        abugamesBuyListPrice
-      );
+      const { marketPrice, buylistPrice, estimatedValue } =
+        await this.computePrices(
+          card,
+          cardMarketPrice,
+          priceChartingPrice,
+          ckBuyListPrice,
+          abugamesBuyListPrice,
+          starcitygamesBuyListPrice
+        );
+
+      console.log("market     ==>>", marketPrice);
+      console.log("buylist    ==>>", buylistPrice);
+      console.log("estimated  ==>>", estimatedValue);
 
       const prices = {
         priceChartingPrice,
         cardMarketPrice,
         ckBuyListPrice,
         abugamesBuyListPrice,
+        starcitygamesBuyListPrice,
         marketPrice,
+        buylistPrice,
+        estimatedValue,
       };
 
-      if (card.marketPrice !== marketPrice) {
-        await this.cardRepository.updateCardPrices(card.id, prices);
-      }
+      await this.cardRepository.updateCardPrices(card.id, prices);
     }
 
     await browser.close();
@@ -134,17 +144,64 @@ export class SyncUsecase {
     }
   }
 
-  async syncCKBuyList(card: CardEntity) {
-    puppeteerExtra.use(Stealth());
+  async syncCardkingdomBuyList(card: CardEntity, page: Page) {
+    try {
+      await page.goto(card.cardkingdomBuyListLink);
 
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
+      await page.waitForNetworkIdle();
 
-    await page.setViewport({ width: 1920, height: 1080 });
-    await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
-    );
+      const data = await page.$eval("span.sellDollarAmount", (fristRow) => {
+        const textContent = fristRow.innerText.trim(); // Get text content and trim any extra spaces
+        const elements = textContent.split("\n"); // Split by line and take the first line
+        return elements;
+      });
+      // console.log("cardkingdomBuyListLink", data);
 
+      const price =
+        parseFloat(
+          data[0].replace("$", "").replace(",", "").replace(".", ",")
+        ) * USD_TO_EUR;
+
+      console.log("cardkingdom buylist price", price);
+
+      return price;
+    } catch (error) {
+      console.log("Not in Cardkingdom BuyList");
+      return undefined;
+    }
+  }
+
+  async syncAbugamesBuyList(card: CardEntity, page: Page) {
+    try {
+      await page.goto(card.abugamesBuyListLink);
+
+      await page.waitForNetworkIdle();
+
+      const data = await page.$eval(
+        "div.buylist span.ng-star-inserted",
+        (fristRow) => {
+          const textContent = fristRow.innerText.trim(); // Get text content and trim any extra spaces
+          const elements = textContent.split("\n"); // Split by line and take the first line
+          return elements;
+        }
+      );
+      console.log("abugamesBuyListLink", data);
+
+      const price =
+        parseFloat(
+          data[0].replace("$", "").replace(",", "").replace(".", ",")
+        ) * USD_TO_EUR;
+
+      console.log("abugames buylist price", price);
+
+      return price;
+    } catch (error) {
+      console.log("Not in Abugames BuyList");
+      return undefined;
+    }
+  }
+
+  async syncStarcitygamesBuyList(card: CardEntity, page: Page) {
     await page.goto(card.cardMarketLink);
 
     await page.waitForNetworkIdle();
@@ -160,56 +217,36 @@ export class SyncUsecase {
     // const value = await element?.evaluate((el) => el.textContent);
     // console.log(value);
 
-    await browser.close();
-
     const price = 0;
     return price;
   }
 
-  async syncAbugamesBuyList(card: CardEntity) {
-    puppeteerExtra.use(Stealth());
-
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-
-    await page.setViewport({ width: 1920, height: 1080 });
-    await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
-    );
-
-    await page.goto(card.cardMarketLink);
-
-    await page.waitForNetworkIdle();
-
-    // handle paginated tables
-    const data = await page.evaluate(() => {
-      const tds = Array.from(document.querySelectorAll("table tr td"));
-      return tds.map((td) => (td as any).innerText);
-    });
-    console.log(data);
-    // await page.waitForSelector(".lot-container");
-    // const element = await page.$(".lot-container");
-    // const value = await element?.evaluate((el) => el.textContent);
-    // console.log(value);
-
-    await browser.close();
-
-    const price = 0;
-    return price;
-  }
-
-  async syncMarketPrice(
+  async computePrices(
     card: CardEntity,
     cardMarketPrice: number | undefined,
     priceChartingPrice: number | undefined,
     ckBuyListPrice: number | undefined,
-    abugamesBuyListPrice: number | undefined
+    abugamesBuyListPrice: number | undefined,
+    starcitygamesBuyListPrice: number | undefined
   ) {
-    const tuple = [
-      cardMarketPrice,
-      priceChartingPrice,
+    const marketTuple = [cardMarketPrice].reduce(
+      (acc, currentValue) => {
+        if (currentValue) {
+          acc[0] = acc[0] ? acc[0] + currentValue : currentValue;
+          acc[1] = acc[1] ? acc[1] + 1 : 1;
+        }
+        return acc;
+      },
+      [0, 0]
+    );
+    const marketPrice = marketTuple[1]
+      ? Math.round(marketTuple[0] / marketTuple[1])
+      : undefined;
+
+    const buylistTuple = [
       ckBuyListPrice,
       abugamesBuyListPrice,
+      starcitygamesBuyListPrice,
     ].reduce(
       (acc, currentValue) => {
         if (currentValue) {
@@ -220,8 +257,28 @@ export class SyncUsecase {
       },
       [0, 0]
     );
-    const price = tuple[1] ? Math.round(tuple[0] / tuple[1]) : undefined;
-    console.log("===>>", price);
-    return price;
+    const buylistPrice = buylistTuple[1]
+      ? Math.round(buylistTuple[0] / buylistTuple[1])
+      : undefined;
+
+    const estimatedTuple = [marketPrice, buylistPrice].reduce(
+      (acc, currentValue) => {
+        if (currentValue) {
+          acc[0] = acc[0] ? acc[0] + currentValue : currentValue;
+          acc[1] = acc[1] ? acc[1] + 1 : 1;
+        }
+        return acc;
+      },
+      [0, 0]
+    );
+    const estimatedValue = estimatedTuple[1]
+      ? Math.round(estimatedTuple[0] / estimatedTuple[1])
+      : undefined;
+
+    return {
+      marketPrice,
+      buylistPrice,
+      estimatedValue,
+    };
   }
 }

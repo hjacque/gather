@@ -12,11 +12,15 @@ export class CardMapper {
     priceChartingPrice,
     ckBuyListPrice,
     abugamesBuyListPrice,
+    starcitygamesBuyListPrice,
     marketPrice,
     cardMarketLink,
     priceChartingLink,
-    ckBuyListLink,
+    cardkingdomBuyListLink,
     abugamesBuyListLink,
+    starcitygamesBuyListLink,
+    buylistPrice,
+    estimatedValue,
   }: CardModel): CardEntity {
     return {
       id: _id.toString(),
@@ -28,11 +32,15 @@ export class CardMapper {
       priceChartingPrice,
       ckBuyListPrice,
       abugamesBuyListPrice,
+      starcitygamesBuyListPrice,
       marketPrice,
       cardMarketLink,
       priceChartingLink,
-      ckBuyListLink,
+      cardkingdomBuyListLink,
       abugamesBuyListLink,
+      starcitygamesBuyListLink,
+      buylistPrice,
+      estimatedValue,
     };
   }
 }
