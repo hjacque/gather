@@ -1,12 +1,20 @@
 import { MongoClient } from "mongodb";
-import { MONGODB_COLLECTION_CARDS, MONGODB_DATABASE_NAME } from "../constants";
+import {
+  MONGODB_COLLECTION_CARDS,
+  MONGODB_COLLECTION_PRICES,
+  MONGODB_DATABASE_NAME,
+} from "../constants";
 import { CardModel } from "./mongo/models/card.model.mongo";
 import { CardRepositoryPort } from "./ports/card.repository.port";
 import { CardRepositoryMongo } from "./mongo/card.repository.mongo";
+import { PriceRepositoryMongo } from "./mongo/price.repository.mongo";
+import { PriceModel } from "./mongo/models/price.model.mongo";
+import { PriceRepositoryPort } from "./ports/price.repository.port";
 
 export const initRepository = async (): Promise<{
   repositories: {
     cardRepository: CardRepositoryPort;
+    priceRepository: PriceRepositoryPort;
   };
   close: () => Promise<void>;
 }> => {
@@ -21,13 +29,18 @@ export const initRepository = async (): Promise<{
   const cardCollection = mongoDBClient.collection<CardModel>(
     MONGODB_COLLECTION_CARDS
   );
+  const priceCollection = mongoDBClient.collection<PriceModel>(
+    MONGODB_COLLECTION_PRICES
+  );
 
   // repositories
   const cardRepository = new CardRepositoryMongo(cardCollection);
+  const priceRepository = new PriceRepositoryMongo(priceCollection);
 
   return {
     repositories: {
       cardRepository,
+      priceRepository,
     },
     close: async () => {
       await mongoClient.close();

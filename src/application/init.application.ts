@@ -1,22 +1,27 @@
 import { CardRepositoryPort } from "../repository/ports/card.repository.port";
-import { GetOpportunitiesUsecase } from "./core/getOpportunities.usecase";
+import { PriceRepositoryPort } from "../repository/ports/price.repository.port";
 import { SyncUsecase } from "./core/sync.usecase";
+import { GetBestRatioCardsTodayUsecase } from "./core/getBestRatioCardsToday.usecase";
 
 export type Usecases = {
   syncUsecase: SyncUsecase;
-  getOpportunitiesUsecase: GetOpportunitiesUsecase;
+  getBestRatioCardsTodayUsecase: GetBestRatioCardsTodayUsecase;
 };
 
 export const initApplication = ({
   cardRepository,
+  priceRepository,
 }: {
   cardRepository: CardRepositoryPort;
+  priceRepository: PriceRepositoryPort;
 }): Usecases => {
-  const syncUsecase = new SyncUsecase(cardRepository);
-  const getOpportunitiesUsecase = new GetOpportunitiesUsecase(cardRepository);
+  const syncUsecase = new SyncUsecase(cardRepository, priceRepository);
+  const getBestRatioCardsTodayUsecase = new GetBestRatioCardsTodayUsecase(
+    priceRepository
+  );
 
   return {
     syncUsecase,
-    getOpportunitiesUsecase,
+    getBestRatioCardsTodayUsecase,
   };
 };
