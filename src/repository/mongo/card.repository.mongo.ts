@@ -20,6 +20,23 @@ export class CardRepositoryMongo implements CardRepositoryPort {
     const cards = await this.cardCollection
       .find(where, { sort: { name: 1 }, limit: take, skip: page })
       .toArray();
+
+    if (!cards) {
+      return [];
+    }
+
     return cards.map((card) => this.cardMapper.toEntity(card));
+  }
+
+  async getCard(cardId: string): Promise<CardEntity> {
+    const card = await this.cardCollection.findOne({
+      _id: new BSON.ObjectId(cardId),
+    });
+
+    if (!card) {
+      throw new Error("Card not found");
+    }
+
+    return this.cardMapper.toEntity(card);
   }
 }

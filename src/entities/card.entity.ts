@@ -39,6 +39,19 @@ export const CardEntitySchema = z.object({
   cardkingdomBuyListLink: z.string(),
   abugamesBuyListLink: z.string(),
   starcitygamesBuyListLink: z.string(),
+  performance: z
+    .object({
+      oneMonthMarketPricePerformance: z.number().nullable(),
+      oneMonthBuylistPricePerformance: z.number().nullable(),
+      oneMonthEstimatedPricePerformance: z.number().nullable(),
+      oneWeekMarketPricePerformance: z.number().nullable(),
+      oneWeekBuylistPricePerformance: z.number().nullable(),
+      oneWeekEstimatedPricePerformance: z.number().nullable(),
+      oneDayMarketPricePerformance: z.number().nullable(),
+      oneDayBuylistPricePerformance: z.number().nullable(),
+      oneDayEstimatedPricePerformance: z.number().nullable(),
+    })
+    .nullable(),
 });
 
 export type CardEntity = z.infer<typeof CardEntitySchema>;

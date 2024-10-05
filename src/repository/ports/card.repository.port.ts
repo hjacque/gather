@@ -5,5 +5,7 @@ export abstract class CardRepositoryPort {
     set?: "alpha" | "arabian_nights" | "antiquities" | "legends" | "the_dark",
     take?: number,
     page?: number
-  ): Promise<CardEntity[] | undefined>;
+  ): Promise<CardEntity[]>;
+
+  abstract getCard(cardId: string): Promise<CardEntity>;
 }

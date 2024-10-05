@@ -25,6 +25,7 @@ export class CardMapper {
       cardkingdomBuyListLink,
       abugamesBuyListLink,
       starcitygamesBuyListLink,
+      performance: null,
     };
   }
 }
