@@ -34,17 +34,17 @@ export const http = async ({
     res.json(result);
   });
 
-  app.get("/cards", async (req, res) => {
+  app.get("/cards/:cardid", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
-    const result = await getCardsUsecase.execute();
+    const result = await getCardUsecase.execute(req.params.cardid);
 
     res.status(200);
     res.json(result);
   });
 
-  app.get("/card/:cardid", async (req, res) => {
+  app.get("/cards", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
-    const result = await getCardUsecase.execute(req.params.cardid);
+    const result = await getCardsUsecase.execute();
 
     res.status(200);
     res.json(result);
