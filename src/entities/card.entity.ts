@@ -52,6 +52,7 @@ export const CardEntitySchema = z.object({
       oneDayEstimatedPricePerformance: z.number().nullable(),
     })
     .nullable(),
+  ratio: z.number().nullable(),
 });
 
 export type CardEntity = z.infer<typeof CardEntitySchema>;

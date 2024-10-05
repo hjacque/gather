@@ -1,4 +1,4 @@
-import { PriceEntity } from "../../entities/price.entity";
+import { PriceEntity, PriceType } from "../../entities/price.entity";
 
 export abstract class PriceRepositoryPort {
   abstract upsertPrice(
@@ -37,4 +37,10 @@ export abstract class PriceRepositoryPort {
     estimatedPrices: PriceEntity[];
     ratioPrices: PriceEntity[];
   }>;
+
+  abstract getCardPrice(
+    cardId: string,
+    type: PriceType,
+    date: Date
+  ): Promise<PriceEntity | null>;
 }

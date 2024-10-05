@@ -314,4 +314,14 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
       ratioPrices: ratioPrices.map((p) => this.priceMapper.toEntity(p)),
     };
   }
+
+  async getCardPrice(cardId: string, type: PriceType, date: Date) {
+    const price = await this.priceCollection.findOne({
+      cardId: new BSON.ObjectId(cardId),
+      type,
+      date,
+    });
+
+    return price ? this.priceMapper.toEntity(price) : null;
+  }
 }
