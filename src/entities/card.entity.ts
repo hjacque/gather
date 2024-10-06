@@ -59,6 +59,8 @@ export const CardEntitySchema = z.object({
       oneDayBuylistPricePerformance: z.number().nullable(),
     })
     .nullable(),
+  market: z.number().nullable(),
+  buylist: z.number().nullable(),
   ratio: z.number().nullable(),
 });
 

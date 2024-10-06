@@ -22,11 +22,25 @@ export class GetCardsUsecase {
     for (const card of cards) {
       card.performance = await this.getPerformances(card.id, today);
 
-      const ratioPrice = await this.priceRepository.getCardPrice(
-        card.id,
-        PriceType.ratio,
-        today
-      );
+      const [marketPrice, buylistPrice, ratioPrice] = [
+        await this.priceRepository.getCardPrice(
+          card.id,
+          PriceType.market,
+          today
+        ),
+        await this.priceRepository.getCardPrice(
+          card.id,
+          PriceType.buylist,
+          today
+        ),
+        await this.priceRepository.getCardPrice(
+          card.id,
+          PriceType.ratio,
+          today
+        ),
+      ];
+      card.market = marketPrice?.value || null;
+      card.buylist = buylistPrice?.value || null;
       card.ratio = ratioPrice?.value || null;
     }
 

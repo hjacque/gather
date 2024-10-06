@@ -26,6 +26,8 @@ export class CardMapper {
       abugamesBuyListLink,
       starcitygamesBuyListLink,
       performance: null,
+      market: null,
+      buylist: null,
       ratio: null,
     };
   }
