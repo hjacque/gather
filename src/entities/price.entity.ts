@@ -8,7 +8,6 @@ export enum PriceType {
   starcitygames = "starcitygames",
   buylist = "buylist",
   market = "market",
-  estimated = "estimated",
   ratio = "ratio",
 }
 
@@ -25,7 +24,6 @@ export const PriceEntitySchema = z.object({
     z.literal("starcitygames"),
     z.literal("buylist"),
     z.literal("market"),
-    z.literal("estimated"),
     z.literal("ratio"),
   ]),
 });

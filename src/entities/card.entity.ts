@@ -1,5 +1,15 @@
 import { z } from "zod";
 
+export const enum Set {
+  alpha = "alpha",
+  beta = "beta",
+  unlimited = "unlimited",
+  arabian_nights = "arabian_nights",
+  antiquities = "antiquities",
+  legends = "legends",
+  the_dark = "the_dark",
+}
+
 export const CardEntitySchema = z.object({
   id: z.string(),
   number: z.number(),
@@ -43,13 +53,10 @@ export const CardEntitySchema = z.object({
     .object({
       oneMonthMarketPricePerformance: z.number().nullable(),
       oneMonthBuylistPricePerformance: z.number().nullable(),
-      oneMonthEstimatedPricePerformance: z.number().nullable(),
       oneWeekMarketPricePerformance: z.number().nullable(),
       oneWeekBuylistPricePerformance: z.number().nullable(),
-      oneWeekEstimatedPricePerformance: z.number().nullable(),
       oneDayMarketPricePerformance: z.number().nullable(),
       oneDayBuylistPricePerformance: z.number().nullable(),
-      oneDayEstimatedPricePerformance: z.number().nullable(),
     })
     .nullable(),
   ratio: z.number().nullable(),

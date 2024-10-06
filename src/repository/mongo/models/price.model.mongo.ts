@@ -13,6 +13,5 @@ export type PriceModel = {
     | "starcitygames"
     | "buylist"
     | "market"
-    | "estimated"
     | "ratio";
 };

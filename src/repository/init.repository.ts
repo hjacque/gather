@@ -1,6 +1,7 @@
 import { MongoClient } from "mongodb";
 import {
   MONGODB_COLLECTION_CARDS,
+  MONGODB_COLLECTION_PERFORMANCES,
   MONGODB_COLLECTION_PRICES,
   MONGODB_DATABASE_NAME,
 } from "../constants";
@@ -10,11 +11,15 @@ import { CardRepositoryMongo } from "./mongo/card.repository.mongo";
 import { PriceRepositoryMongo } from "./mongo/price.repository.mongo";
 import { PriceModel } from "./mongo/models/price.model.mongo";
 import { PriceRepositoryPort } from "./ports/price.repository.port";
+import { PerformanceRepositoryPort } from "./ports/performance.repository.port";
+import { PerformanceModel } from "./mongo/models/performance.model.mongo";
+import { PerformanceRepositoryMongo } from "./mongo/performance.repository.mongo";
 
 export const initRepository = async (): Promise<{
   repositories: {
     cardRepository: CardRepositoryPort;
     priceRepository: PriceRepositoryPort;
+    performanceRepository: PerformanceRepositoryPort;
   };
   close: () => Promise<void>;
 }> => {
@@ -32,15 +37,22 @@ export const initRepository = async (): Promise<{
   const priceCollection = mongoDBClient.collection<PriceModel>(
     MONGODB_COLLECTION_PRICES
   );
+  const performanceCollection = mongoDBClient.collection<PerformanceModel>(
+    MONGODB_COLLECTION_PERFORMANCES
+  );
 
   // repositories
   const cardRepository = new CardRepositoryMongo(cardCollection);
   const priceRepository = new PriceRepositoryMongo(priceCollection);
+  const performanceRepository = new PerformanceRepositoryMongo(
+    performanceCollection
+  );
 
   return {
     repositories: {
       cardRepository,
       priceRepository,
+      performanceRepository,
     },
     close: async () => {
       await mongoClient.close();

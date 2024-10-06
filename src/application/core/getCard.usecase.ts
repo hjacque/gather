@@ -13,7 +13,6 @@ export class GetCardUsecase {
     CardEntity & {
       marketPrices: PriceEntity[];
       buylistPrices: PriceEntity[];
-      estimatedPrices: PriceEntity[];
       ratioPrices: PriceEntity[];
     }
   > {

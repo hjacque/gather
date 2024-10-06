@@ -20,8 +20,15 @@ export const http = async ({
   // error handling
   app.use(errorHandler);
 
+  app.get("/sync/:set", async (req, res) => {
+    const result = await syncUsecase.execute({ set: req.params.set as any });
+
+    res.status(200);
+    res.json(result);
+  });
+
   app.get("/sync", async (req, res) => {
-    const result = await syncUsecase.execute();
+    const result = await syncUsecase.execute({});
 
     res.status(200);
     res.json(result);

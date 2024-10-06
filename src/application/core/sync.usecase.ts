@@ -1,43 +1,50 @@
 import puppeteer, { Browser } from "puppeteer";
 import puppeteerExtra from "puppeteer-extra";
 import Stealth from "puppeteer-extra-plugin-stealth";
-import { CardEntity } from "../../entities/card.entity";
+import { CardEntity, Set } from "../../entities/card.entity";
 import { CardRepositoryPort } from "../../repository/ports/card.repository.port";
 import { CARDMARKET_FEE, USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PriceType } from "../../entities/price.entity";
+import {
+  PerformanceEntity,
+  PerformancePeriodType,
+  PerformanceType,
+} from "../../entities/performance.entity";
+import { ComputePerformancesUsecase } from "./computePerformance.usecase";
 
+const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+type SyncUsecaseInputDto = {
+  set?: Set;
+};
 export class SyncUsecase {
   constructor(
     private readonly cardRepository: CardRepositoryPort,
-    private readonly priceRepository: PriceRepositoryPort
+    private readonly priceRepository: PriceRepositoryPort,
+    private readonly computePerformancesUsecase: ComputePerformancesUsecase
   ) {}
 
-  async execute() {
+  async execute({ set: setInput }: SyncUsecaseInputDto) {
     console.log("start");
 
     puppeteerExtra.use(Stealth());
 
     let i = 0;
-    for (const set of [
-      "alpha",
-      "arabian_nights",
-      "antiquities",
-      "legends",
-      "the_dark",
-    ]) {
+    for (const set of setInput
+      ? [setInput]
+      : [
+          Set.alpha,
+          Set.beta,
+          Set.unlimited,
+          Set.arabian_nights,
+          Set.antiquities,
+          Set.legends,
+          Set.the_dark,
+        ]) {
       while (true) {
         const take = 20;
-        const cards = await this.cardRepository.getCards(
-          set as
-            | "alpha"
-            | "arabian_nights"
-            | "antiquities"
-            | "legends"
-            | "the_dark",
-          take,
-          i
-        );
+        const cards = await this.cardRepository.getCards(set as Set, take, i);
         if (!cards?.length) {
           console.log("No cards found");
           i = 0;
@@ -63,6 +70,7 @@ export class SyncUsecase {
           console.log("--------------");
           console.log(card.name);
 
+          await sleep((Math.floor(Math.random() * 3) + 1) * 1000); // sleep for 1 to 3 seconds
           const [
             cardMarketPrice,
             priceChartingPrice,
@@ -85,11 +93,9 @@ export class SyncUsecase {
             abugamesBuyListPrice,
             starcitygamesBuyListPrice
           );
-          // console.log(prices);
 
           console.log("market     ==>>", prices.get(PriceType.market));
           console.log("buylist    ==>>", prices.get(PriceType.buylist));
-          console.log("estimated  ==>>", prices.get(PriceType.estimated));
 
           for (const key of prices.keys()) {
             await this.priceRepository.upsertPrice(
@@ -104,6 +110,8 @@ export class SyncUsecase {
         await browser.close();
       }
     }
+
+    await this.computePerformancesUsecase.execute({ set: setInput });
 
     console.log("end");
   }
@@ -313,36 +321,179 @@ export class SyncUsecase {
       ? Math.round(buylistTuple[0] / buylistTuple[1])
       : undefined;
 
-    const estimatedTuple = [marketPrice, buylistPrice].reduce(
-      (acc, currentValue) => {
-        if (currentValue) {
-          acc[0] = acc[0] ? acc[0] + currentValue : currentValue;
-          acc[1] = acc[1] ? acc[1] + 1 : 1;
-        }
-        return acc;
-      },
-      [0, 0]
-    );
+    const estimatedTuple =
+      marketPrice && buylistPrice
+        ? [marketPrice, buylistPrice].reduce(
+            (acc, currentValue) => {
+              if (currentValue) {
+                acc[0] = acc[0] ? acc[0] + currentValue : currentValue;
+                acc[1] = acc[1] ? acc[1] + 1 : 1;
+              }
+              return acc;
+            },
+            [0, 0]
+          )
+        : [0, 0];
     const estimatedValue = estimatedTuple[1]
       ? Math.round(estimatedTuple[0] / estimatedTuple[1])
       : undefined;
 
+    const ratio =
+      marketPrice &&
+      buylistPrice &&
+      Math.round((marketPrice / buylistPrice) * 100) - 100;
+
     return new Map([
       [PriceType.market, marketPrice],
       [PriceType.buylist, buylistPrice],
-      [PriceType.estimated, estimatedValue],
       [PriceType.cardmarket, cardMarketPrice],
       [PriceType.pricecharting, priceChartingPrice],
       [PriceType.cardkingdom, ckBuyListPrice],
       [PriceType.abugames, abugamesBuyListPrice],
       [PriceType.starcitygames, starcitygamesBuyListPrice],
-      [
-        PriceType.ratio,
-        (marketPrice &&
-          buylistPrice &&
-          Math.round((marketPrice / buylistPrice) * 100)) ||
-          undefined,
-      ],
+      [PriceType.ratio, ratio],
     ]);
+  }
+
+  async computePerformances(
+    cardId: string
+  ): Promise<Omit<PerformanceEntity, "id">[]> {
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+
+    const performances: Omit<PerformanceEntity, "id">[] = [];
+
+    const todayMarketPrice = await this.priceRepository.getOne(
+      cardId,
+      PriceType.market,
+      today
+    );
+    const todayBuylistPrice = await this.priceRepository.getOne(
+      cardId,
+      PriceType.buylist,
+      today
+    );
+
+    const oneDayAgo = new Date(today);
+    oneDayAgo.setUTCDate(today.getUTCDate() - 1);
+    const oneDayOldMarketPrice = await this.priceRepository.getOne(
+      cardId,
+      PriceType.market,
+      oneDayAgo
+    );
+    const oneDayOldBuylistPrice = await this.priceRepository.getOne(
+      cardId,
+      PriceType.buylist,
+      oneDayAgo
+    );
+
+    const oneWeekAgo = new Date(today);
+    oneWeekAgo.setUTCDate(today.getUTCDate() - 7);
+    const oneWeekOldMarketPrice = await this.priceRepository.getOne(
+      cardId,
+      PriceType.market,
+      oneWeekAgo
+    );
+    const oneWeekOldBuylistPrice = await this.priceRepository.getOne(
+      cardId,
+      PriceType.buylist,
+      oneWeekAgo
+    );
+
+    const oneMonthAgo = new Date(today);
+    oneMonthAgo.setUTCMonth(today.getUTCMonth() - 1);
+    const oneMonthOldMarketPrice = await this.priceRepository.getOne(
+      cardId,
+      PriceType.market,
+      oneMonthAgo
+    );
+    const oneMonthOldBuylistPrice = await this.priceRepository.getOne(
+      cardId,
+      PriceType.buylist,
+      oneMonthAgo
+    );
+
+    const oneDayMarketPricePerformance =
+      oneDayOldMarketPrice?.value && todayMarketPrice?.value
+        ? Math.round(
+            (todayMarketPrice.value / oneDayOldMarketPrice.value - 1) * 100
+          )
+        : null;
+    performances.push({
+      cardId,
+      value: oneDayMarketPricePerformance,
+      date: today,
+      periodType: PerformancePeriodType.daily,
+      type: PerformanceType.market,
+    });
+    const oneDayBuylistPricePerformance =
+      oneDayOldBuylistPrice?.value && todayBuylistPrice?.value
+        ? Math.round(
+            (todayBuylistPrice.value / oneDayOldBuylistPrice.value - 1) * 100
+          )
+        : null;
+    performances.push({
+      cardId,
+      value: oneDayBuylistPricePerformance,
+      date: today,
+      periodType: PerformancePeriodType.daily,
+      type: PerformanceType.buylist,
+    });
+
+    const oneWeekMarketPricePerformance =
+      oneWeekOldMarketPrice?.value && todayMarketPrice?.value
+        ? Math.round(
+            (todayMarketPrice.value / oneWeekOldMarketPrice.value - 1) * 100
+          )
+        : null;
+    performances.push({
+      cardId,
+      value: oneWeekMarketPricePerformance,
+      date: today,
+      periodType: PerformancePeriodType.weekly,
+      type: PerformanceType.market,
+    });
+    const oneWeekBuylistPricePerformance =
+      oneWeekOldBuylistPrice?.value && todayBuylistPrice?.value
+        ? Math.round(
+            (todayBuylistPrice.value / oneWeekOldBuylistPrice.value - 1) * 100
+          )
+        : null;
+    performances.push({
+      cardId,
+      value: oneWeekBuylistPricePerformance,
+      date: today,
+      periodType: PerformancePeriodType.weekly,
+      type: PerformanceType.buylist,
+    });
+
+    const oneMonthMarketPricePerformance =
+      oneMonthOldMarketPrice?.value && todayMarketPrice?.value
+        ? Math.round(
+            (todayMarketPrice.value / oneMonthOldMarketPrice.value - 1) * 100
+          )
+        : null;
+    performances.push({
+      cardId,
+      value: oneMonthMarketPricePerformance,
+      date: today,
+      periodType: PerformancePeriodType.monthly,
+      type: PerformanceType.market,
+    });
+    const oneMonthBuylistPricePerformance =
+      oneMonthOldBuylistPrice?.value && todayBuylistPrice?.value
+        ? Math.round(
+            (todayBuylistPrice.value / oneMonthOldBuylistPrice.value - 1) * 100
+          )
+        : null;
+    performances.push({
+      cardId,
+      value: oneMonthBuylistPricePerformance,
+      date: today,
+      periodType: PerformancePeriodType.monthly,
+      type: PerformanceType.buylist,
+    });
+
+    return performances;
   }
 }
