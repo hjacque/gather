@@ -13,6 +13,7 @@ export const http = async ({
   getBestRatioCardsTodayUsecase,
   getCardsUsecase,
   getCardUsecase,
+  getCardOfTheDayUsecase,
 }: Usecases) => {
   // middlewares
   app.use(express.json());
@@ -36,6 +37,16 @@ export const http = async ({
 
   app.get("/ratio-today", async (req, res) => {
     const result = await getBestRatioCardsTodayUsecase.execute();
+
+    res.status(200);
+    res.json(result);
+  });
+
+  app.get("/card-of-the-day", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    const result = await getCardOfTheDayUsecase.execute();
+
+    console.log("result", result);
 
     res.status(200);
     res.json(result);

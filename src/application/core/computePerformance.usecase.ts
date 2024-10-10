@@ -96,17 +96,17 @@ export class ComputePerformancesUsecase {
             oneWeekAgo
           );
 
-          const oneMonthAgo = new Date(today);
-          oneMonthAgo.setUTCMonth(today.getUTCMonth() - 1);
+          const thrityDaysAgo = new Date(today);
+          thrityDaysAgo.setUTCMonth(today.getUTCDate() - 30);
           const oneMonthOldMarketPrice = await this.priceRepository.getOne(
             card.id,
             PriceType.market,
-            oneMonthAgo
+            thrityDaysAgo
           );
           const oneMonthOldBuylistPrice = await this.priceRepository.getOne(
             card.id,
             PriceType.buylist,
-            oneMonthAgo
+            thrityDaysAgo
           );
 
           const oneDayMarketPricePerformance =

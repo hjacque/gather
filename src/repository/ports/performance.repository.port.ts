@@ -19,4 +19,6 @@ export abstract class PerformanceRepositoryPort {
     periodType: PerformancePeriodType,
     type: PerformanceType
   ): Promise<PerformanceEntity>;
+
+  abstract getTopPerformance(date: Date): Promise<PerformanceEntity | null>;
 }

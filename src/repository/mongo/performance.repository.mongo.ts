@@ -1,9 +1,4 @@
 import { BSON, Collection } from "mongodb";
-import { PriceModel } from "./models/price.model.mongo";
-import { PriceRepositoryPort } from "../ports/price.repository.port";
-import { PriceMapper } from "./mappers/price.mapper.mongo";
-import { PriceType } from "../../entities/price.entity";
-import { CARDMARKET_FEE } from "../../constants";
 import { PerformanceModel } from "./models/performance.model.mongo";
 import { PerformanceRepositoryPort } from "../ports/performance.repository.port";
 import {
@@ -73,5 +68,25 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
       throw new Error(`Performance not found. Card id : ${cardId}`);
     }
     return this.performanceMapper.toEntity(performance);
+  }
+
+  async getTopPerformance(date: Date): Promise<PerformanceEntity> {
+    const topPerformance = (
+      await this.performanceCollection
+        .find(
+          {
+            date,
+            type: PerformanceType.market,
+            value: { $gt: 0 },
+          },
+          {
+            sort: { value: -1 },
+            limit: 10,
+          }
+        )
+        .toArray()
+    )[0];
+
+    return this.performanceMapper.toEntity(topPerformance);
   }
 }

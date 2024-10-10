@@ -6,12 +6,14 @@ import { GetCardsUsecase } from "./core/getCards.usecase";
 import { GetCardUsecase } from "./core/getCard.usecase";
 import { PerformanceRepositoryPort } from "../repository/ports/performance.repository.port";
 import { ComputePerformancesUsecase } from "./core/computePerformance.usecase";
+import { GetCardOfTheDayUsecase } from "./core/getCardOfTheDay.usecase";
 
 export type Usecases = {
   syncUsecase: SyncUsecase;
   getBestRatioCardsTodayUsecase: GetBestRatioCardsTodayUsecase;
   getCardsUsecase: GetCardsUsecase;
   getCardUsecase: GetCardUsecase;
+  getCardOfTheDayUsecase: GetCardOfTheDayUsecase;
 };
 
 export const initApplication = ({
@@ -42,11 +44,16 @@ export const initApplication = ({
     performanceRepository
   );
   const getCardUsecase = new GetCardUsecase(cardRepository, priceRepository);
+  const getCardOfTheDayUsecase = new GetCardOfTheDayUsecase(
+    cardRepository,
+    performanceRepository
+  );
 
   return {
     syncUsecase,
     getBestRatioCardsTodayUsecase,
     getCardsUsecase,
     getCardUsecase,
+    getCardOfTheDayUsecase,
   };
 };
