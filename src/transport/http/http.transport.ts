@@ -14,6 +14,8 @@ export const http = async ({
   getCardsUsecase,
   getCardUsecase,
   getCardOfTheDayUsecase,
+  syncSingleUsecase,
+  computePerformancesUsecase,
 }: Usecases) => {
   // middlewares
   app.use(express.json());
@@ -21,8 +23,22 @@ export const http = async ({
   // error handling
   app.use(errorHandler);
 
-  app.get("/sync/:set", async (req, res) => {
+  app.get("/sync/set/:set", async (req, res) => {
     const result = await syncUsecase.execute({ set: req.params.set as any });
+
+    res.status(200);
+    res.json(result);
+  });
+
+  app.get("/sync/card/:cardid", async (req, res) => {
+    const result = await syncSingleUsecase.execute(req.params.cardid);
+
+    res.status(200);
+    res.json(result);
+  });
+
+  app.get("/sync/performances", async (req, res) => {
+    const result = await computePerformancesUsecase.execute({});
 
     res.status(200);
     res.json(result);
