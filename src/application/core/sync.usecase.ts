@@ -43,7 +43,9 @@ export class SyncUsecase {
           Set.the_dark,
         ]) {
       while (true) {
-        const take = 20;
+        await sleep(1 * 1000); // Sleep 1 second
+  
+        const take = 4;
         const cards = await this.cardRepository.getCards(set as Set, take, i);
         if (!cards?.length) {
           console.log("No cards found");
@@ -52,68 +54,67 @@ export class SyncUsecase {
         }
         i += take;
 
-        const browser = await puppeteer.launch({
-          headless: false,
-          args: [
-            "--ignore-certificate-errors",
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-accelerated-2d-canvas",
-            "--disable-gpu",
-          ],
-        });
-
         const today = new Date();
         today.setUTCHours(0, 0, 0, 0);
 
-        for (const card of cards) {
-          console.log("--------------");
-          console.log(card.name);
-
-          await sleep((Math.floor(Math.random() * 3) + 1) * 1000); // sleep for 1 to 3 seconds
-          const [
-            cardMarketPrice,
-            priceChartingPrice,
-            ckBuyListPrice,
-            abugamesBuyListPrice,
-            starcitygamesBuyListPrice,
-          ] = [
-            await this.syncCardMarket(card, browser),
-            undefined, // await this.syncPriceCharting(card, browser),
-            await this.syncCardkingdomBuyList(card, browser),
-            await this.syncAbugamesBuyList(card, browser),
-            undefined, // await this.syncStarcitygamesBuyList(card, browser),
-          ];
-
-          const prices = await this.computePrices(
-            card,
-            cardMarketPrice,
-            priceChartingPrice,
-            ckBuyListPrice,
-            abugamesBuyListPrice,
-            starcitygamesBuyListPrice
-          );
-
-          console.log("market     ==>>", prices.get(PriceType.market));
-          console.log("buylist    ==>>", prices.get(PriceType.buylist));
-
-          for (const key of prices.keys()) {
-            await this.priceRepository.upsertPrice(
-              card.id,
-              prices.get(key),
-              key,
-              today
-            );
-          }
-        }
-
-        await browser.close();
+        await Promise.all(cards.map((card) =>
+          this.syncOneCard(card, today)
+        ));
       }
     }
 
     await this.computePerformancesUsecase.execute({ set: setInput });
 
     console.log("end");
+  }
+
+  async syncOneCard(card: CardEntity, today: Date) {
+    await sleep((Math.floor(Math.random() * 10) + 1) * 1000); // Random sleep between 1 and 11 seconds
+    const browser = await puppeteer.launch({
+      headless: false,
+      args: [
+        "--ignore-certificate-errors",
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-accelerated-2d-canvas",
+        "--disable-gpu",
+      ],
+    });
+
+    const [
+      cardMarketPrice,
+      priceChartingPrice,
+      ckBuyListPrice,
+      abugamesBuyListPrice,
+      starcitygamesBuyListPrice,
+    ] = [
+      await this.syncCardMarket(card, browser),
+      undefined, // await this.syncPriceCharting(card, browser),
+      await this.syncCardkingdomBuyList(card, browser),
+      await this.syncAbugamesBuyList(card, browser),
+      undefined, // await this.syncStarcitygamesBuyList(card, browser),
+    ];
+
+    const prices = await this.computePrices(
+      card,
+      cardMarketPrice,
+      priceChartingPrice,
+      ckBuyListPrice,
+      abugamesBuyListPrice,
+      starcitygamesBuyListPrice
+    );
+
+    console.log(card.name, prices);
+
+    for (const key of prices.keys()) {
+      await this.priceRepository.upsertPrice(
+        card.id,
+        prices.get(key),
+        key,
+        today
+      );
+    }
+    await browser.close();
   }
 
   // todo - implement factory pattern
@@ -149,10 +150,10 @@ export class SyncUsecase {
         parseFloat(data[data.length - 2].replace(".", "")) *
         (1 - CARDMARKET_FEE);
 
-      console.log("CardMarket :", price);
+      // console.log("CardMarket :", price);
       return price;
     } catch (error) {
-      console.log("No CardMarket listing");
+      console.log("No CardMarket listing", card.name);
       await page.close();
       return undefined;
     }
@@ -216,11 +217,11 @@ export class SyncUsecase {
           data[0].replace("$", "").replace(",", "").replace(".", ",")
         ) * USD_TO_EUR;
 
-      console.log("cardkingdom buylist price", price);
+      // console.log("cardkingdom buylist price", price);
       return price;
     } catch (error) {
       await page.close();
-      console.log("Not in Cardkingdom BuyList");
+      console.log("Not in Cardkingdom BuyList", card.name);
       return undefined;
     }
   }
@@ -251,12 +252,12 @@ export class SyncUsecase {
           data[0].replace("$", "").replace(",", "").replace(".", ",")
         ) * USD_TO_EUR;
 
-      console.log("abugames buylist price", price);
+      // console.log("abugames buylist price", price);
 
       return price;
     } catch (error) {
       await page.close();
-      console.log("Not in Abugames BuyList");
+      console.log("Not in Abugames BuyList", card.name);
       return undefined;
     }
   }
@@ -289,54 +290,12 @@ export class SyncUsecase {
     abugamesBuyListPrice: number | undefined,
     starcitygamesBuyListPrice: number | undefined
   ) {
-    const marketTuple = [cardMarketPrice].reduce(
-      (acc, currentValue) => {
-        if (currentValue) {
-          acc[0] = acc[0] ? acc[0] + currentValue : currentValue;
-          acc[1] = acc[1] ? acc[1] + 1 : 1;
-        }
-        return acc;
-      },
-      [0, 0]
-    );
-    const marketPrice = marketTuple[1]
-      ? Math.round(marketTuple[0] / marketTuple[1])
-      : undefined;
+    const marketPrice = Math.min(cardMarketPrice || 0) || undefined;
 
-    const buylistTuple = [
-      ckBuyListPrice,
-      abugamesBuyListPrice,
-      starcitygamesBuyListPrice,
-    ].reduce(
-      (acc, currentValue) => {
-        if (currentValue) {
-          acc[0] = acc[0] ? acc[0] + currentValue : currentValue;
-          acc[1] = acc[1] ? acc[1] + 1 : 1;
-        }
-        return acc;
-      },
-      [0, 0]
-    );
-    const buylistPrice = buylistTuple[1]
-      ? Math.round(buylistTuple[0] / buylistTuple[1])
-      : undefined;
-
-    const estimatedTuple =
-      marketPrice && buylistPrice
-        ? [marketPrice, buylistPrice].reduce(
-            (acc, currentValue) => {
-              if (currentValue) {
-                acc[0] = acc[0] ? acc[0] + currentValue : currentValue;
-                acc[1] = acc[1] ? acc[1] + 1 : 1;
-              }
-              return acc;
-            },
-            [0, 0]
-          )
-        : [0, 0];
-    const estimatedValue = estimatedTuple[1]
-      ? Math.round(estimatedTuple[0] / estimatedTuple[1])
-      : undefined;
+    const buylistPrice = Math.max(
+      ckBuyListPrice || 0,
+      abugamesBuyListPrice || 0,
+      starcitygamesBuyListPrice || 0) || undefined;
 
     const ratio =
       marketPrice &&
