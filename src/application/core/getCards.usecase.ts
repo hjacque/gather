@@ -20,28 +20,31 @@ export class GetCardsUsecase {
     today.setUTCHours(0, 0, 0, 0);
 
     for (const card of cards) {
-      card.performance = await this.getPerformances(card.id, today);
-
-      const [marketPrice, buylistPrice, ratioPrice] = [
-        await this.priceRepository.getCardPrice(
+      const [marketPrice, buylistPrice, ratioPrice, performance] = await Promise.all([
+        this.priceRepository.getCardPrice(
           card.id,
           PriceType.market,
           today
         ),
-        await this.priceRepository.getCardPrice(
+        this.priceRepository.getCardPrice(
           card.id,
           PriceType.buylist,
           today
         ),
-        await this.priceRepository.getCardPrice(
+        this.priceRepository.getCardPrice(
           card.id,
           PriceType.ratio,
           today
         ),
-      ];
+        this.getPerformances(
+          card.id,
+          today
+        ),
+      ]);
       card.market = marketPrice?.value || null;
       card.buylist = buylistPrice?.value || null;
       card.ratio = ratioPrice?.value || null;
+      card.performance = performance || null;
     }
 
     return cards;
@@ -55,63 +58,51 @@ export class GetCardsUsecase {
       oneWeekBuylistPricePerformance,
       oneMonthMarketPricePerformance,
       oneMonthBuylistPricePerformance,
-    ] = [
-      (
-        await this.performanceRepository.getPerformance(
-          cardId,
-          today,
-          PerformancePeriodType.daily,
-          PerformanceType.market
-        )
-      ).value,
-      (
-        await this.performanceRepository.getPerformance(
-          cardId,
-          today,
-          PerformancePeriodType.daily,
-          PerformanceType.buylist
-        )
-      ).value,
-      (
-        await this.performanceRepository.getPerformance(
-          cardId,
-          today,
-          PerformancePeriodType.weekly,
-          PerformanceType.market
-        )
-      ).value,
-      (
-        await this.performanceRepository.getPerformance(
-          cardId,
-          today,
-          PerformancePeriodType.weekly,
-          PerformanceType.buylist
-        )
-      ).value,
-      (
-        await this.performanceRepository.getPerformance(
-          cardId,
-          today,
-          PerformancePeriodType.monthly,
-          PerformanceType.market
-        )
-      ).value,
-      (
-        await this.performanceRepository.getPerformance(
-          cardId,
-          today,
-          PerformancePeriodType.monthly,
-          PerformanceType.buylist
-        )
-      ).value,
-    ];
+    ] = await Promise.all([
+      this.performanceRepository.getPerformance(
+        cardId,
+        today,
+        PerformancePeriodType.daily,
+        PerformanceType.market
+      ),
+      this.performanceRepository.getPerformance(
+        cardId,
+        today,
+        PerformancePeriodType.daily,
+        PerformanceType.buylist
+      ),
+      this.performanceRepository.getPerformance(
+        cardId,
+        today,
+        PerformancePeriodType.weekly,
+        PerformanceType.market
+      ),
+      this.performanceRepository.getPerformance(
+        cardId,
+        today,
+        PerformancePeriodType.weekly,
+        PerformanceType.buylist
+      ),
+      this.performanceRepository.getPerformance(
+        cardId,
+        today,
+        PerformancePeriodType.monthly,
+        PerformanceType.market
+      ),
+      this.performanceRepository.getPerformance(
+        cardId,
+        today,
+        PerformancePeriodType.monthly,
+        PerformanceType.buylist
+      ),
+    ]);
     return {
-      oneDayMarketPricePerformance,
-      oneDayBuylistPricePerformance,
-      oneWeekMarketPricePerformance,
-      oneWeekBuylistPricePerformance,
-      oneMonthMarketPricePerformance,
-      oneMonthBuylistPricePerformance,
+      oneDayMarketPricePerformance: oneDayMarketPricePerformance.value,
+      oneDayBuylistPricePerformance: oneDayBuylistPricePerformance.value,
+      oneWeekMarketPricePerformance: oneWeekMarketPricePerformance.value,
+      oneWeekBuylistPricePerformance: oneWeekBuylistPricePerformance.value,
+      oneMonthMarketPricePerformance: oneMonthMarketPricePerformance.value,
+      oneMonthBuylistPricePerformance: oneMonthBuylistPricePerformance.value,
     };
   }
 }
