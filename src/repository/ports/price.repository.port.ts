@@ -24,15 +24,18 @@ export abstract class PriceRepositoryPort {
     ratioPrices: PriceEntity[];
   }>;
 
-  abstract getCardPrice(
-    cardId: string,
-    type: PriceType,
-    date: Date
-  ): Promise<PriceEntity | null>;
-
   abstract getOne(
     cardId: string,
     type: PriceType,
     date: Date
   ): Promise<PriceEntity | null>;
+
+  abstract getCardsPricesByDate(
+    cardIds: string[],
+    date: Date
+  ): Promise<Map<string, {
+    market: number | null;
+    buylist: number | null;
+    ratio: number | null;
+  }>>;
 }

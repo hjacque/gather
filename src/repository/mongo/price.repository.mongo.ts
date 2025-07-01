@@ -3,7 +3,6 @@ import { PriceModel } from "./models/price.model.mongo";
 import { PriceRepositoryPort } from "../ports/price.repository.port";
 import { PriceMapper } from "./mappers/price.mapper.mongo";
 import { PriceType } from "../../entities/price.entity";
-import { CARDMARKET_FEE } from "../../constants";
 
 export class PriceRepositoryMongo implements PriceRepositoryPort {
   private priceMapper: PriceMapper;
@@ -146,14 +145,37 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
     };
   }
 
-  async getCardPrice(cardId: string, type: PriceType, date: Date) {
-    const price = await this.priceCollection.findOne({
-      cardId: new BSON.ObjectId(cardId),
-      type,
-      date,
-    });
+  async getCardsPricesByDate(
+    cardIds: string[],
+    date: Date
+  ) {
+    const prices = await this.priceCollection
+      .find({
+        cardId: { $in: cardIds.map((id) => new BSON.ObjectId(id)) },
+        date,
+        type: { $in: ["market", "buylist", "ratio"] },
+      })
+      .toArray();
 
-    return price ? this.priceMapper.toEntity(price) : null;
+    type ResKey = PriceType.market | PriceType.buylist | PriceType.ratio;
+    const result: Map<string, Record<ResKey, number | null>> = new Map();
+    
+    for (const cardId of cardIds) {
+      result.set(cardId, {
+        market: null,
+        buylist: null,
+        ratio: null,
+      });
+    }
+
+    for (const price of prices) {
+      result.set(price.cardId.toString(), {
+        ...result.get(price.cardId.toString()),
+        [price.type]: price.value,
+      } as Record<ResKey, number | null>);
+    }
+
+    return result;
   }
 
   async getOne(cardId: string, type: PriceType, date: Date) {

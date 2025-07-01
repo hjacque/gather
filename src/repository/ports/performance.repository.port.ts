@@ -13,12 +13,17 @@ export abstract class PerformanceRepositoryPort {
     type: PerformanceType
   ): Promise<void>;
 
-  abstract getPerformance(
-    cardId: string,
-    date: Date,
-    periodType: PerformancePeriodType,
-    type: PerformanceType
-  ): Promise<PerformanceEntity>;
-
   abstract getTopPerformance(date: Date): Promise<PerformanceEntity | null>;
+
+  abstract getPerformances(
+    cardIds: string[],
+    date: Date
+  ): Promise<Map<string, {
+    oneDayMarketPricePerformance: number | null,
+      oneDayBuylistPricePerformance: number | null,
+      oneWeekMarketPricePerformance: number | null,
+      oneWeekBuylistPricePerformance: number | null,
+      oneMonthMarketPricePerformance: number  | null,
+      oneMonthBuylistPricePerformance: number | null,
+  }>>;
 }
