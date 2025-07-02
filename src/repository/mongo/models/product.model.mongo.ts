@@ -1,7 +1,9 @@
 import { ObjectId } from "mongodb";
 
-export type CardModel = {
+export type ProductModel = {
   _id: ObjectId;
+  type: "single" | "booster_box" | "collector_booster_box";
+  franchise: "mtg" | "pokemon";
   number: number;
   name: string;
   set:

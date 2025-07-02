@@ -1,4 +1,4 @@
-import { CardRepositoryPort } from "../repository/ports/card.repository.port";
+import { ProductRepositoryPort } from "../repository/ports/product.repository.port";
 import { PriceRepositoryPort } from "../repository/ports/price.repository.port";
 import { SyncUsecase } from "./core/sync.usecase";
 import { GetBestRatioCardsTodayUsecase } from "./core/getBestRatioCardsToday.usecase";
@@ -20,21 +20,21 @@ export type Usecases = {
 };
 
 export const initApplication = ({
-  cardRepository,
+  productRepository,
   priceRepository,
   performanceRepository,
 }: {
-  cardRepository: CardRepositoryPort;
+  productRepository: ProductRepositoryPort;
   priceRepository: PriceRepositoryPort;
   performanceRepository: PerformanceRepositoryPort;
 }): Usecases => {
   const computePerformancesUsecase = new ComputePerformancesUsecase(
-    cardRepository,
+    productRepository,
     priceRepository,
     performanceRepository
   );
   const syncUsecase = new SyncUsecase(
-    cardRepository,
+    productRepository,
     priceRepository,
     computePerformancesUsecase
   );
@@ -42,17 +42,17 @@ export const initApplication = ({
     priceRepository
   );
   const getCardsUsecase = new GetCardsUsecase(
-    cardRepository,
+    productRepository,
     priceRepository,
     performanceRepository
   );
-  const getCardUsecase = new GetCardUsecase(cardRepository, priceRepository);
+  const getCardUsecase = new GetCardUsecase(productRepository, priceRepository);
   const getCardOfTheDayUsecase = new GetCardOfTheDayUsecase(
-    cardRepository,
+    productRepository,
     performanceRepository
   );
   const syncSingleUsecase = new SyncSingleUsecase(
-    cardRepository,
+    productRepository,
     priceRepository,
     computePerformancesUsecase
   );

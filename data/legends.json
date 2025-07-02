@@ -1,7 +1,8 @@
 [
   {
-    "number": 1,
     "name": "Acid Rain",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Acid-Rain",
@@ -10,8 +11,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Acid%20Rain&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 2,
     "name": "Adun Oakenshield",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Adun-Oakenshield",
@@ -20,8 +22,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Acid%20Rain&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 3,
     "name": "Al-abara's Carpet",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Al-abara-s-Carpet",
@@ -30,8 +33,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Al-abara%27s%20Carpet&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 4,
     "name": "Alchor's Tomb",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Alchor-s-Tomb",
@@ -40,8 +44,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist/singles?search=Alchor%27s%20Tomb&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 5,
     "name": "All Hallow's Eve",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/All-Hallow-s-Eve",
@@ -50,8 +55,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=All%20Hallow%27s%20Eve&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 6,
     "name": "Angus Mackenzie",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Angus-Mackenzie",
@@ -60,8 +66,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Angus%20Mackenzie&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 7,
     "name": "Bartel Runeaxe",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Bartel-Runeaxe",
@@ -70,8 +77,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Bartel%20Runeaxe&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 8,
     "name": "Boris Devilboon",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Boris-Devilboon",
@@ -80,8 +88,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Boris%20Devilboon&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 9,
     "name": "Caverns of Despair",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Caverns-of-Despair",
@@ -90,8 +99,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Caverns%20of%20Despair&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 10,
     "name": "Chains of Mephistopheles",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Chains-of-Mephistopheles",
@@ -100,8 +110,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Chains%20of%20Mephistopheles&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 11,
     "name": "Cleanse",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Cleanse",
@@ -110,8 +121,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Cleanse&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": null,
     "name": "Disharmony",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "uncommon",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Disharmony",
@@ -120,8 +132,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Disharmony&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": null,
     "name": "Divine Intervention",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Divine-Intervention",
@@ -130,8 +143,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Divine%20Intervention&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": null,
     "name": "Elder Spawn",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Elder-Spawn",
@@ -140,8 +154,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Elder%20Spawn&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": null,
     "name": "Eureka",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Eureka",
@@ -150,8 +165,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Eureka&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": null,
     "name": "Falling Star",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Falling-Star",
@@ -160,8 +176,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Falling%20Star&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": null,
     "name": "Field of Dreams",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Field-of-Dreams",
@@ -170,8 +187,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Field%20of%20Dreams&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": null,
     "name": "Firestorm Phoenix",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Firestorm-Phoenix",
@@ -180,8 +198,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Firestorm%20Phoenix&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": null,
     "name": "Forethought Amulet",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "uncommon",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Forethought-Amulet",
@@ -190,8 +209,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Forethought%20Amulet&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": null,
     "name": "Gosta Dirk",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Gosta-Dirk",
@@ -200,8 +220,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Gosta%20Dirk&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": null,
     "name": "Gravity Sphere",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Gravity-Sphere",
@@ -210,8 +231,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Gravity%20Sphere&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": null,
     "name": "Gwendlyn Di Corci",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "uncommon",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Gwendlyn-Di-Corci",
@@ -220,8 +242,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Gwendlyn%20Di%20Corci&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": null,
     "name": "Halfdane",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Halfdane",
@@ -230,8 +253,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Halfdane&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 1,
     "name": "Hazezon Tamar",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Hazezon-Tamar",
@@ -240,8 +264,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Hazezon%20Tamar&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 2,
     "name": "Hellfire",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Hellfire",
@@ -250,8 +275,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Hellfire&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 3,
     "name": "Imprison",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "uncommon",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Imprison",
@@ -260,8 +286,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Imprison&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 4,
     "name": "In the Eye of Chaos",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/In-the-Eye-of-Chaos",
@@ -270,8 +297,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=In%20the%20Eye%20of%20Chaos&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 5,
     "name": "Infinite Authority",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Infinite-Authority",
@@ -280,8 +308,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Infinite%20Authority&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 6,
     "name": "Invoke Prejudice",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Invoke-Prejudice",
@@ -290,8 +319,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Invoke%20Prejudice&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 7,
     "name": "Jacques le Vert",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Jacques-le-Vert",
@@ -300,8 +330,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Jacques%20le%20vert&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 8,
     "name": "Jovial Evil",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Jovial-Evil",
@@ -310,8 +341,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Jovial%20Evil&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 9,
     "name": "Knowledge Vault",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Knowledge-Vault",
@@ -320,8 +352,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Knowledge%20Vault&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 10,
     "name": "Kobold Overlord",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "uncommon",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Kobold-Overlord",
@@ -330,8 +363,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Kobold%20Overlord&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 11,
     "name": "Lady Caleria",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Lady-Caleria",
@@ -340,8 +374,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Lady%20Caleria&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 12,
     "name": "Lady Evangela",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Lady-Evangela",
@@ -350,8 +385,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Lady%20Evangela&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 1,
     "name": "Land Equilibrium",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Land-Equilibrium",
@@ -360,8 +396,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Land%20Equilibrium&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 2,
     "name": "Life Matrix",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Life-Matrix",
@@ -370,8 +407,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Life%20Matrix&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 3,
     "name": "Lifeblood",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "uncommon",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Lifeblood",
@@ -380,8 +418,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Lifeblood&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 4,
     "name": "Living Plane",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Living-Plane",
@@ -390,8 +429,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Living%20Plane&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 5,
     "name": "Livonya Silone",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Livonya-Silone",
@@ -400,8 +440,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Livonya%20Silone&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 6,
     "name": "Mana Matrix",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Mana-Matrix",
@@ -410,8 +451,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Mana%20Matrix&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 7,
     "name": "Master of the Hunt",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Master-of-the-Hunt",
@@ -420,8 +462,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Master%20of%20the%20Hunt&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 8,
     "name": "Mirror Universe",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Mirror-Universe",
@@ -430,8 +473,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Mirror%20Universe&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 9,
     "name": "Moat",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Moat",
@@ -440,8 +484,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Moat&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 10,
     "name": "Mold Demon",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Mold-Demon",
@@ -450,8 +495,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Mold%20Demon&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 11,
     "name": "Nether Void",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Nether-Void",
@@ -460,8 +506,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Nether%20Void&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 12,
     "name": "North Star",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/North-Star",
@@ -470,8 +517,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=North%20Star&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 1,
     "name": "Nova Pentacle",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Nova-Pentacle",
@@ -480,8 +528,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Nova%20Pentacle&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 2,
     "name": "Pixie Queen",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Pixie-Queen",
@@ -490,8 +539,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Pixie%20Queen&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 3,
     "name": "Planar Gate",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Planar-Gate",
@@ -500,8 +550,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Planar%20Gate&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 4,
     "name": "Quarum Trench Gnomes",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Quarum-Trench-Gnomes",
@@ -510,8 +561,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Quarum%20Trench%20Gnomes&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 5,
     "name": "Ragnar",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Ragnar",
@@ -520,8 +572,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Ragnar&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 6,
     "name": "Ramses Overdark",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Ramses-Overdark",
@@ -530,8 +583,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Ramses%20Overdark&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 7,
     "name": "Rapid Fire",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Rapid-Fire",
@@ -540,8 +594,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Rapid%20Fire&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 8,
     "name": "Rasputin Dreamweaver",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Rasputin-Dreamweaver",
@@ -550,8 +605,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Rasputin%20Dreamweaver&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 9,
     "name": "Reverberation",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Reverberation",
@@ -560,8 +616,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Reverberation&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 10,
     "name": "Ring of Immortals",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Ring-of-Immortals",
@@ -570,8 +627,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Ring%20of%20Immortals&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 11,
     "name": "Rohgahh of Kher Keep",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Rohgahh-of-Kher-Keep",
@@ -580,8 +638,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Rohgahh%20of%20Kher%20Keep&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 12,
     "name": "Spinal Villain",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Spinal-Villain",
@@ -590,8 +649,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Spinal%20Villain&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 1,
     "name": "Spiritual Sanctuary",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "uncommon",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Spiritual-Sanctuary",
@@ -600,8 +660,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Spiritual%20Sanctuary&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 2,
     "name": "Storm World",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Storm-World",
@@ -610,8 +671,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Storm%20World&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 3,
     "name": "Sword of the Ages",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Sword-of-the-Ages",
@@ -620,8 +682,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Sword%20of%20the%20Ages&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 4,
     "name": "Telekinesis",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Telekinesis",
@@ -630,8 +693,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Telekinesis&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 5,
     "name": "Tetsuo Umezawa",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Tetsuo-Umezawa",
@@ -640,8 +704,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Tetsuo%20Umezawa&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 6,
     "name": "The Abyss",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/The-Abyss",
@@ -650,8 +715,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=The%20Abyss&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 7,
     "name": "The Tabernacle at Pendrell Vale",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/The-Tabernacle-at-Pendrell-Vale",
@@ -660,8 +726,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=The%20Tabernacle%20at%20Pendrell%20Vale&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 8,
     "name": "Thunder Spirit",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "uncommon",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Thunder-Spirit",
@@ -670,8 +737,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Thunder%20Spirit&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 9,
     "name": "Tuknir Deathlock",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "uncommon",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Tuknir-Deathlock",
@@ -680,8 +748,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Tuknir%20Deathlock&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 10,
     "name": "Typhoon",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "uncommon",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Typhoon",
@@ -690,8 +759,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Typhoon&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 11,
     "name": "Ur-Drago",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Ur-Drago",
@@ -700,8 +770,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Ur-Drago&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 12,
     "name": "Willow Satyr",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "uncommon",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Willow-Satyr",
@@ -710,8 +781,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Willow%20Satyr&magic_edition=%5B\"Legends\"%5D&language=%5B\"English\"%5D"
   },
   {
-    "number": 36,
     "name": "Wood Elemental",
+    "type": "single",
+    "franchise": "mtg",
     "set": "legends",
     "rarity": "uncommon",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Legends/Wood-Elemental",

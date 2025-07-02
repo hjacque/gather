@@ -6,7 +6,7 @@ import {
 
 export type PerformanceModel = {
   _id: ObjectId;
-  cardId: ObjectId;
+  productId: ObjectId;
   date: Date;
   value: number | null;
   periodType: PerformancePeriodType;

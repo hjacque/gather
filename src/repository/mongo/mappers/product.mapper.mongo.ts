@@ -1,10 +1,11 @@
-import { CardEntity } from "../../../entities/card.entity";
-import { CardModel } from "../models/card.model.mongo";
+import { ProductEntity } from "../../../entities/product.entity";
+import { ProductModel } from "../models/product.model.mongo";
 
-export class CardMapper {
+export class ProductMapper {
   toEntity({
     _id,
-    number,
+    type,
+    franchise,
     name,
     set,
     rarity,
@@ -13,10 +14,11 @@ export class CardMapper {
     cardkingdomBuyListLink,
     abugamesBuyListLink,
     starcitygamesBuyListLink,
-  }: CardModel): CardEntity {
+  }: ProductModel): ProductEntity {
     return {
       id: _id.toString(),
-      number,
+      type,
+      franchise,
       name,
       set,
       rarity,

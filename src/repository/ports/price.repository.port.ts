@@ -2,7 +2,7 @@ import { PriceEntity, PriceType } from "../../entities/price.entity";
 
 export abstract class PriceRepositoryPort {
   abstract upsertPrice(
-    cardId: string,
+    productId: string,
     value: number | undefined,
     type:
       | "cardmarket"
@@ -18,20 +18,20 @@ export abstract class PriceRepositoryPort {
 
   abstract getBestRatioCards(startDate: Date, endDate: Date): Promise<any[]>;
 
-  abstract getCardPrices(cardId: string): Promise<{
+  abstract getCardPrices(productId: string): Promise<{
     marketPrices: PriceEntity[];
     buylistPrices: PriceEntity[];
     ratioPrices: PriceEntity[];
   }>;
 
   abstract getOne(
-    cardId: string,
+    productId: string,
     type: PriceType,
     date: Date
   ): Promise<PriceEntity | null>;
 
   abstract getCardsPricesByDate(
-    cardIds: string[],
+    productIds: string[],
     date: Date
   ): Promise<Map<string, {
     market: number | null;

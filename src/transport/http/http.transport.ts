@@ -30,8 +30,8 @@ export const http = async ({
     res.json(result);
   });
 
-  app.get("/sync/card/:cardid", async (req, res) => {
-    const result = await syncSingleUsecase.execute(req.params.cardid);
+  app.get("/sync/product/:productid", async (req, res) => {
+    const result = await syncSingleUsecase.execute(req.params.productid);
 
     res.status(200);
     res.json(result);
@@ -68,15 +68,15 @@ export const http = async ({
     res.json(result);
   });
 
-  app.get("/cards/:cardid", async (req, res) => {
+  app.get("/products/:productid", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
-    const result = await getCardUsecase.execute(req.params.cardid);
+    const result = await getCardUsecase.execute(req.params.productid);
 
     res.status(200);
     res.json(result);
   });
 
-  app.get("/cards", async (req, res) => {
+  app.get("/products", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
     const result = await getCardsUsecase.execute();
 

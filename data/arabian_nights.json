@@ -1,7 +1,8 @@
 [
   {
-    "number": 19,
     "name": "Ali from Cairo",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Ali-from-Cairo",
@@ -10,8 +11,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Ali%20from%20Cairo"
   },
   {
-    "number": 2,
     "name": "Bazaar of Baghdad",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Bazaar-of-Baghdad",
@@ -20,8 +22,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Bazaar%20of%20Baghdad"
   },
   {
-    "number": 3,
     "name": "City in a Bottle",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/City-in-a-Bottle",
@@ -30,8 +33,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=City%20in%20a%20Bottle"
   },
   {
-    "number": 4,
     "name": "Diamond Valley",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Diamond-Valley",
@@ -40,8 +44,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Diamond%20Valley"
   },
   {
-    "number": 5,
     "name": "Drop of Honey",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Drop-of-Honey",
@@ -50,8 +55,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Drop%20of%20Honey"
   },
   {
-    "number": 6,
     "name": "Elephant Graveyard",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "uncommon",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Elephant-Graveyard",
@@ -60,8 +66,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Elephant%20Graveyard"
   },
   {
-    "number": 7,
     "name": "Guardian Beast",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Guardian-Beast",
@@ -70,8 +77,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Guardian%20Beast"
   },
   {
-    "number": 8,
     "name": "Ifh-Bíff Efreet",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "uncommon",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/IfhBiff-Efreet",
@@ -80,8 +88,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Ifh-Biff%20Efreet"
   },
   {
-    "number": 9,
     "name": "Island of Wak-Wak",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Island-of-Wak-Wak",
@@ -90,8 +99,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Island%20of%20Wak-Wak"
   },
   {
-    "number": 10,
     "name": "Jihad",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Jihad",
@@ -100,8 +110,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Jihad"
   },
   {
-    "number": 11,
     "name": "Juzám Djinn",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Juzam-Djinn",
@@ -110,8 +121,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist/singles?search=Juzam%20Djinn"
   },
   {
-    "number": 12,
     "name": "Khabál Ghoul",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "uncommon",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Khabal-Ghoul",
@@ -120,8 +132,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Khabal%20Ghoul"
   },
   {
-    "number": 13,
     "name": "King Suleiman",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/King-Suleiman",
@@ -130,8 +143,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=King%20Suleiman"
   },
   {
-    "number": 76,
     "name": "Library of Alexandria",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Library-of-Alexandria",
@@ -140,8 +154,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Library%20of%20Alexandria"
   },
   {
-    "number": 14,
     "name": "Merchant Ship",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Merchant-Ship",
@@ -150,8 +165,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Merchant%20Ship"
   },
   {
-    "number": 15,
     "name": "Old Man of the Sea",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Old-Man-of-the-Sea",
@@ -160,8 +176,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Old%20Man%of%20the%20Sea"
   },
   {
-    "number": 16,
     "name": "Pyramids",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Pyramids",
@@ -170,8 +187,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Pyramids"
   },
   {
-    "number": 17,
     "name": "Ring of Ma'rûf",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Ring-of-Maruf",
@@ -180,8 +198,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist/singles?search=Ring%20of%20Ma%27ruf"
   },
   {
-    "number": 18,
     "name": "Sandals of Abdallah",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Sandals-of-Abdallah",
@@ -190,8 +209,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Sandals%20of%20Abdallah"
   },
   {
-    "number": 20,
     "name": "Serendib Djinn",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Serendib-Djinn",
@@ -200,8 +220,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Serendib%20Djinn"
   },
   {
-    "number": 21,
     "name": "Shahrazad",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Shahrazad",
@@ -210,8 +231,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Shahrazad"
   },
   {
-    "number": 22,
     "name": "Singing Tree",
+    "type": "single",
+    "franchise": "mtg",
     "set": "arabian_nights",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Arabian-Nights/Singing-Tree",

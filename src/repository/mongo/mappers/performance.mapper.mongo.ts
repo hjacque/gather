@@ -4,7 +4,7 @@ import { PerformanceModel } from "../models/performance.model.mongo";
 export class PerformanceMapper {
   toEntity({
     _id,
-    cardId,
+    productId,
     date,
     value,
     type,
@@ -12,7 +12,7 @@ export class PerformanceMapper {
   }: PerformanceModel): PerformanceEntity {
     return {
       id: _id.toString(),
-      cardId: cardId.toString(),
+      productId: productId.toString(),
       date,
       value,
       periodType,

@@ -14,7 +14,7 @@ export enum PerformanceType {
 
 export const PerformanceEntitySchema = z.object({
   id: z.string(),
-  cardId: z.string(),
+  productId: z.string(),
   date: z.date(),
   value: z.number().nullable(),
   periodType: z.union([

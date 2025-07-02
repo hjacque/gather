@@ -1,7 +1,7 @@
 import puppeteer, { Browser } from "puppeteer";
 import puppeteerExtra from "puppeteer-extra";
 import Stealth from "puppeteer-extra-plugin-stealth";
-import { CardRepositoryPort } from "../../repository/ports/card.repository.port";
+import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PriceType } from "../../entities/price.entity";
 import { PerformanceRepositoryPort } from "../../repository/ports/performance.repository.port";
@@ -10,7 +10,7 @@ import {
   PerformancePeriodType,
   PerformanceType,
 } from "../../entities/performance.entity";
-import { Set } from "../../entities/card.entity";
+import { Set } from "../../entities/product.entity";
 
 type ComputePerformancesInputDto = {
   set?: Set;
@@ -18,7 +18,7 @@ type ComputePerformancesInputDto = {
 
 export class ComputePerformancesUsecase {
   constructor(
-    private readonly cardRepository: CardRepositoryPort,
+    private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
     private readonly performanceRepository: PerformanceRepositoryPort
   ) {}
@@ -42,9 +42,9 @@ export class ComputePerformancesUsecase {
         ]) {
       while (true) {
         const take = 20;
-        const cards = await this.cardRepository.getCards(set as Set, take, i);
-        if (!cards?.length) {
-          console.log("No cards found");
+        const products = await this.productRepository.getCards(set as Set, take, i);
+        if (!products?.length) {
+          console.log("No products found");
           i = 0;
           break;
         }
@@ -53,19 +53,19 @@ export class ComputePerformancesUsecase {
         const today = new Date();
         today.setUTCHours(0, 0, 0, 0);
 
-        for (const card of cards) {
+        for (const product of products) {
           console.log("--------------");
-          console.log(card.name);
+          console.log(product.name);
 
           const performances: Omit<PerformanceEntity, "id">[] = [];
 
           const todayMarketPrice = await this.priceRepository.getOne(
-            card.id,
+            product.id,
             PriceType.market,
             today
           );
           const todayBuylistPrice = await this.priceRepository.getOne(
-            card.id,
+            product.id,
             PriceType.buylist,
             today
           );
@@ -73,12 +73,12 @@ export class ComputePerformancesUsecase {
           const oneDayAgo = new Date(today);
           oneDayAgo.setUTCDate(today.getUTCDate() - 1);
           const oneDayOldMarketPrice = await this.priceRepository.getOne(
-            card.id,
+            product.id,
             PriceType.market,
             oneDayAgo
           );
           const oneDayOldBuylistPrice = await this.priceRepository.getOne(
-            card.id,
+            product.id,
             PriceType.buylist,
             oneDayAgo
           );
@@ -86,12 +86,12 @@ export class ComputePerformancesUsecase {
           const oneWeekAgo = new Date(today);
           oneWeekAgo.setUTCDate(today.getUTCDate() - 7);
           const oneWeekOldMarketPrice = await this.priceRepository.getOne(
-            card.id,
+            product.id,
             PriceType.market,
             oneWeekAgo
           );
           const oneWeekOldBuylistPrice = await this.priceRepository.getOne(
-            card.id,
+            product.id,
             PriceType.buylist,
             oneWeekAgo
           );
@@ -99,12 +99,12 @@ export class ComputePerformancesUsecase {
           const thrityDaysAgo = new Date(today);
           thrityDaysAgo.setUTCMonth(today.getUTCDate() - 30);
           const oneMonthOldMarketPrice = await this.priceRepository.getOne(
-            card.id,
+            product.id,
             PriceType.market,
             thrityDaysAgo
           );
           const oneMonthOldBuylistPrice = await this.priceRepository.getOne(
-            card.id,
+            product.id,
             PriceType.buylist,
             thrityDaysAgo
           );
@@ -117,7 +117,7 @@ export class ComputePerformancesUsecase {
                 )
               : null;
           performances.push({
-            cardId: card.id,
+            productId: product.id,
             value: oneDayMarketPricePerformance,
             date: today,
             periodType: PerformancePeriodType.daily,
@@ -131,7 +131,7 @@ export class ComputePerformancesUsecase {
                 )
               : null;
           performances.push({
-            cardId: card.id,
+            productId: product.id,
             value: oneDayBuylistPricePerformance,
             date: today,
             periodType: PerformancePeriodType.daily,
@@ -146,7 +146,7 @@ export class ComputePerformancesUsecase {
                 )
               : null;
           performances.push({
-            cardId: card.id,
+            productId: product.id,
             value: oneWeekMarketPricePerformance,
             date: today,
             periodType: PerformancePeriodType.weekly,
@@ -160,7 +160,7 @@ export class ComputePerformancesUsecase {
                 )
               : null;
           performances.push({
-            cardId: card.id,
+            productId: product.id,
             value: oneWeekBuylistPricePerformance,
             date: today,
             periodType: PerformancePeriodType.weekly,
@@ -175,7 +175,7 @@ export class ComputePerformancesUsecase {
                 )
               : null;
           performances.push({
-            cardId: card.id,
+            productId: product.id,
             value: oneMonthMarketPricePerformance,
             date: today,
             periodType: PerformancePeriodType.monthly,
@@ -190,20 +190,16 @@ export class ComputePerformancesUsecase {
                 )
               : null;
           performances.push({
-            cardId: card.id,
+            productId: product.id,
             value: oneMonthBuylistPricePerformance,
             date: today,
             periodType: PerformancePeriodType.monthly,
             type: PerformanceType.buylist,
           });
 
-          console.log(
-            "performances",
-            performances.map((p) => [p.periodType, p.type, p.value])
-          );
           for (const performance of performances) {
             await this.performanceRepository.upsertPerformance(
-              card.id,
+              product.id,
               performance.value,
               today,
               PerformancePeriodType[performance.periodType],

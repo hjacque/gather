@@ -1,34 +1,34 @@
-import { CardRepositoryPort } from "../../repository/ports/card.repository.port";
+import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { PerformanceRepositoryPort } from "../../repository/ports/performance.repository.port";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 
 export class GetCardsUsecase {
   constructor(
-    private readonly cardRepository: CardRepositoryPort,
+    private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
     private readonly performanceRepository: PerformanceRepositoryPort
   ) {}
 
   async execute() {
-    const cards = await this.cardRepository.getCards();
-    const cardIds = cards.map((card) => card.id);
+    const products = await this.productRepository.getCards();
+    const productIds = products.map((product) => product.id);
 
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
     const prices = await this.priceRepository.getCardsPricesByDate(
-      cardIds,
+      productIds,
       today
     );
     const performances = await this.performanceRepository.getPerformances(
-      cardIds,
+      productIds,
       today
     );
 
-    return cards.map((card) => {
-      const { market, buylist, ratio } = prices.get(card.id)!;
-      const performance = performances.get(card.id)!;
+    return products.map((product) => {
+      const { market, buylist, ratio } = prices.get(product.id)!;
+      const performance = performances.get(product.id)!;
       return {
-        ...card,
+        ...product,
         market,
         buylist,
         ratio,

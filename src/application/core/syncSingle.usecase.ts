@@ -1,8 +1,8 @@
 import puppeteer, { Browser } from "puppeteer";
 import puppeteerExtra from "puppeteer-extra";
 import Stealth from "puppeteer-extra-plugin-stealth";
-import { CardEntity, Set } from "../../entities/card.entity";
-import { CardRepositoryPort } from "../../repository/ports/card.repository.port";
+import { ProductEntity, Set } from "../../entities/product.entity";
+import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { CARDMARKET_FEE, USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PriceType } from "../../entities/price.entity";
@@ -15,18 +15,18 @@ import { ComputePerformancesUsecase } from "./computePerformance.usecase";
 
 export class SyncSingleUsecase {
   constructor(
-    private readonly cardRepository: CardRepositoryPort,
+    private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
     private readonly computePerformancesUsecase: ComputePerformancesUsecase
   ) {}
 
-  async execute(cardId: string) {
-    console.log("starto", cardId);
+  async execute(productId: string) {
+    console.log("starto", productId);
 
     puppeteerExtra.use(Stealth());
 
-    const card = await this.cardRepository.getCard(cardId);
-    if (!card) {
+    const product = await this.productRepository.getCard(productId);
+    if (!product) {
       console.log("Card not found");
     }
 
@@ -45,7 +45,7 @@ export class SyncSingleUsecase {
     today.setUTCHours(0, 0, 0, 0);
 
     console.log("--------------");
-    console.log(card.name);
+    console.log(product.name);
 
     const [
       cardMarketPrice,
@@ -54,15 +54,15 @@ export class SyncSingleUsecase {
       abugamesBuyListPrice,
       starcitygamesBuyListPrice,
     ] = [
-      await this.syncCardMarket(card, browser),
-      undefined, // await this.syncPriceCharting(card, browser),
-      await this.syncCardkingdomBuyList(card, browser),
-      await this.syncAbugamesBuyList(card, browser),
-      undefined, // await this.syncStarcitygamesBuyList(card, browser),
+      await this.syncCardMarket(product, browser),
+      undefined, // await this.syncPriceCharting(product, browser),
+      await this.syncCardkingdomBuyList(product, browser),
+      await this.syncAbugamesBuyList(product, browser),
+      undefined, // await this.syncStarcitygamesBuyList(product, browser),
     ];
 
     const prices = await this.computePrices(
-      card,
+      product,
       cardMarketPrice,
       priceChartingPrice,
       ckBuyListPrice,
@@ -75,7 +75,7 @@ export class SyncSingleUsecase {
 
     for (const key of prices.keys()) {
       await this.priceRepository.upsertPrice(
-        card.id,
+        product.id,
         prices.get(key),
         key,
         today
@@ -89,7 +89,7 @@ export class SyncSingleUsecase {
 
   // todo - implement factory pattern
   async syncCardMarket(
-    card: CardEntity,
+    product: ProductEntity,
     browser: Browser
   ): Promise<number | undefined> {
     const page = await browser.newPage();
@@ -100,7 +100,7 @@ export class SyncSingleUsecase {
 
     try {
       await page.goto(
-        card.cardMarketLink +
+        product.cardMarketLink +
           "?language=1&minCondition=2&isSigned=N&isAltered=N"
       );
       await page.waitForSelector("div.article-row", {
@@ -129,9 +129,9 @@ export class SyncSingleUsecase {
     }
   }
 
-  // async syncPriceCharting(card: CardEntity, browser: Browser) {
+  // async syncPriceCharting(product: ProductEntity, browser: Browser) {
   //   try {
-  //     await page.goto(card.priceChartingLink);
+  //     await page.goto(product.priceChartingLink);
 
   //     await page.waitForNetworkIdle();
 
@@ -163,7 +163,7 @@ export class SyncSingleUsecase {
   //   }
   // }
 
-  async syncCardkingdomBuyList(card: CardEntity, browser: Browser) {
+  async syncCardkingdomBuyList(product: ProductEntity, browser: Browser) {
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 });
     await page.setUserAgent(
@@ -171,7 +171,7 @@ export class SyncSingleUsecase {
     );
 
     try {
-      await page.goto(card.cardkingdomBuyListLink);
+      await page.goto(product.cardkingdomBuyListLink);
       await page.waitForNetworkIdle();
 
       const data = await page.$eval("span.sellDollarAmount", (fristRow) => {
@@ -196,7 +196,7 @@ export class SyncSingleUsecase {
     }
   }
 
-  async syncAbugamesBuyList(card: CardEntity, browser: Browser) {
+  async syncAbugamesBuyList(product: ProductEntity, browser: Browser) {
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 });
     await page.setUserAgent(
@@ -204,7 +204,7 @@ export class SyncSingleUsecase {
     );
 
     try {
-      await page.goto(card.abugamesBuyListLink);
+      await page.goto(product.abugamesBuyListLink);
       await page.waitForNetworkIdle();
 
       const data = await page.$eval(
@@ -232,8 +232,8 @@ export class SyncSingleUsecase {
     }
   }
 
-  // async syncStarcitygamesBuyList(card: CardEntity, browser: Browser) {
-  //   await page.goto(card.cardMarketLink);
+  // async syncStarcitygamesBuyList(product: ProductEntity, browser: Browser) {
+  //   await page.goto(product.cardMarketLink);
 
   //   await page.waitForNetworkIdle();
 
@@ -253,7 +253,7 @@ export class SyncSingleUsecase {
   // }
 
   async computePrices(
-    card: CardEntity,
+    product: ProductEntity,
     cardMarketPrice: number | undefined,
     priceChartingPrice: number | undefined,
     ckBuyListPrice: number | undefined,
@@ -327,7 +327,7 @@ export class SyncSingleUsecase {
   }
 
   async computePerformances(
-    cardId: string
+    productId: string
   ): Promise<Omit<PerformanceEntity, "id">[]> {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
@@ -335,12 +335,12 @@ export class SyncSingleUsecase {
     const performances: Omit<PerformanceEntity, "id">[] = [];
 
     const todayMarketPrice = await this.priceRepository.getOne(
-      cardId,
+      productId,
       PriceType.market,
       today
     );
     const todayBuylistPrice = await this.priceRepository.getOne(
-      cardId,
+      productId,
       PriceType.buylist,
       today
     );
@@ -348,12 +348,12 @@ export class SyncSingleUsecase {
     const oneDayAgo = new Date(today);
     oneDayAgo.setUTCDate(today.getUTCDate() - 1);
     const oneDayOldMarketPrice = await this.priceRepository.getOne(
-      cardId,
+      productId,
       PriceType.market,
       oneDayAgo
     );
     const oneDayOldBuylistPrice = await this.priceRepository.getOne(
-      cardId,
+      productId,
       PriceType.buylist,
       oneDayAgo
     );
@@ -361,12 +361,12 @@ export class SyncSingleUsecase {
     const oneWeekAgo = new Date(today);
     oneWeekAgo.setUTCDate(today.getUTCDate() - 7);
     const oneWeekOldMarketPrice = await this.priceRepository.getOne(
-      cardId,
+      productId,
       PriceType.market,
       oneWeekAgo
     );
     const oneWeekOldBuylistPrice = await this.priceRepository.getOne(
-      cardId,
+      productId,
       PriceType.buylist,
       oneWeekAgo
     );
@@ -374,12 +374,12 @@ export class SyncSingleUsecase {
     const oneMonthAgo = new Date(today);
     oneMonthAgo.setUTCMonth(today.getUTCMonth() - 1);
     const oneMonthOldMarketPrice = await this.priceRepository.getOne(
-      cardId,
+      productId,
       PriceType.market,
       oneMonthAgo
     );
     const oneMonthOldBuylistPrice = await this.priceRepository.getOne(
-      cardId,
+      productId,
       PriceType.buylist,
       oneMonthAgo
     );
@@ -391,7 +391,7 @@ export class SyncSingleUsecase {
           )
         : null;
     performances.push({
-      cardId,
+      productId,
       value: oneDayMarketPricePerformance,
       date: today,
       periodType: PerformancePeriodType.daily,
@@ -404,7 +404,7 @@ export class SyncSingleUsecase {
           )
         : null;
     performances.push({
-      cardId,
+      productId,
       value: oneDayBuylistPricePerformance,
       date: today,
       periodType: PerformancePeriodType.daily,
@@ -418,7 +418,7 @@ export class SyncSingleUsecase {
           )
         : null;
     performances.push({
-      cardId,
+      productId,
       value: oneWeekMarketPricePerformance,
       date: today,
       periodType: PerformancePeriodType.weekly,
@@ -431,7 +431,7 @@ export class SyncSingleUsecase {
           )
         : null;
     performances.push({
-      cardId,
+      productId,
       value: oneWeekBuylistPricePerformance,
       date: today,
       periodType: PerformancePeriodType.weekly,
@@ -445,7 +445,7 @@ export class SyncSingleUsecase {
           )
         : null;
     performances.push({
-      cardId,
+      productId,
       value: oneMonthMarketPricePerformance,
       date: today,
       periodType: PerformancePeriodType.monthly,
@@ -458,7 +458,7 @@ export class SyncSingleUsecase {
           )
         : null;
     performances.push({
-      cardId,
+      productId,
       value: oneMonthBuylistPricePerformance,
       date: today,
       periodType: PerformancePeriodType.monthly,

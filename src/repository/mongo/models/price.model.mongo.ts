@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 export type PriceModel = {
   _id: ObjectId;
-  cardId: ObjectId;
+  productId: ObjectId;
   date: Date;
   value: number | null;
   type:

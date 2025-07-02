@@ -1,7 +1,8 @@
 [
   {
-    "number": 1,
     "name": "Ancestral Recall",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Ancestral-Recall",
@@ -10,8 +11,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Ancestral%20Recall&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Badlands",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Badlands",
@@ -20,8 +22,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Badlands&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Bayou",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Bayou",
@@ -30,8 +33,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Bayou&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Black Lotus",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Black-Lotus",
@@ -40,8 +44,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Black%20Lotus&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Blaze of Glory",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Blaze-of-Glory",
@@ -50,8 +55,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Blaze%20of%20Glory&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Braingeyser",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Braingeyser",
@@ -60,8 +66,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Braingeyser&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Chaos Orb",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Chaos-Orb",
@@ -70,8 +77,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Chaos%20Orb&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Contract from Below",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Contract-from-Below",
@@ -80,8 +88,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Contract%20from%20Below&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Copy Artifact",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Copy-Artifact",
@@ -90,8 +99,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Copy%20Artifact&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Cyclopean Tomb",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Cyclopean-Tomb",
@@ -100,8 +110,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Cyclopean%20Tomb&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Darkpact",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Darkpact",
@@ -110,8 +121,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Darkpact&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Demonic Attorney",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Demonic-Attorney",
@@ -120,8 +132,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Demonic%20Attorney&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Demonic Hordes",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Demonic-Hordes",
@@ -130,8 +143,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Demonic%20Hordes&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Farmstead",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Farmstead",
@@ -140,8 +154,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Farmstead&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Fastbond",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Fastbond",
@@ -150,8 +165,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Fastbond&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Forcefield",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Forcefield",
@@ -160,8 +176,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Forcefield&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Fork",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Fork",
@@ -170,8 +187,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Fork&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Gauntlet of Might",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Gauntlet-of-Might",
@@ -180,8 +198,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Gauntlet%20of%20Might&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Granite Gargoyle",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Granite-Gargoyle",
@@ -190,8 +209,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Granite%20Gargoyle&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Illusionary Mask",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Illusionary-Mask",
@@ -200,8 +220,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Illusionary%20Mask&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Kudzu",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Kudzu",
@@ -210,8 +231,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Kudzu&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Lich",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Lich",
@@ -220,8 +242,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Lich&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Mox Emerald",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Mox-Emerald",
@@ -230,8 +253,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Mox%20Emerald&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Mox Jet",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Mox-Jet",
@@ -240,8 +264,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Mox%20Jet&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Mox Pearl",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Mox-Pearl",
@@ -250,8 +275,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Mox%20Pearl&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Mox Ruby",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Mox-Ruby",
@@ -260,8 +286,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Mox%20Ruby&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Mox Sapphire",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Mox-Sapphire",
@@ -270,8 +297,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Mox%20Sapphire&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Natural Selection",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Natural-Selection",
@@ -280,8 +308,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Natural%20Selection&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Plateau",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Plateau",
@@ -290,8 +319,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Plateau&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Raging River",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Raging-River",
@@ -300,8 +330,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Raging%20River&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Roc of Kher Ridges",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Roc-of-Kher-Ridges",
@@ -310,8 +341,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Roc%20of%20Kher%20Ridges&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Rock Hydra",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Rock-Hydra",
@@ -320,8 +352,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Rock%20Hydra&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Savannah",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Savannah",
@@ -330,8 +363,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Savannah&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Scrubland",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Scrubland",
@@ -340,8 +374,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Scrubland&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Sedge Troll",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Sedge-Troll",
@@ -350,8 +385,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Sedge%20Troll&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Taiga",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Taiga",
@@ -360,8 +396,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Taiga&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Time Vault",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Time-Vault",
@@ -370,8 +407,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Time%20Vault&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Time Walk",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Time-Walk",
@@ -380,8 +418,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Time%20Walk&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Timetwister",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Timetwister",
@@ -390,8 +429,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Timetwister&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Tropical Island",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Tropical-Island",
@@ -400,8 +440,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Tropical%20Island&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Tundra",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Tundra",
@@ -410,8 +451,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Tundra&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Two-Headed Giant of Foriys",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Two-Headed-Giant-of-Foriys",
@@ -420,8 +462,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Two-Headed%20Giant%20of%20Foriys&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Underground Sea",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Underground-Sea",
@@ -430,8 +473,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Underground%20Sea&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Vesuvan Doppelganger",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Vesuvan-Doppelganger",
@@ -440,8 +484,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Vesuvan%20Doppelganger&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Veteran Bodyguard",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Veteran-Bodyguard",
@@ -450,8 +495,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Veteran%20Bodyguard&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Volcanic Island",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Volcanic-Island",
@@ -460,8 +506,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Volcanic%20Island&magic_edition=%5B\"Beta\"%5D"
   },
   {
-    "number": 1,
     "name": "Wheel of Fortune",
+    "type": "single",
+    "franchise": "mtg",
     "set": "beta",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Beta/Wheel-of-Fortune",

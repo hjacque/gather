@@ -1,6 +1,6 @@
-import { CardEntity } from "../../entities/card.entity";
+import { ProductEntity } from "../../entities/product.entity";
 
-export abstract class CardRepositoryPort {
+export abstract class ProductRepositoryPort {
   abstract getCards(
     set?:
       | "alpha"
@@ -12,7 +12,7 @@ export abstract class CardRepositoryPort {
       | "the_dark",
     take?: number,
     page?: number
-  ): Promise<CardEntity[]>;
+  ): Promise<ProductEntity[]>;
 
-  abstract getCard(cardId: string): Promise<CardEntity>;
+  abstract getCard(productId: string): Promise<ProductEntity>;
 }

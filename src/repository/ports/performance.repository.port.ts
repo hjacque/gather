@@ -6,7 +6,7 @@ import {
 
 export abstract class PerformanceRepositoryPort {
   abstract upsertPerformance(
-    cardId: string,
+    productId: string,
     value: number | null,
     date: Date,
     periodType: PerformancePeriodType,
@@ -16,7 +16,7 @@ export abstract class PerformanceRepositoryPort {
   abstract getTopPerformance(date: Date): Promise<PerformanceEntity | null>;
 
   abstract getPerformances(
-    cardIds: string[],
+    productIds: string[],
     date: Date
   ): Promise<Map<string, {
     oneDayMarketPricePerformance: number | null,

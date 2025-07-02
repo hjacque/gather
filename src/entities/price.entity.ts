@@ -13,7 +13,7 @@ export enum PriceType {
 
 export const PriceEntitySchema = z.object({
   id: z.string(),
-  cardId: z.string(),
+  productId: z.string(),
   date: z.date(),
   value: z.number().nullable(),
   type: z.union([

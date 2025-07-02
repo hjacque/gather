@@ -18,24 +18,24 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
   }
 
   async upsertPerformance(
-    cardId: string,
+    productId: string,
     value: number | null,
     date: Date,
     periodType: PerformancePeriodType,
     type: PerformanceType
   ): Promise<void> {
     const existingPrice = await this.performanceCollection.findOne({
-      cardId: new BSON.ObjectId(cardId),
+      productId: new BSON.ObjectId(productId),
       type,
       date,
       periodType,
     });
     if (existingPrice) {
       await this.performanceCollection.updateOne(
-        { cardId: new BSON.ObjectId(cardId), type, date, periodType },
+        { productId: new BSON.ObjectId(productId), type, date, periodType },
         {
           $set: {
-            cardId: new BSON.ObjectId(cardId),
+            productId: new BSON.ObjectId(productId),
             value,
           },
         }
@@ -44,7 +44,7 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
     }
     await this.performanceCollection.insertOne({
       _id: new BSON.ObjectId(),
-      cardId: new BSON.ObjectId(cardId),
+      productId: new BSON.ObjectId(productId),
       value,
       type,
       date,
@@ -58,7 +58,7 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
         .find(
           {
             date,
-            type: PerformanceType.market,
+            type: { $in : [ PerformanceType.market, PerformanceType.buylist ]},
             value: { $gt: 0 },
           },
           {
@@ -73,11 +73,11 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
   }
 
   async getPerformances(
-    cardIds: string[],
+    productIds: string[],
     date: Date
   ) {
     const performances = await this.performanceCollection.find({
-      cardId: { $in: cardIds.map((id) => new BSON.ObjectId(id)) },
+      productId: { $in: productIds.map((id) => new BSON.ObjectId(id)) },
       date,
     }).toArray();
 
@@ -95,8 +95,8 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
       return null;
     }
 
-    for (const cardId of cardIds) {
-      result.set(cardId, {
+    for (const productId of productIds) {
+      result.set(productId, {
         oneDayMarketPricePerformance: null,
         oneDayBuylistPricePerformance: null,
         oneWeekMarketPricePerformance: null,
@@ -107,8 +107,8 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
     }
     for (const perf of performances) {
       const key = getPerformanceKey(perf);
-      if (key) result.set(perf.cardId.toString(), {
-        ...(result.get(perf.cardId.toString()) || {}),
+      if (key) result.set(perf.productId.toString(), {
+        ...(result.get(perf.productId.toString()) || {}),
         [key as Period]: perf.value,
       } as Record<Period, number | null>);
     }

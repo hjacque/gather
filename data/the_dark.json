@@ -1,7 +1,8 @@
 [
   {
-    "number": 1,
     "name": "City of Shadows",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/City-of-Shadows",
@@ -10,8 +11,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=City%20of%Shadows&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 2,
     "name": "Cleansing",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Cleansing",
@@ -20,8 +22,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Cleansing&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 3,
     "name": "Eternal Flame",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Eternal-Flame",
@@ -30,8 +33,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Eternal%20Flame&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 4,
     "name": "Exorcist",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Exorcist",
@@ -40,8 +44,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Exorcist&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 5,
     "name": "Frankenstein's Monster",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Frankenstein-s-Monster",
@@ -50,8 +55,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Frankenstein%27s%20Monster&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 6,
     "name": "Goblin Wizard",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Goblin-Wizard",
@@ -60,8 +66,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Goblin%20Wizard&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 7,
     "name": "Grave Robbers",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "uncommon",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Grave-Robbers",
@@ -70,8 +77,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Grave%20Robbers&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 8,
     "name": "Hidden Path",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Hidden-Path",
@@ -80,8 +88,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Hidden%20Path&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 9,
     "name": "Knights of Thorn",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Knights-of-Thorn",
@@ -90,8 +99,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Knights%20of%20Thorn&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 10,
     "name": "Lurker",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "uncommon",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Lurker",
@@ -100,8 +110,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Lurker&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 11,
     "name": "Mana Vortex",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Mana-Vortex",
@@ -110,8 +121,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Mana%20Vortex&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 12,
     "name": "Martyr's Cry",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Martyr-s-Cry",
@@ -120,8 +132,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist/singles?search=Martyr%27s%20Cry&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 13,
     "name": "Nameless Race",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Nameless-Race",
@@ -130,8 +143,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Nameless%20Race&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 1,
     "name": "Niall Silvain",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Niall-Silvain",
@@ -140,8 +154,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Niall%Silvain&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 2,
     "name": "Preacher",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Preacher",
@@ -150,8 +165,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Preacher&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 3,
     "name": "Psychic Allergy",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Psychic-Allergy",
@@ -160,8 +176,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Psychic%20Allergy&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 4,
     "name": "Scarwood Bandits",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Scarwood-Bandits",
@@ -170,8 +187,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Scarwood%20Bandits&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 5,
     "name": "Season of the Witch",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Season-of-the-Witch",
@@ -180,8 +198,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Season%20of%20the%20Witch&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 6,
     "name": "Sorrow's Path",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Sorrow-s-Path",
@@ -190,8 +209,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Sorrow%27s%20Path&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 7,
     "name": "Stone Calendar",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Stone-Calendar",
@@ -200,8 +220,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Stone%20Calendar&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 8,
     "name": "Tracker",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Tracker",
@@ -210,8 +231,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Tracker&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 9,
     "name": "Worms of the Earth",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Worms-of-the-Earth",
@@ -220,8 +242,9 @@
     "abugamesBuyListLink": "https://abugames.com/buylist?search=Worms%20of%20the%20Earth&magic_edition=%5B\"The%20Dark\"%5D"
   },
   {
-    "number": 10,
     "name": "Wormwood Treefolk",
+    "type": "single",
+    "franchise": "mtg",
     "set": "the_dark",
     "rarity": "rare",
     "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/The-Dark/Wormwood-Treefolk",

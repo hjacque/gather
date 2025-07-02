@@ -1,13 +1,13 @@
 import { MongoClient } from "mongodb";
 import {
-  MONGODB_COLLECTION_CARDS,
+  MONGODB_COLLECTION_PRODUCTS,
   MONGODB_COLLECTION_PERFORMANCES,
   MONGODB_COLLECTION_PRICES,
   MONGODB_DATABASE_NAME,
 } from "../constants";
-import { CardModel } from "./mongo/models/card.model.mongo";
-import { CardRepositoryPort } from "./ports/card.repository.port";
-import { CardRepositoryMongo } from "./mongo/card.repository.mongo";
+import { ProductModel } from "./mongo/models/product.model.mongo";
+import { ProductRepositoryPort } from "./ports/product.repository.port";
+import { ProductRepositoryMongo } from "./mongo/product.repository.mongo";
 import { PriceRepositoryMongo } from "./mongo/price.repository.mongo";
 import { PriceModel } from "./mongo/models/price.model.mongo";
 import { PriceRepositoryPort } from "./ports/price.repository.port";
@@ -17,7 +17,7 @@ import { PerformanceRepositoryMongo } from "./mongo/performance.repository.mongo
 
 export const initRepository = async (): Promise<{
   repositories: {
-    cardRepository: CardRepositoryPort;
+    productRepository: ProductRepositoryPort;
     priceRepository: PriceRepositoryPort;
     performanceRepository: PerformanceRepositoryPort;
   };
@@ -31,8 +31,8 @@ export const initRepository = async (): Promise<{
   console.log("Connected successfully to server");
 
   // mongo collections
-  const cardCollection = mongoDBClient.collection<CardModel>(
-    MONGODB_COLLECTION_CARDS
+  const productCollection = mongoDBClient.collection<ProductModel>(
+    MONGODB_COLLECTION_PRODUCTS
   );
   const priceCollection = mongoDBClient.collection<PriceModel>(
     MONGODB_COLLECTION_PRICES
@@ -42,7 +42,7 @@ export const initRepository = async (): Promise<{
   );
 
   // repositories
-  const cardRepository = new CardRepositoryMongo(cardCollection);
+  const productRepository = new ProductRepositoryMongo(productCollection);
   const priceRepository = new PriceRepositoryMongo(priceCollection);
   const performanceRepository = new PerformanceRepositoryMongo(
     performanceCollection
@@ -50,7 +50,7 @@ export const initRepository = async (): Promise<{
 
   return {
     repositories: {
-      cardRepository,
+      productRepository,
       priceRepository,
       performanceRepository,
     },

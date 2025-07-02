@@ -12,22 +12,22 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
   }
 
   async upsertPrice(
-    cardId: string,
+    productId: string,
     value: number,
     type: PriceType,
     date: Date
   ): Promise<void> {
     const existingPrice = await this.priceCollection.findOne({
-      cardId: new BSON.ObjectId(cardId),
+      productId: new BSON.ObjectId(productId),
       type,
       date,
     });
     if (existingPrice) {
       await this.priceCollection.updateOne(
-        { cardId: new BSON.ObjectId(cardId), type, date },
+        { productId: new BSON.ObjectId(productId), type, date },
         {
           $set: {
-            cardId: new BSON.ObjectId(cardId),
+            productId: new BSON.ObjectId(productId),
             value,
             type,
             date,
@@ -38,7 +38,7 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
     }
     await this.priceCollection.insertOne({
       _id: new BSON.ObjectId(),
-      cardId: new BSON.ObjectId(cardId),
+      productId: new BSON.ObjectId(productId),
       value,
       type,
       date,
@@ -61,7 +61,7 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
         {
           $lookup: {
             from: "cards",
-            localField: "cardId",
+            localField: "productId",
             foreignField: "_id",
             as: "cardDetails",
           },
@@ -78,7 +78,7 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
         {
           $project: {
             _id: 1,
-            cardId: 1,
+            productId: 1,
             value: 1,
             date: 1,
             "cardDetails.name": 1,
@@ -92,21 +92,21 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
     for (const r of ratio) {
       r.marketPrice = (
         await this.priceCollection.findOne({
-          cardId: r.cardId,
+          productId: r.productId,
           type: PriceType.market,
           date: r.date,
         })
       )?.value;
       r.cardMarketPrice = (
         await this.priceCollection.findOne({
-          cardId: r.cardId,
+          productId: r.productId,
           type: "cardmarket",
           date: r.date,
         })
       )?.value;
       r.buylistPrice = (
         await this.priceCollection.findOne({
-          cardId: r.cardId,
+          productId: r.productId,
           type: PriceType.buylist,
           date: r.date,
         })
@@ -115,24 +115,24 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
     return ratio;
   }
 
-  async getCardPrices(cardId: string) {
+  async getCardPrices(productId: string) {
     const marketPrices = await this.priceCollection
       .find({
-        cardId: new BSON.ObjectId(cardId),
+        productId: new BSON.ObjectId(productId),
         type: PriceType.market,
       })
       .sort({ date: 1 })
       .toArray();
     const buylistPrices = await this.priceCollection
       .find({
-        cardId: new BSON.ObjectId(cardId),
+        productId: new BSON.ObjectId(productId),
         type: PriceType.buylist,
       })
       .sort({ date: 1 })
       .toArray();
     const ratioPrices = await this.priceCollection
       .find({
-        cardId: new BSON.ObjectId(cardId),
+        productId: new BSON.ObjectId(productId),
         type: PriceType.ratio,
       })
       .sort({ date: 1 })
@@ -146,12 +146,12 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
   }
 
   async getCardsPricesByDate(
-    cardIds: string[],
+    productIds: string[],
     date: Date
   ) {
     const prices = await this.priceCollection
       .find({
-        cardId: { $in: cardIds.map((id) => new BSON.ObjectId(id)) },
+        productId: { $in: productIds.map((id) => new BSON.ObjectId(id)) },
         date,
         type: { $in: ["market", "buylist", "ratio"] },
       })
@@ -160,8 +160,8 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
     type ResKey = PriceType.market | PriceType.buylist | PriceType.ratio;
     const result: Map<string, Record<ResKey, number | null>> = new Map();
     
-    for (const cardId of cardIds) {
-      result.set(cardId, {
+    for (const productId of productIds) {
+      result.set(productId, {
         market: null,
         buylist: null,
         ratio: null,
@@ -169,8 +169,8 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
     }
 
     for (const price of prices) {
-      result.set(price.cardId.toString(), {
-        ...result.get(price.cardId.toString()),
+      result.set(price.productId.toString(), {
+        ...result.get(price.productId.toString()),
         [price.type]: price.value,
       } as Record<ResKey, number | null>);
     }
@@ -178,9 +178,9 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
     return result;
   }
 
-  async getOne(cardId: string, type: PriceType, date: Date) {
+  async getOne(productId: string, type: PriceType, date: Date) {
     const price = await this.priceCollection.findOne({
-      cardId: new BSON.ObjectId(cardId),
+      productId: new BSON.ObjectId(productId),
       type,
       date,
     });

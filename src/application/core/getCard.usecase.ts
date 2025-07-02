@@ -1,27 +1,27 @@
-import { CardEntity } from "../../entities/card.entity";
+import { ProductEntity } from "../../entities/product.entity";
 import { PriceEntity } from "../../entities/price.entity";
-import { CardRepositoryPort } from "../../repository/ports/card.repository.port";
+import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 
 export class GetCardUsecase {
   constructor(
-    private readonly cardRepository: CardRepositoryPort,
+    private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort
   ) {}
 
-  async execute(cardId: string): Promise<
-    CardEntity & {
+  async execute(productId: string): Promise<
+    ProductEntity & {
       marketPrices: PriceEntity[];
       buylistPrices: PriceEntity[];
       ratioPrices: PriceEntity[];
     }
   > {
-    const card = await this.cardRepository.getCard(cardId);
-    const cardPrices = await this.priceRepository.getCardPrices(cardId);
+    const product = await this.productRepository.getCard(productId);
+    const productPrices = await this.priceRepository.getCardPrices(productId);
 
     return {
-      ...card,
-      ...cardPrices,
+      ...product,
+      ...productPrices,
     };
   }
 }

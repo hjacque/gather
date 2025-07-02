@@ -20,9 +20,9 @@ export class GetBestRatioCardsTodayUsecase {
     const formated = result.map((e) => {
       return {
         ratio: e.value - 100,
-        name: e.cardDetails.name,
-        set: e.cardDetails.set,
-        link: e.cardDetails.cardMarketLink,
+        name: e.productDetails.name,
+        set: e.productDetails.set,
+        link: e.productDetails.cardMarketLink,
         market: e.marketPrice,
         cardMarket: e.cardMarketPrice,
         buylist: e.buylistPrice,

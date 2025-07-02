@@ -1,4 +1,4 @@
-export const MONGODB_COLLECTION_CARDS = "cards";
+export const MONGODB_COLLECTION_PRODUCTS = "products";
 export const MONGODB_COLLECTION_PRICES = "prices";
 export const MONGODB_COLLECTION_PERFORMANCES = "performances";
 

@@ -1,16 +1,16 @@
-import { CardEntity } from "../../entities/card.entity";
+import { ProductEntity } from "../../entities/product.entity";
 import { PerformanceEntity } from "../../entities/performance.entity";
-import { CardRepositoryPort } from "../../repository/ports/card.repository.port";
+import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { PerformanceRepositoryPort } from "../../repository/ports/performance.repository.port";
 
 export class GetCardOfTheDayUsecase {
   constructor(
-    private readonly cardRepository: CardRepositoryPort,
+    private readonly productRepository: ProductRepositoryPort,
     private readonly performanceRepository: PerformanceRepositoryPort
   ) {}
 
   async execute(): Promise<
-    (CardEntity & { topPerformance: PerformanceEntity }) | undefined
+    (ProductEntity & { topPerformance: PerformanceEntity }) | undefined
   > {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
@@ -24,10 +24,10 @@ export class GetCardOfTheDayUsecase {
       return undefined;
     }
 
-    const card = await this.cardRepository.getCard(topPerformance.cardId);
+    const product = await this.productRepository.getCard(topPerformance.productId);
 
     return {
-      ...card,
+      ...product,
       topPerformance,
     };
   }

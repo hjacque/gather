@@ -10,9 +10,20 @@ export const enum Set {
   the_dark = "the_dark",
 }
 
-export const CardEntitySchema = z.object({
+export type ProductType = "single" | "booster_box" | "collector_booster_box";
+export type Franchise = "mtg" | "pokemon";
+
+export const ProductEntitySchema = z.object({
   id: z.string(),
-  number: z.number(),
+  type: z.union([
+    z.literal("single"),
+    z.literal("booster_box"),
+    z.literal("collector_booster_box")
+  ]),
+  franchise: z.union([
+    z.literal("mtg"),
+    z.literal("pokemon")
+  ]),
   name: z.string(),
   set: z.union([
     z.literal("alpha"),
@@ -64,4 +75,4 @@ export const CardEntitySchema = z.object({
   ratio: z.number().nullable(),
 });
 
-export type CardEntity = z.infer<typeof CardEntitySchema>;
+export type ProductEntity = z.infer<typeof ProductEntitySchema>;
