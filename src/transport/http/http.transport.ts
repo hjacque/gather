@@ -3,6 +3,8 @@ import { Usecases } from "../../application/init.application";
 import { validateRequest } from "zod-express-middleware";
 import { z } from "zod";
 import { errorHandler } from "./middlewares/http.errors";
+import { SyncUsecaseInputDto } from "application/core/sync.usecase";
+import { GetProductOfTheDayUsecaseInputDto } from "application/core/getProductOfTheDay.usecase";
 require("express-async-errors");
 
 const app = express();
@@ -13,7 +15,7 @@ export const http = async ({
   getBestRatioCardsTodayUsecase,
   getCardsUsecase,
   getCardUsecase,
-  getCardOfTheDayUsecase,
+  getProductOfTheDayUsecase,
   syncSingleUsecase,
   computePerformancesUsecase,
 }: Usecases) => {
@@ -45,7 +47,8 @@ export const http = async ({
   });
 
   app.get("/sync", async (req, res) => {
-    const result = await syncUsecase.execute({});
+    const { set, type, franchise } = req.query;
+    const result = await syncUsecase.execute({ set, type, franchise } as SyncUsecaseInputDto);
 
     res.status(200);
     res.json(result);
@@ -58,11 +61,20 @@ export const http = async ({
     res.json(result);
   });
 
-  app.get("/card-of-the-day", async (req, res) => {
+  app.get("/product-of-the-day", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
-    const result = await getCardOfTheDayUsecase.execute();
 
-    console.log("result", result);
+    const { set, type, franchise } = req.query;
+    const result = await getProductOfTheDayUsecase.execute({set, type, franchise} as GetProductOfTheDayUsecaseInputDto);
+
+    res.status(200);
+    res.json(result);
+  });
+
+  app.get("/products", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+
+    const result = await getCardsUsecase.execute(req.query);
 
     res.status(200);
     res.json(result);
@@ -71,14 +83,6 @@ export const http = async ({
   app.get("/products/:productid", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
     const result = await getCardUsecase.execute(req.params.productid);
-
-    res.status(200);
-    res.json(result);
-  });
-
-  app.get("/products", async (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
-    const result = await getCardsUsecase.execute();
 
     res.status(200);
     res.json(result);

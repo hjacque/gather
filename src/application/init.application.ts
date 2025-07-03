@@ -6,7 +6,7 @@ import { GetCardsUsecase } from "./core/getCards.usecase";
 import { GetCardUsecase } from "./core/getCard.usecase";
 import { PerformanceRepositoryPort } from "../repository/ports/performance.repository.port";
 import { ComputePerformancesUsecase } from "./core/computePerformance.usecase";
-import { GetCardOfTheDayUsecase } from "./core/getCardOfTheDay.usecase";
+import { GetProductOfTheDayUsecase } from "./core/getProductOfTheDay.usecase";
 import { SyncSingleUsecase } from "./core/syncSingle.usecase";
 
 export type Usecases = {
@@ -14,7 +14,7 @@ export type Usecases = {
   getBestRatioCardsTodayUsecase: GetBestRatioCardsTodayUsecase;
   getCardsUsecase: GetCardsUsecase;
   getCardUsecase: GetCardUsecase;
-  getCardOfTheDayUsecase: GetCardOfTheDayUsecase;
+  getProductOfTheDayUsecase: GetProductOfTheDayUsecase;
   syncSingleUsecase: SyncSingleUsecase;
   computePerformancesUsecase: ComputePerformancesUsecase;
 };
@@ -47,7 +47,7 @@ export const initApplication = ({
     performanceRepository
   );
   const getCardUsecase = new GetCardUsecase(productRepository, priceRepository);
-  const getCardOfTheDayUsecase = new GetCardOfTheDayUsecase(
+  const getProductOfTheDayUsecase = new GetProductOfTheDayUsecase(
     productRepository,
     performanceRepository
   );
@@ -62,7 +62,7 @@ export const initApplication = ({
     getBestRatioCardsTodayUsecase,
     getCardsUsecase,
     getCardUsecase,
-    getCardOfTheDayUsecase,
+    getProductOfTheDayUsecase,
     syncSingleUsecase,
     computePerformancesUsecase,
   };

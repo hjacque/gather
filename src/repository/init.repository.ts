@@ -45,7 +45,8 @@ export const initRepository = async (): Promise<{
   const productRepository = new ProductRepositoryMongo(productCollection);
   const priceRepository = new PriceRepositoryMongo(priceCollection);
   const performanceRepository = new PerformanceRepositoryMongo(
-    performanceCollection
+    performanceCollection,
+    productCollection
   );
 
   return {

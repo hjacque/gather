@@ -145,7 +145,7 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
     };
   }
 
-  async getCardsPricesByDate(
+  async getProductsPricesByDate(
     productIds: string[],
     date: Date
   ) {

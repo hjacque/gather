@@ -30,7 +30,7 @@ export abstract class PriceRepositoryPort {
     date: Date
   ): Promise<PriceEntity | null>;
 
-  abstract getCardsPricesByDate(
+  abstract getProductsPricesByDate(
     productIds: string[],
     date: Date
   ): Promise<Map<string, {

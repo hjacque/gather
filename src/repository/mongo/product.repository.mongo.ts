@@ -1,24 +1,37 @@
 import { BSON, Collection } from "mongodb";
-import { ProductEntity } from "../../entities/product.entity";
+import { Franchise, ProductEntity, ProductType, SetType } from "../../entities/product.entity";
 import { ProductMapper } from "./mappers/product.mapper.mongo";
 import { ProductModel } from "./models/product.model.mongo";
 import { ProductRepositoryPort } from "../ports/product.repository.port";
 
+type getProductsFilter = {
+  type?: ProductType,
+  franchise?: Franchise,
+  set?: SetType,
+};
 export class ProductRepositoryMongo implements ProductRepositoryPort {
   private ProductMapper: ProductMapper;
 
   constructor(private readonly productCollection: Collection<ProductModel>) {
     this.ProductMapper = new ProductMapper();
   }
-
-  async getCards(
-    set?: "arabian_nights" | "antiquities" | "legends" | "the_dark",
-    take?: number,
-    page?: number
+ 
+  async getProducts(
+    filters: getProductsFilter,
+    pagination?: {
+      take?: number,
+      page?: number
+    }
   ): Promise<ProductEntity[]> {
-    const where = set ? { set } : {};
+    let where = filters;
+    for (let [key, value] of Object.entries(where)) {
+      if (value === undefined) {
+        delete where[key as keyof getProductsFilter];
+      }
+    }
+
     const products = await this.productCollection
-      .find(where, { sort: { name: 1 }, limit: take, skip: page })
+      .find(where, { sort: { name: 1, set: 1 }, limit: pagination?.take, skip: pagination?.page })
       .toArray();
 
     if (!products) {

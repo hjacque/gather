@@ -7,12 +7,16 @@ import {
   PerformanceType,
 } from "../../entities/performance.entity";
 import { PerformanceMapper } from "./mappers/performance.mapper.mongo";
+import { Franchise, ProductType } from "entities/product.entity";
+import { ProductModel } from "./models/product.model.mongo";
+import RessourceNotFoundError from "../../errors/ressourceNotFound.error";
 
 export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
   private performanceMapper: PerformanceMapper;
 
   constructor(
-    private readonly performanceCollection: Collection<PerformanceModel>
+    private readonly performanceCollection: Collection<PerformanceModel>,
+    private readonly productCollection: Collection<ProductModel>
   ) {
     this.performanceMapper = new PerformanceMapper();
   }
@@ -52,7 +56,7 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
     });
   }
 
-  async getTopPerformance(date: Date): Promise<PerformanceEntity> {
+  async getTopPerformance(date: Date, franchise: Franchise, productType: ProductType) {
     const topPerformance = (
       await this.performanceCollection
         .find(
@@ -68,6 +72,47 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
         )
         .toArray()
     )[0];
+
+    // const res = this.productCollection.aggregate([
+    //   {
+    //     $match: {
+    //       type: productType,
+    //       franchise,
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "performances",
+    //       localField: "_id",
+    //       foreignField: "productId",
+    //       as: "performances",
+    //     },
+    //   },
+    //   { $unwind: "$performances" },
+    //   {
+    //     $match: {
+    //       "performances.value": { $gt: 0 },
+    //       date,
+    //       type: { $in : [ PerformanceType.market, PerformanceType.buylist ]},
+    //     },
+    //   },
+    //   {
+    //     $sort: { "performances.value": -1 },
+    //   },
+    //   { $limit: 1 },
+    //   {
+    //     $project: {
+    //       _id: 0,
+    //       bestPerformanceValue: "$performances",
+    //     },
+    //   },
+    // ]);
+
+    // console.debug(res, await res.toArray(), (await res.toArray())[0]);
+
+    // if (!topPerformance) {
+    //   throw new RessourceNotFoundError();
+    // }
 
     return this.performanceMapper.toEntity(topPerformance);
   }

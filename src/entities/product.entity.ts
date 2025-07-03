@@ -9,6 +9,7 @@ export const enum Set {
   legends = "legends",
   the_dark = "the_dark",
 }
+export type SetType = keyof typeof Set;
 
 export type ProductType = "single" | "booster_box" | "collector_booster_box";
 export type Franchise = "mtg" | "pokemon";

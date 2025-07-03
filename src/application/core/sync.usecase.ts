@@ -1,7 +1,7 @@
 import puppeteer, { Browser } from "puppeteer";
 import puppeteerExtra from "puppeteer-extra";
 import Stealth from "puppeteer-extra-plugin-stealth";
-import { ProductEntity, Set } from "../../entities/product.entity";
+import { Franchise, ProductEntity, ProductType, Set } from "../../entities/product.entity";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { CARDMARKET_FEE, USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
@@ -15,8 +15,10 @@ import { ComputePerformancesUsecase } from "./computePerformance.usecase";
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-type SyncUsecaseInputDto = {
+export type SyncUsecaseInputDto = {
   set?: Set;
+  franchise?: Franchise,
+  type?: ProductType
 };
 export class SyncUsecase {
   constructor(
@@ -25,51 +27,38 @@ export class SyncUsecase {
     private readonly computePerformancesUsecase: ComputePerformancesUsecase
   ) {}
 
-  async execute({ set: setInput }: SyncUsecaseInputDto) {
+  async execute({ set, franchise, type }: SyncUsecaseInputDto) {
     console.log("start");
 
     puppeteerExtra.use(Stealth());
 
     let i = 0;
-    for (const set of setInput
-      ? [setInput]
-      : [
-          Set.alpha,
-          Set.beta,
-          Set.unlimited,
-          Set.arabian_nights,
-          Set.antiquities,
-          Set.legends,
-          Set.the_dark,
-        ]) {
-      while (true) {
-        await sleep(1 * 1000); // Sleep 1 second
-  
-        const take = 4;
-        const products = await this.productRepository.getCards(set as Set, take, i);
-        if (!products?.length) {
-          console.log("No products found");
-          i = 0;
-          break;
-        }
-        i += take;
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    while (true) {
+      await sleep(1 * 1000); // Sleep 1 second
 
-        const today = new Date();
-        today.setUTCHours(0, 0, 0, 0);
-
-        await Promise.all(products.map((product) =>
-          this.syncOneCard(product, today)
-        ));
+      const take = 4;
+      const products = await this.productRepository.getProducts({ set, franchise, type }, {take, page: i});
+      if (!products?.length) {
+        console.log("No products found");
+        i = 0;
+        break;
       }
-    }
+      i += take;
 
-    await this.computePerformancesUsecase.execute({ set: setInput });
+      await Promise.all(products.map((product, i) =>
+        this.syncProduct(product, today, i)
+      ));
+    }
+    
+    await this.computePerformancesUsecase.execute({ set, franchise, type });
 
     console.log("end");
   }
 
-  async syncOneCard(product: ProductEntity, today: Date) {
-    await sleep((Math.floor(Math.random() * 10) + 1) * 1000); // Random sleep between 1 and 11 seconds
+  async syncProduct(product: ProductEntity, today: Date, inc: number) {
+    await sleep((Math.floor(Math.random() * (10 + inc % 6)) + 1) * 1000); // Random sleep between 1 and 17 seconds
     const browser = await puppeteer.launch({
       headless: false,
       args: [
@@ -104,8 +93,6 @@ export class SyncUsecase {
       starcitygamesBuyListPrice
     );
 
-    console.log(product.name, prices);
-
     for (const key of prices.keys()) {
       await this.priceRepository.upsertPrice(
         product.id,
@@ -114,6 +101,7 @@ export class SyncUsecase {
         today
       );
     }
+
     await browser.close();
   }
 
