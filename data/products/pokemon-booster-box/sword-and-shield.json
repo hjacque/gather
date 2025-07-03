@@ -4,6 +4,10 @@
     "type": "booster_box",
     "franchise": "pokemon",
     "set": "sword_and_shield",
+    "releaseDate": {
+      "$date": "2020-02-07T00:00:00.000+00:00"
+    },
+    "msrp": null,
     "rarity": null,
     "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Sword-Shield-Booster-Box?language=1",
     "priceChartingLink": null,
@@ -15,6 +19,10 @@
     "type": "booster_box",
     "franchise": "pokemon",
     "set": "rebel_clash",
+    "releaseDate": {
+      "$date": "2020-05-01T00:00:00.000+00:00"
+    },
+    "msrp": null,
     "rarity": null,
     "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Rebel-Clash-Booster-Box?language=1",
     "priceChartingLink": null,
@@ -26,6 +34,10 @@
     "type": "booster_box",
     "franchise": "pokemon",
     "set": "darkness_ablaze",
+    "releaseDate": {
+      "$date": "2020-08-14T00:00:00.000+00:00"
+    },
+    "msrp": null,
     "rarity": null,
     "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Darkness-Ablaze-Booster-Box?language=1",
     "priceChartingLink": null,
@@ -37,6 +49,10 @@
     "type": "booster_box",
     "franchise": "pokemon",
     "set": "vivid_voltage",
+    "releaseDate": {
+      "$date": "2020-11-13T00:00:00.000+00:00"
+    },
+    "msrp": null,
     "rarity": null,
     "cardMarketLink": "http://cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Vivid-Voltage-Booster-Box?language=1",
     "priceChartingLink": null,
@@ -48,6 +64,10 @@
     "type": "booster_box",
     "franchise": "pokemon",
     "set": "battle_styles",
+    "releaseDate": {
+      "$date": "2021-03-19T00:00:00.000+00:00"
+    },
+    "msrp": null,
     "rarity": null,
     "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Battle-Styles-Booster-Box?language=1",
     "priceChartingLink": null,
@@ -59,6 +79,10 @@
     "type": "booster_box",
     "franchise": "pokemon",
     "set": "chilling_reign",
+    "releaseDate": {
+      "$date": "2021-06-18T00:00:00.000+00:00"
+    },
+    "msrp": null,
     "rarity": null,
     "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Chilling-Reign-Booster-Box?language=1",
     "priceChartingLink": null,
@@ -70,6 +94,10 @@
     "type": "booster_box",
     "franchise": "pokemon",
     "set": "evolving_skies",
+    "releaseDate": {
+      "$date": "2021-08-27T00:00:00.000+00:00"
+    },
+    "msrp": null,
     "rarity": null,
     "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Evolving-Skies-Booster-Box?language=1",
     "priceChartingLink": null,
@@ -81,6 +109,10 @@
     "type": "booster_box",
     "franchise": "pokemon",
     "set": "fusion_strike",
+    "releaseDate": {
+      "$date": "2021-11-12T00:00:00.000+00:00"
+    },
+    "msrp": null,
     "rarity": null,
     "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Fusion-Strike-Booster-Box?language=1",
     "priceChartingLink": null,
@@ -92,6 +124,10 @@
     "type": "booster_box",
     "franchise": "pokemon",
     "set": "brilliant_stars",
+    "releaseDate": {
+      "$date": "2022-02-25T00:00:00.000+00:00"
+    },
+    "msrp": null,
     "rarity": null,
     "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Brilliant-Stars-Booster-Box?language=1",
     "priceChartingLink": null,
@@ -103,6 +139,10 @@
     "type": "booster_box",
     "franchise": "pokemon",
     "set": "astral_radiance",
+    "releaseDate": {
+      "$date": "2022-05-27T00:00:00.000+00:00"
+    },
+    "msrp": null,
     "rarity": null,
     "cardMarketLink": "http://cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Astral-Radiance-Booster-Box?language=1",
     "priceChartingLink": null,
@@ -114,6 +154,10 @@
     "type": "booster_box",
     "franchise": "pokemon",
     "set": "lost_origin",
+    "releaseDate": {
+      "$date": "2022-09-09T00:00:00.000+00:00"
+    },
+    "msrp": null,
     "rarity": null,
     "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Lost-Origin-Booster-Box?language=1",
     "priceChartingLink": null,
@@ -125,6 +169,10 @@
     "type": "booster_box",
     "franchise": "pokemon",
     "set": "silver_tempest",
+    "releaseDate": {
+      "$date": "2022-11-11T00:00:00.000+00:00"
+    },
+    "msrp": null,
     "rarity": null,
     "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Silver-Tempest-Booster-Box?language=1",
     "priceChartingLink": null,
