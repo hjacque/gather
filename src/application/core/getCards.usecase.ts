@@ -10,7 +10,7 @@ export class GetCardsUsecase {
     private readonly performanceRepository: PerformanceRepositoryPort
   ) {}
 
-  async execute(filter?: { franchise?: Franchise, type?: ProductType }) {
+  async execute(filter?: { franchise?: Franchise, type?: ProductType | ProductType[] }) {
     const products = await this.productRepository.getProducts(filter);
     const productIds = products.map((product) => product.id);
 

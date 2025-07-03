@@ -1,12 +1,14 @@
 import { Franchise, ProductEntity, ProductType, SetType } from "../../entities/product.entity";
 
+export type GetProductsFilter = {
+  set?: SetType,
+  type?: ProductType | ProductType[],
+  franchise?: Franchise
+}
+
 export abstract class ProductRepositoryPort {
   abstract getProducts(
-    filters?: {
-      set?: SetType,
-      type?: ProductType,
-      franchise?: Franchise
-    },
+    filters?: GetProductsFilter,
     pagination?: {
       take?: number,
       page?: number,
