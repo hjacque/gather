@@ -1,0 +1,92 @@
+[
+  {
+    "name": "Booster Box",
+    "type": "booster_box",
+    "franchise": "mtg",
+    "set": "marvel's_spider-man",
+    "releaseDate": {
+      "$date": "2025-09-26T00:00:00.000+00:00"
+    },
+    "msrp": 178.36,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/fr/Magic/Products/Booster-Boxes/Magic-The-Gathering-Marvels-Spider-Man-Play-Booster-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Collector Booster Box",
+    "type": "collector_booster_box",
+    "franchise": "mtg",
+    "set": "marvel's_spider-man",
+    "releaseDate": {
+      "$date": "2025-09-26T00:00:00.000+00:00"
+    },
+    "msrp": 387.74,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/fr/Magic/Products/Booster-Boxes/Magic-The-Gathering-Marvels-Spider-Man-Collector-Booster-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box",
+    "type": "booster_box",
+    "franchise": "mtg",
+    "set": "edge_of_eternities",
+    "releaseDate": {
+      "$date": "2025-08-01T00:00:00.000+00:00"
+    },
+    "msrp": 140.08,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/fr/Magic/Products/Booster-Boxes/Edge-of-Eternities-Play-Booster-Box",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Collector Booster Box",
+    "type": "collector_booster_box",
+    "franchise": "mtg",
+    "set": "edge_of_eternities",
+    "releaseDate": {
+      "$date": "2025-08-01T00:00:00.000+00:00"
+    },
+    "msrp": 255.06,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/fr/Magic/Products/Booster-Boxes/Edge-of-Eternities-Collector-Booster-Box",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box",
+    "type": "booster_box",
+    "franchise": "mtg",
+    "set": "FINAL_FANTASY",
+    "releaseDate": {
+      "$date": "2025-06-13T00:00:00.000+00:00"
+    },
+    "msrp": 178.36,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/fr/Magic/Products/Booster-Boxes/Magic-The-Gathering-FINAL-FANTASY-Play-Booster-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Collector Booster Box",
+    "type": "collector_booster_box",
+    "franchise": "mtg",
+    "set": "FINAL_FANTASY",
+    "releaseDate": {
+      "$date": "2025-06-13T00:00:00.000+00:00"
+    },
+    "msrp": 387.74,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/fr/Magic/Products/Booster-Boxes/Magic-The-Gathering-FINAL-FANTASY-Collector-Booster-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  }
+]
