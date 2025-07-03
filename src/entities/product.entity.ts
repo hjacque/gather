@@ -26,6 +26,8 @@ export const ProductEntitySchema = z.object({
     z.literal("pokemon")
   ]),
   name: z.string(),
+  releaseDate: z.date().optional(),
+  msrp: z.number().optional(),
   set: z.union([
     z.literal("alpha"),
     z.literal("beta"),
