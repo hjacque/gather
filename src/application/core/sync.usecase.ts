@@ -364,8 +364,8 @@ export class SyncUsecase {
 
     const oneDayMarketPricePerformance =
       oneDayOldMarketPrice?.value && todayMarketPrice?.value
-        ? Math.round(
-            (todayMarketPrice.value / oneDayOldMarketPrice.value - 1) * 100
+        ? parseInt(
+            ((todayMarketPrice.value / oneDayOldMarketPrice.value - 1) * 100).toFixed(2)
           )
         : null;
     performances.push({
@@ -377,8 +377,8 @@ export class SyncUsecase {
     });
     const oneDayBuylistPricePerformance =
       oneDayOldBuylistPrice?.value && todayBuylistPrice?.value
-        ? Math.round(
-            (todayBuylistPrice.value / oneDayOldBuylistPrice.value - 1) * 100
+        ? parseInt(
+            ((todayBuylistPrice.value / oneDayOldBuylistPrice.value - 1) * 100).toFixed(2)
           )
         : null;
     performances.push({
@@ -391,8 +391,8 @@ export class SyncUsecase {
 
     const oneWeekMarketPricePerformance =
       oneWeekOldMarketPrice?.value && todayMarketPrice?.value
-        ? Math.round(
-            (todayMarketPrice.value / oneWeekOldMarketPrice.value - 1) * 100
+        ? parseInt(
+            ((todayMarketPrice.value / oneWeekOldMarketPrice.value - 1) * 100).toFixed(2)
           )
         : null;
     performances.push({
@@ -404,8 +404,8 @@ export class SyncUsecase {
     });
     const oneWeekBuylistPricePerformance =
       oneWeekOldBuylistPrice?.value && todayBuylistPrice?.value
-        ? Math.round(
-            (todayBuylistPrice.value / oneWeekOldBuylistPrice.value - 1) * 100
+        ? parseInt(
+            ((todayBuylistPrice.value / oneWeekOldBuylistPrice.value - 1) * 100).toFixed(2)
           )
         : null;
     performances.push({
@@ -418,8 +418,8 @@ export class SyncUsecase {
 
     const oneMonthMarketPricePerformance =
       oneMonthOldMarketPrice?.value && todayMarketPrice?.value
-        ? Math.round(
-            (todayMarketPrice.value / oneMonthOldMarketPrice.value - 1) * 100
+        ? parseInt(
+            ((todayMarketPrice.value / oneMonthOldMarketPrice.value - 1) * 100).toFixed(2)
           )
         : null;
     performances.push({
@@ -431,8 +431,8 @@ export class SyncUsecase {
     });
     const oneMonthBuylistPricePerformance =
       oneMonthOldBuylistPrice?.value && todayBuylistPrice?.value
-        ? Math.round(
-            (todayBuylistPrice.value / oneMonthOldBuylistPrice.value - 1) * 100
+        ? parseInt(
+            ((todayBuylistPrice.value / oneMonthOldBuylistPrice.value - 1) * 100).toFixed(2)
           )
         : null;
     performances.push({
