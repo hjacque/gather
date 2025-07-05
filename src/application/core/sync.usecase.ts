@@ -102,6 +102,8 @@ export class SyncUsecase {
       );
     }
 
+    console.log(product, prices);
+
     await browser.close();
   }
 
