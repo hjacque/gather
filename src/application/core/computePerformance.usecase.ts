@@ -46,7 +46,7 @@ export class ComputePerformancesUsecase {
 
       for (const product of products) {
         console.log("--------------");
-        console.log(product.name);
+        console.log(product.name, product.set);
 
         const performances: Omit<PerformanceEntity, "id">[] = [];
 
@@ -102,9 +102,9 @@ export class ComputePerformancesUsecase {
 
         const oneDayMarketPricePerformance =
           oneDayOldMarketPrice?.value && todayMarketPrice?.value
-            ? Math.round(
-                (todayMarketPrice.value / oneDayOldMarketPrice.value - 1) *
-                  100
+            ? parseFloat(
+                ((todayMarketPrice.value / oneDayOldMarketPrice.value - 1) *
+                  100).toFixed(2)
               )
             : null;
         performances.push({
@@ -116,9 +116,9 @@ export class ComputePerformancesUsecase {
         });
         const oneDayBuylistPricePerformance =
           oneDayOldBuylistPrice?.value && todayBuylistPrice?.value
-            ? Math.round(
-                (todayBuylistPrice.value / oneDayOldBuylistPrice.value - 1) *
-                  100
+            ? parseFloat(
+                ((todayBuylistPrice.value / oneDayOldBuylistPrice.value - 1) *
+                  100).toFixed(2)
               )
             : null;
         performances.push({
@@ -131,9 +131,9 @@ export class ComputePerformancesUsecase {
 
         const oneWeekMarketPricePerformance =
           oneWeekOldMarketPrice?.value && todayMarketPrice?.value
-            ? Math.round(
-                (todayMarketPrice.value / oneWeekOldMarketPrice.value - 1) *
-                  100
+            ? parseFloat(
+                ((todayMarketPrice.value / oneWeekOldMarketPrice.value - 1) *
+                  100).toFixed(2)
               )
             : null;
         performances.push({
@@ -145,9 +145,9 @@ export class ComputePerformancesUsecase {
         });
         const oneWeekBuylistPricePerformance =
           oneWeekOldBuylistPrice?.value && todayBuylistPrice?.value
-            ? Math.round(
-                (todayBuylistPrice.value / oneWeekOldBuylistPrice.value - 1) *
-                  100
+            ? parseFloat(
+                ((todayBuylistPrice.value / oneWeekOldBuylistPrice.value - 1) *
+                  100).toFixed(2)
               )
             : null;
         performances.push({
@@ -160,9 +160,9 @@ export class ComputePerformancesUsecase {
 
         const oneMonthMarketPricePerformance =
           oneMonthOldMarketPrice?.value && todayMarketPrice?.value
-            ? Math.round(
-                (todayMarketPrice.value / oneMonthOldMarketPrice.value - 1) *
-                  100
+            ? parseFloat(
+                ((todayMarketPrice.value / oneMonthOldMarketPrice.value - 1) *
+                  100).toFixed(2)
               )
             : null;
         performances.push({
@@ -174,10 +174,9 @@ export class ComputePerformancesUsecase {
         });
         const oneMonthBuylistPricePerformance =
           oneMonthOldBuylistPrice?.value && todayBuylistPrice?.value
-            ? Math.round(
-                (todayBuylistPrice.value / oneMonthOldBuylistPrice.value -
-                  1) *
-                  100
+            ? parseFloat(
+                ((todayBuylistPrice.value / oneMonthOldBuylistPrice.value - 1) *
+                  100).toFixed(2)
               )
             : null;
         performances.push({
