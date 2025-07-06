@@ -12,7 +12,7 @@ import {
 } from "../../entities/performance.entity";
 import { Franchise, ProductType, Set } from "../../entities/product.entity";
 
-type ComputePerformancesInputDto = {
+export type ComputePerformancesInputDto = {
   set?: Set;
   franchise?: Franchise,
   type?: ProductType
@@ -88,7 +88,7 @@ export class ComputePerformancesUsecase {
         );
 
         const thrityDaysAgo = new Date(today);
-        thrityDaysAgo.setUTCMonth(today.getUTCDate() - 30);
+        thrityDaysAgo.setUTCDate(today.getUTCDate() - 30);
         const oneMonthOldMarketPrice = await this.priceRepository.getOne(
           product.id,
           PriceType.market,

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { errorHandler } from "./middlewares/http.errors";
 import { SyncUsecaseInputDto } from "application/core/sync.usecase";
 import { GetProductOfTheDayUsecaseInputDto } from "application/core/getProductOfTheDay.usecase";
+import { ComputePerformancesInputDto } from "application/core/computePerformance.usecase";
 require("express-async-errors");
 
 const app = express();
@@ -40,7 +41,8 @@ export const http = async ({
   });
 
   app.get("/sync/performances", async (req, res) => {
-    const result = await computePerformancesUsecase.execute({});
+    const { set, type, franchise } = req.query;
+    const result = await computePerformancesUsecase.execute({ set, type, franchise } as ComputePerformancesInputDto);
 
     res.status(200);
     res.json(result);
