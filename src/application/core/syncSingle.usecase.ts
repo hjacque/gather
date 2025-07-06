@@ -1,7 +1,7 @@
 import puppeteer, { Browser } from "puppeteer";
 import puppeteerExtra from "puppeteer-extra";
 import Stealth from "puppeteer-extra-plugin-stealth";
-import { ProductEntity, Set } from "../../entities/product.entity";
+import { Franchise, ProductEntity, ProductType, Set } from "../../entities/product.entity";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { CARDMARKET_FEE, USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
@@ -13,6 +13,11 @@ import {
 } from "../../entities/performance.entity";
 import { ComputePerformancesUsecase } from "./computePerformance.usecase";
 
+const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+export type SyncUsecaseInputDto = {
+  productId: string
+};
 export class SyncSingleUsecase {
   constructor(
     private readonly productRepository: ProductRepositoryPort,
@@ -21,15 +26,23 @@ export class SyncSingleUsecase {
   ) {}
 
   async execute(productId: string) {
-    console.log("starto", productId);
+    console.log("start");
 
     puppeteerExtra.use(Stealth());
 
-    const product = await this.productRepository.getCard(productId);
-    if (!product) {
-      console.log("Card not found");
-    }
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
 
+    const product = await this.productRepository.getCard(productId);
+    await this.syncProduct(product, today, 0);
+    
+    await this.computePerformancesUsecase.execute({ set: product.set as Set, franchise: product.franchise, type: product.type });
+
+    console.log("end");
+  }
+
+  async syncProduct(product: ProductEntity, today: Date, inc: number) {
+    await sleep((Math.floor(Math.random() * (10 + inc % 6)) + 1) * 1000); // Random sleep between 1 and 17 seconds
     const browser = await puppeteer.launch({
       headless: false,
       args: [
@@ -40,12 +53,6 @@ export class SyncSingleUsecase {
         "--disable-gpu",
       ],
     });
-
-    const today = new Date();
-    today.setUTCHours(0, 0, 0, 0);
-
-    console.log("--------------");
-    console.log(product.name);
 
     const [
       cardMarketPrice,
@@ -70,9 +77,6 @@ export class SyncSingleUsecase {
       starcitygamesBuyListPrice
     );
 
-    console.log("market     ==>>", prices.get(PriceType.market));
-    console.log("buylist    ==>>", prices.get(PriceType.buylist));
-
     for (const key of prices.keys()) {
       await this.priceRepository.upsertPrice(
         product.id,
@@ -83,8 +87,6 @@ export class SyncSingleUsecase {
     }
 
     await browser.close();
-
-    console.log("end");
   }
 
   // todo - implement factory pattern
@@ -120,10 +122,10 @@ export class SyncSingleUsecase {
         parseFloat(data[data.length - 2].replace(".", "")) *
         (1 - CARDMARKET_FEE);
 
-      console.log("CardMarket :", price);
+      // console.log("CardMarket :", price);
       return price;
     } catch (error) {
-      console.log("No CardMarket listing");
+      console.log("No CardMarket listing", product.name);
       await page.close();
       return undefined;
     }
@@ -187,11 +189,11 @@ export class SyncSingleUsecase {
           data[0].replace("$", "").replace(",", "").replace(".", ",")
         ) * USD_TO_EUR;
 
-      console.log("cardkingdom buylist price", price);
+      // console.log("cardkingdom buylist price", price);
       return price;
     } catch (error) {
       await page.close();
-      console.log("Not in Cardkingdom BuyList");
+      console.log("Not in Cardkingdom BuyList", product.name);
       return undefined;
     }
   }
@@ -222,12 +224,12 @@ export class SyncSingleUsecase {
           data[0].replace("$", "").replace(",", "").replace(".", ",")
         ) * USD_TO_EUR;
 
-      console.log("abugames buylist price", price);
+      // console.log("abugames buylist price", price);
 
       return price;
     } catch (error) {
       await page.close();
-      console.log("Not in Abugames BuyList");
+      console.log("Not in Abugames BuyList", product.name);
       return undefined;
     }
   }
@@ -260,54 +262,12 @@ export class SyncSingleUsecase {
     abugamesBuyListPrice: number | undefined,
     starcitygamesBuyListPrice: number | undefined
   ) {
-    const marketTuple = [cardMarketPrice].reduce(
-      (acc, currentValue) => {
-        if (currentValue) {
-          acc[0] = acc[0] ? acc[0] + currentValue : currentValue;
-          acc[1] = acc[1] ? acc[1] + 1 : 1;
-        }
-        return acc;
-      },
-      [0, 0]
-    );
-    const marketPrice = marketTuple[1]
-      ? Math.round(marketTuple[0] / marketTuple[1])
-      : undefined;
+    const marketPrice = Math.min(cardMarketPrice || 0) || undefined;
 
-    const buylistTuple = [
-      ckBuyListPrice,
-      abugamesBuyListPrice,
-      starcitygamesBuyListPrice,
-    ].reduce(
-      (acc, currentValue) => {
-        if (currentValue) {
-          acc[0] = acc[0] ? acc[0] + currentValue : currentValue;
-          acc[1] = acc[1] ? acc[1] + 1 : 1;
-        }
-        return acc;
-      },
-      [0, 0]
-    );
-    const buylistPrice = buylistTuple[1]
-      ? Math.round(buylistTuple[0] / buylistTuple[1])
-      : undefined;
-
-    const estimatedTuple =
-      marketPrice && buylistPrice
-        ? [marketPrice, buylistPrice].reduce(
-            (acc, currentValue) => {
-              if (currentValue) {
-                acc[0] = acc[0] ? acc[0] + currentValue : currentValue;
-                acc[1] = acc[1] ? acc[1] + 1 : 1;
-              }
-              return acc;
-            },
-            [0, 0]
-          )
-        : [0, 0];
-    const estimatedValue = estimatedTuple[1]
-      ? Math.round(estimatedTuple[0] / estimatedTuple[1])
-      : undefined;
+    const buylistPrice = Math.max(
+      ckBuyListPrice || 0,
+      abugamesBuyListPrice || 0,
+      starcitygamesBuyListPrice || 0) || undefined;
 
     const ratio =
       marketPrice &&
@@ -324,147 +284,5 @@ export class SyncSingleUsecase {
       [PriceType.starcitygames, starcitygamesBuyListPrice],
       [PriceType.ratio, ratio],
     ]);
-  }
-
-  async computePerformances(
-    productId: string
-  ): Promise<Omit<PerformanceEntity, "id">[]> {
-    const today = new Date();
-    today.setUTCHours(0, 0, 0, 0);
-
-    const performances: Omit<PerformanceEntity, "id">[] = [];
-
-    const todayMarketPrice = await this.priceRepository.getOne(
-      productId,
-      PriceType.market,
-      today
-    );
-    const todayBuylistPrice = await this.priceRepository.getOne(
-      productId,
-      PriceType.buylist,
-      today
-    );
-
-    const oneDayAgo = new Date(today);
-    oneDayAgo.setUTCDate(today.getUTCDate() - 1);
-    const oneDayOldMarketPrice = await this.priceRepository.getOne(
-      productId,
-      PriceType.market,
-      oneDayAgo
-    );
-    const oneDayOldBuylistPrice = await this.priceRepository.getOne(
-      productId,
-      PriceType.buylist,
-      oneDayAgo
-    );
-
-    const oneWeekAgo = new Date(today);
-    oneWeekAgo.setUTCDate(today.getUTCDate() - 7);
-    const oneWeekOldMarketPrice = await this.priceRepository.getOne(
-      productId,
-      PriceType.market,
-      oneWeekAgo
-    );
-    const oneWeekOldBuylistPrice = await this.priceRepository.getOne(
-      productId,
-      PriceType.buylist,
-      oneWeekAgo
-    );
-
-    const oneMonthAgo = new Date(today);
-    oneMonthAgo.setUTCMonth(today.getUTCMonth() - 1);
-    const oneMonthOldMarketPrice = await this.priceRepository.getOne(
-      productId,
-      PriceType.market,
-      oneMonthAgo
-    );
-    const oneMonthOldBuylistPrice = await this.priceRepository.getOne(
-      productId,
-      PriceType.buylist,
-      oneMonthAgo
-    );
-
-    const oneDayMarketPricePerformance =
-      oneDayOldMarketPrice?.value && todayMarketPrice?.value
-        ? Math.round(
-            (todayMarketPrice.value / oneDayOldMarketPrice.value - 1) * 100
-          )
-        : null;
-    performances.push({
-      productId,
-      value: oneDayMarketPricePerformance,
-      date: today,
-      periodType: PerformancePeriodType.daily,
-      type: PerformanceType.market,
-    });
-    const oneDayBuylistPricePerformance =
-      oneDayOldBuylistPrice?.value && todayBuylistPrice?.value
-        ? Math.round(
-            (todayBuylistPrice.value / oneDayOldBuylistPrice.value - 1) * 100
-          )
-        : null;
-    performances.push({
-      productId,
-      value: oneDayBuylistPricePerformance,
-      date: today,
-      periodType: PerformancePeriodType.daily,
-      type: PerformanceType.buylist,
-    });
-
-    const oneWeekMarketPricePerformance =
-      oneWeekOldMarketPrice?.value && todayMarketPrice?.value
-        ? Math.round(
-            (todayMarketPrice.value / oneWeekOldMarketPrice.value - 1) * 100
-          )
-        : null;
-    performances.push({
-      productId,
-      value: oneWeekMarketPricePerformance,
-      date: today,
-      periodType: PerformancePeriodType.weekly,
-      type: PerformanceType.market,
-    });
-    const oneWeekBuylistPricePerformance =
-      oneWeekOldBuylistPrice?.value && todayBuylistPrice?.value
-        ? Math.round(
-            (todayBuylistPrice.value / oneWeekOldBuylistPrice.value - 1) * 100
-          )
-        : null;
-    performances.push({
-      productId,
-      value: oneWeekBuylistPricePerformance,
-      date: today,
-      periodType: PerformancePeriodType.weekly,
-      type: PerformanceType.buylist,
-    });
-
-    const oneMonthMarketPricePerformance =
-      oneMonthOldMarketPrice?.value && todayMarketPrice?.value
-        ? Math.round(
-            (todayMarketPrice.value / oneMonthOldMarketPrice.value - 1) * 100
-          )
-        : null;
-    performances.push({
-      productId,
-      value: oneMonthMarketPricePerformance,
-      date: today,
-      periodType: PerformancePeriodType.monthly,
-      type: PerformanceType.market,
-    });
-    const oneMonthBuylistPricePerformance =
-      oneMonthOldBuylistPrice?.value && todayBuylistPrice?.value
-        ? Math.round(
-            (todayBuylistPrice.value / oneMonthOldBuylistPrice.value - 1) * 100
-          )
-        : null;
-    performances.push({
-      productId,
-      value: oneMonthBuylistPricePerformance,
-      date: today,
-      periodType: PerformancePeriodType.monthly,
-      type: PerformanceType.buylist,
-    });
-
-    return performances;
   }
 }
