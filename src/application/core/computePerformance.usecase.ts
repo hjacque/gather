@@ -15,7 +15,7 @@ import { Franchise, ProductType, Set } from "../../entities/product.entity";
 export type ComputePerformancesInputDto = {
   set?: Set;
   franchise?: Franchise,
-  type?: ProductType
+  type?: ProductType | ProductType[]
 };
 
 export class ComputePerformancesUsecase {

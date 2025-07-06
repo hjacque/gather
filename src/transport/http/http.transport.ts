@@ -27,7 +27,7 @@ export const http = async ({
   app.use(errorHandler);
 
   app.get("/sync/set/:set", async (req, res) => {
-    const result = await syncUsecase.execute({ set: req.params.set as any });
+    const result = await syncUsecase.execute({ filter: {set: req.params.set as any}, mode: {headless: false} });
 
     res.status(200);
     res.json(result);
@@ -50,7 +50,7 @@ export const http = async ({
 
   app.get("/sync", async (req, res) => {
     const { set, type, franchise } = req.query;
-    const result = await syncUsecase.execute({ set, type, franchise } as SyncUsecaseInputDto);
+    const result = await syncUsecase.execute({ filter: {set, type, franchise}, mode: {headless: false} } as SyncUsecaseInputDto);
 
     res.status(200);
     res.json(result);

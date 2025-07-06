@@ -1,6 +1,7 @@
 import { initRepository } from "./repository/init.repository";
 import { initApplication } from "./application/init.application";
 import { initTransport } from "./transport/init.transport";
+import { initServices } from "./services/init.services";
 
 type DanglingConnections = {
   close: () => Promise<void> | void;
@@ -14,6 +15,10 @@ const run = async () => {
 
   // application
   const usecases = initApplication(repositories);
+
+  // services
+  // const services = initServices({syncUsecase: usecases.syncUsecase});
+  // await services.syncSchedulerService.execute();
 
   // transport
   const { close: transportClose } = await initTransport(usecases);

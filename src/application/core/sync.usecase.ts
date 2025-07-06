@@ -3,22 +3,22 @@ import puppeteerExtra from "puppeteer-extra";
 import Stealth from "puppeteer-extra-plugin-stealth";
 import { Franchise, ProductEntity, ProductType, Set } from "../../entities/product.entity";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
-import { CARDMARKET_FEE, USD_TO_EUR } from "../../constants";
+import { USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PriceType } from "../../entities/price.entity";
-import {
-  PerformanceEntity,
-  PerformancePeriodType,
-  PerformanceType,
-} from "../../entities/performance.entity";
 import { ComputePerformancesUsecase } from "./computePerformance.usecase";
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 export type SyncUsecaseInputDto = {
-  set?: Set;
-  franchise?: Franchise,
-  type?: ProductType
+  filter: {
+    set?: Set;
+    franchise?: Franchise,
+    type?: ProductType | ProductType[]
+  },
+  mode: {
+    headless: boolean
+  }
 };
 export class SyncUsecase {
   constructor(
@@ -27,7 +27,7 @@ export class SyncUsecase {
     private readonly computePerformancesUsecase: ComputePerformancesUsecase
   ) {}
 
-  async execute({ set, franchise, type }: SyncUsecaseInputDto) {
+  async execute({ filter, mode }: SyncUsecaseInputDto) {
     console.log("start");
 
     puppeteerExtra.use(Stealth());
@@ -36,10 +36,10 @@ export class SyncUsecase {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
     while (true) {
-      await sleep(1 * 1000); // Sleep 1 second
+      await sleep(2 * 1000); // Sleep 2 second
 
       const take = 4;
-      const products = await this.productRepository.getProducts({ set, franchise, type }, {take, page: i});
+      const products = await this.productRepository.getProducts(filter, {take, page: i});
       if (!products?.length) {
         console.log("No products found");
         i = 0;
@@ -47,20 +47,23 @@ export class SyncUsecase {
       }
       i += take;
 
-      await Promise.all(products.map((product, i) =>
-        this.syncProduct(product, today, i)
-      ));
+      for (const product of products) {
+        await sleep((Math.floor(Math.random() * 9 + 1)) * 1000); // Random sleep between 1 and 10 seconds
+        await this.syncProduct(product, today, i, mode);
+      }
+      // await Promise.all(products.map((product, i) =>
+      //   this.syncProduct(product, today, i, mode)
+      // ));
     }
     
-    await this.computePerformancesUsecase.execute({ set, franchise, type });
+    await this.computePerformancesUsecase.execute(filter);
 
     console.log("end");
   }
 
-  async syncProduct(product: ProductEntity, today: Date, inc: number) {
-    await sleep((Math.floor(Math.random() * (10 + inc % 6)) + 1) * 1000); // Random sleep between 1 and 17 seconds
+  async syncProduct(product: ProductEntity, today: Date, inc: number, { headless }: { headless: boolean}) {
     const browser = await puppeteer.launch({
-      headless: false,
+      headless,
       args: [
         "--ignore-certificate-errors",
         "--no-sandbox",
