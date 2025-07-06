@@ -1,0 +1,529 @@
+[
+  {
+    "name": "Booster Box",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "scarlet_and_violet",
+    "setCode": "SVI",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-03-31T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Scarlet-Violet-Booster-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box (18 Boosters)",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "scarlet_and_violet",
+    "setCode": "SVI",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-03-31T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Scarlet-Violet-Booster-Box-18-Boosters?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Bundle",
+    "type": "booster_bundle",
+    "franchise": "pokemon",
+    "set": "scarlet_and_violet",
+    "setCode": "SVI",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-03-31T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Scarlet-Violet-Booster-Bundle?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "paldea_evolved",
+    "setCode": "PAL",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-06-09T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Paldea-Evolved-Booster-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box (18 Boosters)",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "paldea_evolved",
+    "setCode": "PAL",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-06-09T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Paldea-Evolved-Booster-Box-18-Boosters?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Bundle",
+    "type": "booster_bundle",
+    "franchise": "pokemon",
+    "set": "paldea_evolved",
+    "setCode": "PAL",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-06-09T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Paldea-Evolved-Booster-Bundle?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "obsidian_flames",
+    "setCode": "OBF",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-08-11T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "http://cardmarket.com/en/Pokemon/Products/Booster-Boxes/Obsidian-Flames-Booster-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box (18 Boosters)",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "obsidian_flames",
+    "setCode": "OBF",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-08-11T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Obsidian-Flames-Booster-Box-18-Boosters?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Bundle",
+    "type": "booster_bundle",
+    "franchise": "pokemon",
+    "set": "obsidian_flames",
+    "setCode": "OBF",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-08-11T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Obsidian-Flames-Booster-Bundle?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Bundle",
+    "type": "booster_bundle",
+    "franchise": "pokemon",
+    "set": "151",
+    "setCode": "MEW",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2022-09-22T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/151-Booster-Bundle?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "paradox_rift",
+    "setCode": "PAR",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-11-03T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Paradox-Rift-Booster-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box (18 Boosters)",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "paradox_rift",
+    "setCode": "PAR",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-11-03T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Paradox-Rift-Booster-Box-18-Boosters?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Bundle",
+    "type": "booster_bundle",
+    "franchise": "pokemon",
+    "set": "paradox_rift",
+    "setCode": "PAR",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-11-03T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Paradox-Rift-Booster-Bundle?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Bundle",
+    "type": "booster_bundle",
+    "franchise": "pokemon",
+    "set": "paldean_fates",
+    "setCode": "PAF",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2024-01-26T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Paldean-Fates-Booster-Bundle?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "temporal_forces",
+    "setCode": "TEF",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2024-03-22T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Temporal-Forces-Booster-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box (18 Boosters)",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "temporal_forces",
+    "setCode": "TEF",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2024-03-22T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Temporal-Forces-Booster-Box-18-Boosters?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Bundle",
+    "type": "booster_bundle",
+    "franchise": "pokemon",
+    "set": "temporal_forces",
+    "setCode": "TEF",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2024-03-22T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Temporal-Forces-Booster-Bundle?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "twilight_masquerade",
+    "setCode": "TWM",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2024-05-24T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Twilight-Masquerade-Booster-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box (18 Boosters)",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "twilight_masquerade",
+    "setCode": "TWM",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2024-05-24T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Twilight-Masquerade-Booster-Box-18-Boosters?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Bundle",
+    "type": "booster_bundle",
+    "franchise": "pokemon",
+    "set": "twilight_masquerade",
+    "setCode": "TWM",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2024-05-24T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Twilight-Masquerade-Booster-Bundle?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Bundle",
+    "type": "booster_bundle",
+    "franchise": "pokemon",
+    "set": "shrouded_fable",
+    "setCode": "SFA",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2024-05-24T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Shrouded-Fable-Booster-Bundle-Version-1?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "stellar_crown",
+    "setCode": "SCR",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2024-09-13T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Stellar-Crown-Booster-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box (18 Boosters)",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "stellar_crown",
+    "setCode": "SCR",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2024-09-13T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Stellar-Crown-Booster-Box-18-Boosters?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Bundle",
+    "type": "booster_bundle",
+    "franchise": "pokemon",
+    "set": "stellar_crown",
+    "setCode": "SCR",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2024-09-13T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Stellar-Crown-Booster-Bundle?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "surging_sparks",
+    "setCode": "SSP",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2024-11-08T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Surging-Sparks-Booster-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box (18 Boosters)",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "surging_sparks",
+    "setCode": "SSP",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2024-11-08T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Surging-Sparks-Booster-Box-18-Boosters?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Bundle",
+    "type": "booster_bundle",
+    "franchise": "pokemon",
+    "set": "surging_sparks",
+    "setCode": "SSP",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2024-11-08T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Surging-Sparks-Booster-Bundle?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Bundle",
+    "type": "booster_bundle",
+    "franchise": "pokemon",
+    "set": "prismatic_evolutions",
+    "setCode": "PRE",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2025-01-17T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Prismatic-Evolutions-Booster-Bundle?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "journey_together",
+    "setCode": "JTG",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2025-03-28T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Journey-Together-Booster-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Box (18 Boosters)",
+    "type": "booster_box",
+    "franchise": "pokemon",
+    "set": "journey_together",
+    "setCode": "JTG",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2025-03-28T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Journey-Together-Booster-Box-18-Boosters?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  },
+  {
+    "name": "Booster Bundle",
+    "type": "booster_bundle",
+    "franchise": "pokemon",
+    "set": "journey_together",
+    "setCode": "JTG",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2025-03-28T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Journey-Together-Booster-Bundle?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null
+  }
+]

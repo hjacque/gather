@@ -11,7 +11,7 @@ export const enum Set {
 }
 export type SetType = keyof typeof Set;
 
-export type ProductType = "single" | "booster_box" | "collector_booster_box";
+export type ProductType = "single" | "booster_box" | "collector_booster_box" | "booster_bundle";
 export type Franchise = "mtg" | "pokemon";
 
 export const ProductEntitySchema = z.object({
