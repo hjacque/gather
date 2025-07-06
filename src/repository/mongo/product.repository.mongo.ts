@@ -18,7 +18,7 @@ export class ProductRepositoryMongo implements ProductRepositoryPort {
       page?: number
     }
   ): Promise<ProductEntity[]> {
-    let where = filters as any;
+    let where = structuredClone(filters as any);
     for (let [key, value] of Object.entries(where)) {
       if (value === undefined) {
         delete where[key as keyof GetProductsFilter];
