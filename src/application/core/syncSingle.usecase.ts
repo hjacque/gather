@@ -3,18 +3,11 @@ import puppeteerExtra from "puppeteer-extra";
 import Stealth from "puppeteer-extra-plugin-stealth";
 import {
   ProductEntity,
-  Set,
 } from "../../entities/product.entity";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { CARDMARKET_FEE, USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PriceType } from "../../entities/price.entity";
-import {
-  PerformanceEntity,
-  PerformancePeriodType,
-  PerformanceType,
-} from "../../entities/performance.entity";
-import { ComputePerformancesUsecase } from "./computePerformance.usecase";
 import { SetPerformancesUsecase } from "./setPerformances.usecase";
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
@@ -40,7 +33,6 @@ export class SyncSingleUsecase {
     const product = await this.productRepository.getCard(productId);
 
     await this.syncProduct(product, today, 0);
-    await this.setPerformancesUsecase.execute({productIds: [product.id]});
 
     console.log("end");
   }
@@ -58,6 +50,7 @@ export class SyncSingleUsecase {
       ],
     });
 
+    // prices
     const [
       cardMarketPrice,
       priceChartingPrice,
@@ -71,7 +64,6 @@ export class SyncSingleUsecase {
       await this.syncAbugamesBuyList(product, browser),
       undefined, // await this.syncStarcitygamesBuyList(product, browser),
     ];
-
     const prices = await this.computePrices(
       product,
       cardMarketPrice,
@@ -80,7 +72,6 @@ export class SyncSingleUsecase {
       abugamesBuyListPrice,
       starcitygamesBuyListPrice,
     );
-
     for (const key of prices.keys()) {
       await this.priceRepository.upsertPrice(
         product.id,
@@ -89,6 +80,11 @@ export class SyncSingleUsecase {
         today,
       );
     }
+
+    // performances
+    await this.setPerformancesUsecase.execute({productIds: [product.id]});
+
+    console.debug(product, prices);
 
     await browser.close();
   }
@@ -266,7 +262,16 @@ export class SyncSingleUsecase {
     abugamesBuyListPrice: number | undefined,
     starcitygamesBuyListPrice: number | undefined,
   ) {
+    const pricesMap = new Map([
+      [PriceType.cardmarket, cardMarketPrice],
+      [PriceType.pricecharting, priceChartingPrice],
+      [PriceType.cardkingdom, ckBuyListPrice],
+      [PriceType.abugames, abugamesBuyListPrice],
+      [PriceType.starcitygames, starcitygamesBuyListPrice],
+    ]);
+
     const marketPrice = Math.min(cardMarketPrice || 0) || undefined;
+    pricesMap.set(PriceType.market, marketPrice);
 
     const buylistPrice =
       Math.max(
@@ -274,21 +279,22 @@ export class SyncSingleUsecase {
         abugamesBuyListPrice || 0,
         starcitygamesBuyListPrice || 0,
       ) || undefined;
+    pricesMap.set(PriceType.buylist, buylistPrice);
 
     const ratio =
       marketPrice &&
       buylistPrice &&
       Math.round((marketPrice / buylistPrice) * 100) - 100;
+    pricesMap.set(PriceType.ratio, ratio);
 
-    return new Map([
-      [PriceType.market, marketPrice],
-      [PriceType.buylist, buylistPrice],
-      [PriceType.cardmarket, cardMarketPrice],
-      [PriceType.pricecharting, priceChartingPrice],
-      [PriceType.cardkingdom, ckBuyListPrice],
-      [PriceType.abugames, abugamesBuyListPrice],
-      [PriceType.starcitygames, starcitygamesBuyListPrice],
-      [PriceType.ratio, ratio],
-    ]);
+    if (product.type !== "single" && typeof product.boosterCount === "number") {
+      const pricePerBooster =
+        typeof marketPrice === "number"
+          ? parseFloat((marketPrice / product.boosterCount).toFixed(2))
+          : undefined;
+      pricesMap.set(PriceType.perBooster, pricePerBooster);
+    }
+
+    return pricesMap;
   }
 }
