@@ -282,27 +282,34 @@ export class SyncUsecase {
     abugamesBuyListPrice: number | undefined,
     starcitygamesBuyListPrice: number | undefined
   ) {
-    const marketPrice = Math.min(cardMarketPrice || 0) || undefined;
-
-    const buylistPrice = Math.max(
-      ckBuyListPrice || 0,
-      abugamesBuyListPrice || 0,
-      starcitygamesBuyListPrice || 0) || undefined;
-
-    const ratio =
-      marketPrice &&
-      buylistPrice &&
-      Math.round((marketPrice / buylistPrice) * 100) - 100;
-
-    return new Map([
-      [PriceType.market, marketPrice],
-      [PriceType.buylist, buylistPrice],
+    const pricesMap = new Map([
       [PriceType.cardmarket, cardMarketPrice],
       [PriceType.pricecharting, priceChartingPrice],
       [PriceType.cardkingdom, ckBuyListPrice],
       [PriceType.abugames, abugamesBuyListPrice],
       [PriceType.starcitygames, starcitygamesBuyListPrice],
-      [PriceType.ratio, ratio],
     ]);
+
+    const marketPrice = Math.min(cardMarketPrice || 0) || undefined;
+    pricesMap.set(PriceType.market, marketPrice);
+
+    const buylistPrice = Math.max(
+      ckBuyListPrice || 0,
+      abugamesBuyListPrice || 0,
+      starcitygamesBuyListPrice || 0) || undefined;
+    pricesMap.set(PriceType.buylist, buylistPrice);
+
+    const ratio =
+      marketPrice &&
+      buylistPrice &&
+      Math.round((marketPrice / buylistPrice) * 100) - 100;
+    pricesMap.set(PriceType.ratio, ratio);
+
+    if (product.type !== "single" && typeof product.boosterCount === "number") {
+      const pricePerBooster = typeof marketPrice === "number" ? parseFloat((marketPrice / product.boosterCount).toFixed(2)) : undefined;
+      pricesMap.set(PriceType.perBooster, pricePerBooster);
+    }
+
+    return pricesMap;
   }
 }

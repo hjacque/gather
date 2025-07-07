@@ -14,25 +14,13 @@ export type ProductModel = {
     | "arabian_nights"
     | "antiquities"
     | "legends"
-    | "the_dark"
-    | "fallen_empires"
-    | "ice_age"
-    | "chronicles"
-    | "homelands"
-    | "alliances"
-    | "mirage"
-    | "visions"
-    | "weatherlight"
-    | "portal"
-    | "stronghold"
-    | "exodus"
-    | "urzas_saga"
-    | "urzas_legacy"
-    | "urzas_destiny";
+    | "the_dark";
   rarity: "common" | "uncommon" | "rare";
   cardMarketLink: string;
   priceChartingLink: string;
   cardkingdomBuyListLink: string;
   abugamesBuyListLink: string;
   starcitygamesBuyListLink: string;
+  block: string;
+  boosterCount?: number;
 };

@@ -12,7 +12,8 @@
     "cardMarketLink": "https://www.cardmarket.com/fr/Magic/Products/Booster-Boxes/Magic-The-Gathering-Marvels-Spider-Man-Play-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 30
   },
   {
     "name": "Collector Booster Box",
@@ -27,7 +28,8 @@
     "cardMarketLink": "https://www.cardmarket.com/fr/Magic/Products/Booster-Boxes/Magic-The-Gathering-Marvels-Spider-Man-Collector-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 12
   },
   {
     "name": "Booster Box",
@@ -42,7 +44,8 @@
     "cardMarketLink": "https://www.cardmarket.com/fr/Magic/Products/Booster-Boxes/Edge-of-Eternities-Play-Booster-Box",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 30
   },
   {
     "name": "Collector Booster Box",
@@ -57,7 +60,8 @@
     "cardMarketLink": "https://www.cardmarket.com/fr/Magic/Products/Booster-Boxes/Edge-of-Eternities-Collector-Booster-Box",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 12
   },
   {
     "name": "Booster Box",
@@ -72,7 +76,8 @@
     "cardMarketLink": "https://www.cardmarket.com/fr/Magic/Products/Booster-Boxes/Magic-The-Gathering-FINAL-FANTASY-Play-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 30
   },
   {
     "name": "Collector Booster Box",
@@ -87,6 +92,7 @@
     "cardMarketLink": "https://www.cardmarket.com/fr/Magic/Products/Booster-Boxes/Magic-The-Gathering-FINAL-FANTASY-Collector-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 12
   }
 ]

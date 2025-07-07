@@ -9,10 +9,46 @@
     },
     "msrp": null,
     "rarity": null,
-    "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Sword-Shield-Booster-Box?language=1",
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Sword-Shield-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 36
+  },
+  {
+    "name": "Elite Trainer Box (Zamazenta)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "sword_and_shield",
+    "releaseDate": {
+      "$date": "2020-02-07T00:00:00.000+00:00"
+    },
+    "msrp": 34.19,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Sword-Shield-Elite-Trainer-Box-Zamazenta?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 8
+  },
+  {
+    "name": "Elite Trainer Box (Zacian)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "sword_and_shield",
+    "releaseDate": {
+      "$date": "2020-02-07T00:00:00.000+00:00"
+    },
+    "msrp": 34.19,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Sword-Shield-Elite-Trainer-Box-Zacian?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 8
   },
   {
     "name": "Booster Box",
@@ -24,10 +60,29 @@
     },
     "msrp": null,
     "rarity": null,
-    "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Rebel-Clash-Booster-Box?language=1",
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Rebel-Clash-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 36
+  },
+  {
+    "name": "Elite Trainer Box",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "rebel_clash",
+    "releaseDate": {
+      "$date": "2020-05-01T00:00:00.000+00:00"
+    },
+    "msrp": 34.19,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Rebel-Clash-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 8
   },
   {
     "name": "Booster Box",
@@ -39,10 +94,29 @@
     },
     "msrp": null,
     "rarity": null,
-    "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Darkness-Ablaze-Booster-Box?language=1",
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Darkness-Ablaze-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 36
+  },
+  {
+    "name": "Elite Trainer Box",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "darkness_ablaze",
+    "releaseDate": {
+      "$date": "2020-08-14T00:00:00.000+00:00"
+    },
+    "msrp": 34.19,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Darkness-Ablaze-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 8
   },
   {
     "name": "Booster Box",
@@ -54,10 +128,29 @@
     },
     "msrp": null,
     "rarity": null,
-    "cardMarketLink": "https://cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Vivid-Voltage-Booster-Box?language=1",
+    "cardMarketLink": "https://cardmarket.com/en/Pokemon/Products/Booster-Boxes/Vivid-Voltage-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 36
+  },
+  {
+    "name": "Elite Trainer Box",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "vivid_voltage",
+    "releaseDate": {
+      "$date": "2020-11-13T00:00:00.000+00:00"
+    },
+    "msrp": 34.19,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Vivid-Voltage-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 8
   },
   {
     "name": "Booster Box",
@@ -69,10 +162,46 @@
     },
     "msrp": null,
     "rarity": null,
-    "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Battle-Styles-Booster-Box?language=1",
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Battle-Styles-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 36
+  },
+  {
+    "name": "Elite Trainer Box (Rapid Strike)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "battle_styles",
+    "releaseDate": {
+      "$date": "2021-03-19T00:00:00.000+00:00"
+    },
+    "msrp": 34.19,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Battle-Styles-Elite-Trainer-Box-Rapid-Strike?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 8
+  },
+  {
+    "name": "Elite Trainer Box (Single Strike)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "battle_styles",
+    "releaseDate": {
+      "$date": "2021-03-19T00:00:00.000+00:00"
+    },
+    "msrp": 34.19,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Battle-Styles-Elite-Trainer-Box-Single-Strike?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 8
   },
   {
     "name": "Booster Box",
@@ -84,10 +213,80 @@
     },
     "msrp": null,
     "rarity": null,
-    "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Chilling-Reign-Booster-Box?language=1",
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Chilling-Reign-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 36
+  },
+  {
+    "name": "Elite Trainer Box (Ice Rider Calyrex)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "chilling_reign",
+    "releaseDate": {
+      "$date": "2021-06-18T00:00:00.000+00:00"
+    },
+    "msrp": 34.19,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Chilling-Reign-Ice-Rider-Calyrex-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 8
+  },
+  {
+    "name": "Elite Trainer Box (Shadow Rider Calyrex)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "chilling_reign",
+    "releaseDate": {
+      "$date": "2021-06-18T00:00:00.000+00:00"
+    },
+    "msrp": 34.19,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Chilling-Reign-Shadow-Rider-Calyrex-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 8
+  },
+  {
+    "name": "Elite Trainer Box (Pokémon Center Shadow Rider Calyrex)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "chilling_reign",
+    "releaseDate": {
+      "$date": "2021-06-18T00:00:00.000+00:00"
+    },
+    "msrp": 42.73,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Chilling-Reign-Pokemon-Center-Shadow-Rider-Calyrex-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 10
+  },
+  {
+    "name": "Elite Trainer Box (Pokémon Center Ice Rider Calyrex)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "chilling_reign",
+    "releaseDate": {
+      "$date": "2021-06-18T00:00:00.000+00:00"
+    },
+    "msrp": 42.73,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Chilling-Reign-Pokemon-Center-Ice-Rider-Calyrex-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 10
   },
   {
     "name": "Booster Box",
@@ -99,10 +298,80 @@
     },
     "msrp": null,
     "rarity": null,
-    "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Evolving-Skies-Booster-Box?language=1",
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Evolving-Skies-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 36
+  },
+  {
+    "name": "Elite Trainer Box (SEGV)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "evolving_skies",
+    "releaseDate": {
+      "$date": "2021-08-27T00:00:00.000+00:00"
+    },
+    "msrp": 34.19,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Evolving-Skies-Elite-Trainer-Box-SEGV?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 8
+  },
+  {
+    "name": "Elite Trainer Box (LUJF)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "evolving_skies",
+    "releaseDate": {
+      "$date": "2021-08-27T00:00:00.000+00:00"
+    },
+    "msrp": 34.19,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Evolving-Skies-Elite-Trainer-Box-LUJF?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 8
+  },
+  {
+    "name": "Elite Trainer Box (Pokémon Center GVSE)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "evolving_skies",
+    "releaseDate": {
+      "$date": "2021-08-27T00:00:00.000+00:00"
+    },
+    "msrp": 42.73,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Evolving-Skies-Pokemon-Center-Elite-Trainer-Box-GVSE?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 10
+  },
+  {
+    "name": "Elite Trainer Box (Pokémon Center FJUL)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "evolving_skies",
+    "releaseDate": {
+      "$date": "2021-08-27T00:00:00.000+00:00"
+    },
+    "msrp": 42.73,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Evolving-Skies-Pokemon-Center-Elite-Trainer-Box-FJUL?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 10
   },
   {
     "name": "Booster Box",
@@ -114,10 +383,46 @@
     },
     "msrp": null,
     "rarity": null,
-    "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Fusion-Strike-Booster-Box?language=1",
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Fusion-Strike-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 36
+  },
+  {
+    "name": "Elite Trainer Box",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "fusion_strike",
+    "releaseDate": {
+      "$date": "2021-11-12T00:00:00.000+00:00"
+    },
+    "msrp": 34.19,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Fusion-Strike-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 8
+  },
+  {
+    "name": "Elite Trainer Box (Pokémon Center)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "fusion_strike",
+    "releaseDate": {
+      "$date": "2021-11-12T00:00:00.000+00:00"
+    },
+    "msrp": 42.73,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Fusion-Strike-Pokemon-Center-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 10
   },
   {
     "name": "Booster Box",
@@ -129,10 +434,46 @@
     },
     "msrp": null,
     "rarity": null,
-    "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Brilliant-Stars-Booster-Box?language=1",
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Brilliant-Stars-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 36
+  },
+  {
+    "name": "Elite Trainer Box",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "brilliant_stars",
+    "releaseDate": {
+      "$date": "2022-02-25T00:00:00.000+00:00"
+    },
+    "msrp": 34.19,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Brilliant-Stars-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 8
+  },
+  {
+    "name": "Elite Trainer Box (Pokémon Center)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "brilliant_stars",
+    "releaseDate": {
+      "$date": "2022-02-25T00:00:00.000+00:00"
+    },
+    "msrp": 42.73,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Brilliant-Stars-Pokemon-Center-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 10
   },
   {
     "name": "Booster Box",
@@ -144,10 +485,46 @@
     },
     "msrp": null,
     "rarity": null,
-    "cardMarketLink": "http://cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Astral-Radiance-Booster-Box?language=1",
+    "cardMarketLink": "http://cardmarket.com/en/Pokemon/Products/Booster-Boxes/Astral-Radiance-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 36
+  },
+  {
+    "name": "Elite Trainer Box",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "astral_radiance",
+    "releaseDate": {
+      "$date": "2022-05-27T00:00:00.000+00:00"
+    },
+    "msrp": 34.19,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Astral-Radiance-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 8
+  },
+  {
+    "name": "Elite Trainer Box (Pokémon Center)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "astral_radiance",
+    "releaseDate": {
+      "$date": "2022-05-27T00:00:00.000+00:00"
+    },
+    "msrp": 42.73,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Astral-Radiance-Pokemon-Center-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 10
   },
   {
     "name": "Booster Box",
@@ -159,10 +536,46 @@
     },
     "msrp": null,
     "rarity": null,
-    "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Lost-Origin-Booster-Box?language=1",
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Lost-Origin-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 36
+  },
+  {
+    "name": "Elite Trainer Box",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "lost_origin",
+    "releaseDate": {
+      "$date": "2022-09-09T00:00:00.000+00:00"
+    },
+    "msrp": 34.19,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Lost-Origin-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 8
+  },
+  {
+    "name": "Elite Trainer Box (Pokémon Center)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "lost_origin",
+    "releaseDate": {
+      "$date": "2022-09-09T00:00:00.000+00:00"
+    },
+    "msrp": 42.73,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Lost-Origin-Pokemon-Center-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 10
   },
   {
     "name": "Booster Box",
@@ -174,9 +587,45 @@
     },
     "msrp": null,
     "rarity": null,
-    "cardMarketLink": "https://www.cardmarket.com/fr/Pokemon/Products/Booster-Boxes/Silver-Tempest-Booster-Box?language=1",
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Silver-Tempest-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 36
+  },
+  {
+    "name": "Elite Trainer Box",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "silver_tempest",
+    "releaseDate": {
+      "$date": "2022-11-11T00:00:00.000+00:00"
+    },
+    "msrp": 34.19,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Silver-Tempest-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 8
+  },
+  {
+    "name": "Elite Trainer Box (Pokémon Center)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "silver_tempest",
+    "releaseDate": {
+      "$date": "2022-11-11T00:00:00.000+00:00"
+    },
+    "msrp": 42.73,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Silver-Tempest-Pokemon-Center-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "block": "sword_and_shield",
+    "boosterCount": 10
   }
 ]

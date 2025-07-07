@@ -14,7 +14,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Scarlet-Violet-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 36
   },
   {
     "name": "Booster Box (18 Boosters)",
@@ -31,7 +32,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Scarlet-Violet-Booster-Box-18-Boosters?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 18
   },
   {
     "name": "Booster Bundle",
@@ -48,7 +50,80 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Scarlet-Violet-Booster-Bundle?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 6
+  },
+  {
+    "name": "Elite Trainer Box (Miraidon)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "scarlet_and_violet",
+    "setCode": "SVI",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-03-31T00:00:00.000+00:00"
+    },
+    "msrp": 42.73,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Scarlet-Violet-Miraidon-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "boosterCount": 9
+  },
+  {
+    "name": "Elite Trainer Box (Koraidon)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "scarlet_and_violet",
+    "setCode": "SVI",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-03-31T00:00:00.000+00:00"
+    },
+    "msrp": 42.73,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Scarlet-Violet-Koraidon-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "boosterCount": 9
+  },
+  {
+    "name": "Elite Trainer Box (Pokémon Center Miraidon)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "scarlet_and_violet",
+    "setCode": "SVI",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-03-31T00:00:00.000+00:00"
+    },
+    "msrp": 51.28,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Scarlet-Violet-Miraidon-Pokemon-Center-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "boosterCount": 11
+  },
+  {
+    "name": "Elite Trainer Box (Pokémon Center Koraidon)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "scarlet_and_violet",
+    "setCode": "SVI",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-03-31T00:00:00.000+00:00"
+    },
+    "msrp": 51.28,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Scarlet-Violet-Koraidon-Pokemon-Center-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "boosterCount": 11
   },
   {
     "name": "Booster Box",
@@ -65,7 +140,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Paldea-Evolved-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 36
   },
   {
     "name": "Booster Box (18 Boosters)",
@@ -82,7 +158,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Paldea-Evolved-Booster-Box-18-Boosters?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 18
   },
   {
     "name": "Booster Bundle",
@@ -99,7 +176,44 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Paldea-Evolved-Booster-Bundle?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 6
+  },
+  {
+    "name": "Elite Trainer Box",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "paldea_evolved",
+    "setCode": "PAL",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-06-09T00:00:00.000+00:00"
+    },
+    "msrp": 42.73,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Paldea-Evolved-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "boosterCount": 9
+  },
+  {
+    "name": "Elite Trainer Box (Pokémon Center)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "paldea_evolved",
+    "setCode": "PAL",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-06-09T00:00:00.000+00:00"
+    },
+    "msrp": 51.28,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Paldea-Evolved-Pokemon-Center-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "boosterCount": 11
   },
   {
     "name": "Booster Box",
@@ -116,7 +230,8 @@
     "cardMarketLink": "http://cardmarket.com/en/Pokemon/Products/Booster-Boxes/Obsidian-Flames-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 36
   },
   {
     "name": "Booster Box (18 Boosters)",
@@ -133,7 +248,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Obsidian-Flames-Booster-Box-18-Boosters?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 18
   },
   {
     "name": "Booster Bundle",
@@ -150,7 +266,44 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Obsidian-Flames-Booster-Bundle?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 6
+  },
+  {
+    "name": "Elite Trainer Box",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "obsidian_flames",
+    "setCode": "OBF",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-08-11T00:00:00.000+00:00"
+    },
+    "msrp": 42.73,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Obsidian-Flames-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "boosterCount": 9
+  },
+  {
+    "name": "Elite Trainer Box (Pokémon Center)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "obsidian_flames",
+    "setCode": "OBF",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2023-08-11T00:00:00.000+00:00"
+    },
+    "msrp": 51.28,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Obsidian-Flames-Pokemon-Center-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "boosterCount": 11
   },
   {
     "name": "Booster Bundle",
@@ -167,7 +320,44 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/151-Booster-Bundle?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 6
+  },
+  {
+    "name": "Elite Trainer Box",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "151",
+    "setCode": "MEW",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2022-09-22T00:00:00.000+00:00"
+    },
+    "msrp": 42.73,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/151-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "boosterCount": 9
+  },
+  {
+    "name": "Elite Trainer Box (Pokémon Center)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "151",
+    "setCode": "MEW",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2022-09-22T00:00:00.000+00:00"
+    },
+    "msrp": 51.28,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/151-Pokemon-Center-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "boosterCount": 11
   },
   {
     "name": "Booster Box",
@@ -184,7 +374,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Paradox-Rift-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 36
   },
   {
     "name": "Booster Box (18 Boosters)",
@@ -201,7 +392,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Paradox-Rift-Booster-Box-18-Boosters?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 18
   },
   {
     "name": "Booster Bundle",
@@ -218,7 +410,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Paradox-Rift-Booster-Bundle?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 6
   },
   {
     "name": "Booster Bundle",
@@ -235,7 +428,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Paldean-Fates-Booster-Bundle?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 6
   },
   {
     "name": "Booster Box",
@@ -252,7 +446,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Temporal-Forces-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 36
   },
   {
     "name": "Booster Box (18 Boosters)",
@@ -269,7 +464,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Temporal-Forces-Booster-Box-18-Boosters?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 18
   },
   {
     "name": "Booster Bundle",
@@ -286,7 +482,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Temporal-Forces-Booster-Bundle?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 6
   },
   {
     "name": "Booster Box",
@@ -303,7 +500,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Twilight-Masquerade-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 36
   },
   {
     "name": "Booster Box (18 Boosters)",
@@ -320,7 +518,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Twilight-Masquerade-Booster-Box-18-Boosters?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 18
   },
   {
     "name": "Booster Bundle",
@@ -337,7 +536,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Twilight-Masquerade-Booster-Bundle?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 6
   },
   {
     "name": "Booster Bundle",
@@ -354,7 +554,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Shrouded-Fable-Booster-Bundle-Version-1?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 6
   },
   {
     "name": "Booster Box",
@@ -371,7 +572,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Stellar-Crown-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 36
   },
   {
     "name": "Booster Box (18 Boosters)",
@@ -388,7 +590,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Stellar-Crown-Booster-Box-18-Boosters?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 18
   },
   {
     "name": "Booster Bundle",
@@ -405,7 +608,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Stellar-Crown-Booster-Bundle?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 6
   },
   {
     "name": "Booster Box",
@@ -422,7 +626,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Surging-Sparks-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 36
   },
   {
     "name": "Booster Box (18 Boosters)",
@@ -439,7 +644,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Surging-Sparks-Booster-Box-18-Boosters?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 18
   },
   {
     "name": "Booster Bundle",
@@ -456,7 +662,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Surging-Sparks-Booster-Bundle?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 6
   },
   {
     "name": "Booster Bundle",
@@ -473,7 +680,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Prismatic-Evolutions-Booster-Bundle?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 6
   },
   {
     "name": "Booster Box",
@@ -490,7 +698,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Journey-Together-Booster-Box?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 36
   },
   {
     "name": "Booster Box (18 Boosters)",
@@ -507,7 +716,8 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Journey-Together-Booster-Box-18-Boosters?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 18
   },
   {
     "name": "Booster Bundle",
@@ -524,6 +734,115 @@
     "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Journey-Together-Booster-Bundle?language=1",
     "priceChartingLink": null,
     "cardkingdomBuyListLink": null,
-    "abugamesBuyListLink": null
+    "abugamesBuyListLink": null,
+    "boosterCount": 6
+  },
+  {
+    "name": "Booster Bundle",
+    "type": "booster_bundle",
+    "franchise": "pokemon",
+    "set": "black_bolt",
+    "setCode": "BLK",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2025-08-22T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/Black-Bolt-Booster-Bundle?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "boosterCount": 6
+  },
+  {
+    "name": "Elite Trainer Box",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "black_bolt",
+    "setCode": "BLK",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2025-08-22T00:00:00.000+00:00"
+    },
+    "msrp": 42.73,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Black-Bolt-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "boosterCount": 9
+  },
+  {
+    "name": "Elite Trainer Box (Pokémon Center)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "black_bolt",
+    "setCode": "BLK",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2025-08-22T00:00:00.000+00:00"
+    },
+    "msrp": 51.28,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/Black-Bolt-Pokemon-Center-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "boosterCount": 11
+  },
+  {
+    "name": "Booster Bundle",
+    "type": "booster_bundle",
+    "franchise": "pokemon",
+    "set": "white_flare",
+    "setCode": "WHT",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2025-08-22T00:00:00.000+00:00"
+    },
+    "msrp": null,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Booster-Boxes/White-Flare-Booster-Bundle?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "boosterCount": 6
+  },
+  {
+    "name": "Elite Trainer Box",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "white_flare",
+    "setCode": "WHT",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2025-08-22T00:00:00.000+00:00"
+    },
+    "msrp": 42.73,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/White-Flare-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "boosterCount": 9
+  },
+  {
+    "name": "Elite Trainer Box (Pokémon Center)",
+    "type": "elite_trainer_box",
+    "franchise": "pokemon",
+    "set": "white_flare",
+    "setCode": "WHT",
+    "block": "scarlet_and_violet",
+    "releaseDate": {
+      "$date": "2025-08-22T00:00:00.000+00:00"
+    },
+    "msrp": 51.28,
+    "rarity": null,
+    "cardMarketLink": "https://www.cardmarket.com/en/Pokemon/Products/Elite-Trainer-Boxes/White-Flare-Pokemon-Center-Elite-Trainer-Box?language=1",
+    "priceChartingLink": null,
+    "cardkingdomBuyListLink": null,
+    "abugamesBuyListLink": null,
+    "boosterCount": 11
   }
 ]

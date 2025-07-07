@@ -27,13 +27,14 @@ export class GetCardsUsecase {
     );
 
     return products.map((product) => {
-      const { market, buylist, ratio } = prices.get(product.id)!;
+      const { market, buylist, ratio, perBooster } = prices.get(product.id)!;
       const performance = performances.get(product.id)!;
       return {
         ...product,
         market,
         buylist,
         ratio,
+        perBooster,
         performance,
       };
     });

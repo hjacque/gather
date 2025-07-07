@@ -9,6 +9,7 @@ export enum PriceType {
   buylist = "buylist",
   market = "market",
   ratio = "ratio",
+  perBooster = "perBooster"
 }
 
 export const PriceEntitySchema = z.object({
@@ -25,6 +26,7 @@ export const PriceEntitySchema = z.object({
     z.literal("buylist"),
     z.literal("market"),
     z.literal("ratio"),
+    z.literal("perBooster")
   ]),
 });
 

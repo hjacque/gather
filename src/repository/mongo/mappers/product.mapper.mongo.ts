@@ -16,6 +16,7 @@ export class ProductMapper {
     cardkingdomBuyListLink,
     abugamesBuyListLink,
     starcitygamesBuyListLink,
+    boosterCount
   }: ProductModel): ProductEntity {
     return {
       id: _id.toString(),
@@ -31,10 +32,12 @@ export class ProductMapper {
       cardkingdomBuyListLink,
       abugamesBuyListLink,
       starcitygamesBuyListLink,
+      boosterCount,
       performance: null,
       market: null,
       buylist: null,
       ratio: null,
+      perBooster: null
     };
   }
 }

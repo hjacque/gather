@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const enum Set {
+export const enum MtgSet {
   alpha = "alpha",
   beta = "beta",
   unlimited = "unlimited",
@@ -9,9 +9,14 @@ export const enum Set {
   legends = "legends",
   the_dark = "the_dark",
 }
-export type SetType = keyof typeof Set;
+export const enum PokemonSet {
+  scarlet_and_violet = "scarlet_and_violet",
+  sword_and_shield = "sword_and_shield",
+}
 
-export type ProductType = "single" | "booster_box" | "collector_booster_box" | "booster_bundle";
+export type Set = keyof typeof MtgSet & keyof typeof PokemonSet;
+
+export type ProductType = "single" | "booster_box" | "collector_booster_box" | "booster_bundle" | "booster_box_18" |"elite_trainer_box";
 export type Franchise = "mtg" | "pokemon";
 
 export const ProductEntitySchema = z.object({
@@ -19,7 +24,10 @@ export const ProductEntitySchema = z.object({
   type: z.union([
     z.literal("single"),
     z.literal("booster_box"),
-    z.literal("collector_booster_box")
+    z.literal("collector_booster_box"),
+    z.literal("booster_bundle"),
+    z.literal("booster_box_18"),
+    z.literal("elite_trainer_box")
   ]),
   franchise: z.union([
     z.literal("mtg"),
@@ -36,20 +44,6 @@ export const ProductEntitySchema = z.object({
     z.literal("antiquities"),
     z.literal("legends"),
     z.literal("the_dark"),
-    z.literal("fallen_empires"),
-    z.literal("ice_age"),
-    z.literal("chronicles"),
-    z.literal("homelands"),
-    z.literal("alliances"),
-    z.literal("mirage"),
-    z.literal("visions"),
-    z.literal("weatherlight"),
-    z.literal("portal"),
-    z.literal("stronghold"),
-    z.literal("exodus"),
-    z.literal("urzas_saga"),
-    z.literal("urzas_legacy"),
-    z.literal("urzas_destiny"),
   ]),
   // setId: z.string(),
   rarity: z.union([
@@ -76,6 +70,8 @@ export const ProductEntitySchema = z.object({
   market: z.number().nullable(),
   buylist: z.number().nullable(),
   ratio: z.number().nullable(),
+  perBooster: z.number().nullable(),
+  boosterCount: z.number().nullable().optional()
 });
 
 export type ProductEntity = z.infer<typeof ProductEntitySchema>;

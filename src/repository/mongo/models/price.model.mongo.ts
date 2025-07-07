@@ -13,5 +13,6 @@ export type PriceModel = {
     | "starcitygames"
     | "buylist"
     | "market"
-    | "ratio";
+    | "ratio"
+    | "perBooster";
 };

@@ -4,15 +4,7 @@ export abstract class PriceRepositoryPort {
   abstract upsertPrice(
     productId: string,
     value: number | undefined,
-    type:
-      | "cardmarket"
-      | "pricecharting"
-      | "cardkingdom"
-      | "abugames"
-      | "starcitygames"
-      | "buylist"
-      | "market"
-      | "ratio",
+    type: keyof typeof PriceType,
     date: Date
   ): Promise<void>;
 
@@ -37,5 +29,6 @@ export abstract class PriceRepositoryPort {
     market: number | null;
     buylist: number | null;
     ratio: number | null;
+    perBooster: number | null;
   }>>;
 }

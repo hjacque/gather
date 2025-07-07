@@ -153,11 +153,11 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
       .find({
         productId: { $in: productIds.map((id) => new BSON.ObjectId(id)) },
         date,
-        type: { $in: ["market", "buylist", "ratio"] },
+        type: { $in: ["market", "buylist", "ratio", "perBooster"] },
       })
       .toArray();
 
-    type ResKey = PriceType.market | PriceType.buylist | PriceType.ratio;
+    type ResKey = PriceType.market | PriceType.buylist | PriceType.ratio | PriceType.perBooster;
     const result: Map<string, Record<ResKey, number | null>> = new Map();
     
     for (const productId of productIds) {
@@ -165,6 +165,7 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
         market: null,
         buylist: null,
         ratio: null,
+        perBooster: null
       });
     }
 
