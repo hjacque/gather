@@ -32,13 +32,13 @@ export const initRepository = async (): Promise<{
 
   // mongo collections
   const productCollection = mongoDBClient.collection<ProductModel>(
-    MONGODB_COLLECTION_PRODUCTS
+    MONGODB_COLLECTION_PRODUCTS,
   );
   const priceCollection = mongoDBClient.collection<PriceModel>(
-    MONGODB_COLLECTION_PRICES
+    MONGODB_COLLECTION_PRICES,
   );
   const performanceCollection = mongoDBClient.collection<PerformanceModel>(
-    MONGODB_COLLECTION_PERFORMANCES
+    MONGODB_COLLECTION_PERFORMANCES,
   );
 
   // repositories
@@ -46,7 +46,7 @@ export const initRepository = async (): Promise<{
   const priceRepository = new PriceRepositoryMongo(priceCollection);
   const performanceRepository = new PerformanceRepositoryMongo(
     performanceCollection,
-    productCollection
+    productCollection,
   );
 
   return {

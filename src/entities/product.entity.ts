@@ -16,7 +16,13 @@ export const enum PokemonSet {
 
 export type Set = keyof typeof MtgSet & keyof typeof PokemonSet;
 
-export type ProductType = "single" | "booster_box" | "collector_booster_box" | "booster_bundle" | "booster_box_18" |"elite_trainer_box";
+export type ProductType =
+  | "single"
+  | "booster_box"
+  | "collector_booster_box"
+  | "booster_bundle"
+  | "booster_box_18"
+  | "elite_trainer_box";
 export type Franchise = "mtg" | "pokemon";
 
 export const ProductEntitySchema = z.object({
@@ -27,12 +33,9 @@ export const ProductEntitySchema = z.object({
     z.literal("collector_booster_box"),
     z.literal("booster_bundle"),
     z.literal("booster_box_18"),
-    z.literal("elite_trainer_box")
+    z.literal("elite_trainer_box"),
   ]),
-  franchise: z.union([
-    z.literal("mtg"),
-    z.literal("pokemon")
-  ]),
+  franchise: z.union([z.literal("mtg"), z.literal("pokemon")]),
   name: z.string(),
   releaseDate: z.date().optional(),
   msrp: z.number().optional(),
@@ -71,7 +74,7 @@ export const ProductEntitySchema = z.object({
   buylist: z.number().nullable(),
   ratio: z.number().nullable(),
   perBooster: z.number().nullable(),
-  boosterCount: z.number().nullable().optional()
+  boosterCount: z.number().nullable().optional(),
 });
 
 export type ProductEntity = z.infer<typeof ProductEntitySchema>;

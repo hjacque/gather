@@ -7,10 +7,13 @@ export class GetCardsUsecase {
   constructor(
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
-    private readonly performanceRepository: PerformanceRepositoryPort
+    private readonly performanceRepository: PerformanceRepositoryPort,
   ) {}
 
-  async execute(filter?: { franchise?: Franchise, type?: ProductType | ProductType[] }) {
+  async execute(filter?: {
+    franchise?: Franchise;
+    type?: ProductType | ProductType[];
+  }) {
     const products = await this.productRepository.getProducts(filter);
     const productIds = products.map((product) => product.id);
 
@@ -18,12 +21,12 @@ export class GetCardsUsecase {
     today.setUTCHours(0, 0, 0, 0);
     const prices = await this.priceRepository.getProductsPricesByDate(
       productIds,
-      today
+      today,
     );
 
     const performances = await this.performanceRepository.getPerformances(
       productIds,
-      today
+      today,
     );
 
     return products.map((product) => {

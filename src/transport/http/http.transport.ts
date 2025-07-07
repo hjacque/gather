@@ -27,7 +27,10 @@ export const http = async ({
   app.use(errorHandler);
 
   app.get("/sync/set/:set", async (req, res) => {
-    const result = await syncUsecase.execute({ filter: {set: req.params.set as any}, mode: {headless: false} });
+    const result = await syncUsecase.execute({
+      filter: { set: req.params.set as any },
+      mode: { headless: false },
+    });
 
     res.status(200);
     res.json(result);
@@ -42,7 +45,11 @@ export const http = async ({
 
   app.get("/sync/performances", async (req, res) => {
     const { set, type, franchise } = req.query;
-    const result = await computePerformancesUsecase.execute({ set, type, franchise } as ComputePerformancesInputDto);
+    const result = await computePerformancesUsecase.execute({
+      set,
+      type,
+      franchise,
+    } as ComputePerformancesInputDto);
 
     res.status(200);
     res.json(result);
@@ -50,7 +57,10 @@ export const http = async ({
 
   app.get("/sync", async (req, res) => {
     const { set, type, franchise } = req.query;
-    const result = await syncUsecase.execute({ filter: {set, type, franchise}, mode: {headless: false} } as SyncUsecaseInputDto);
+    const result = await syncUsecase.execute({
+      filter: { set, type, franchise },
+      mode: { headless: false },
+    } as SyncUsecaseInputDto);
 
     res.status(200);
     res.json(result);
@@ -67,7 +77,11 @@ export const http = async ({
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
 
     const { set, type, franchise } = req.query;
-    const result = await getProductOfTheDayUsecase.execute({set, type, franchise} as GetProductOfTheDayUsecaseInputDto);
+    const result = await getProductOfTheDayUsecase.execute({
+      set,
+      type,
+      franchise,
+    } as GetProductOfTheDayUsecaseInputDto);
 
     res.status(200);
     res.json(result);

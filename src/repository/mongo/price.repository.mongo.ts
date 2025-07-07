@@ -15,7 +15,7 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
     productId: string,
     value: number,
     type: PriceType,
-    date: Date
+    date: Date,
   ): Promise<void> {
     const existingPrice = await this.priceCollection.findOne({
       productId: new BSON.ObjectId(productId),
@@ -32,7 +32,7 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
             type,
             date,
           },
-        }
+        },
       );
       return;
     }
@@ -145,10 +145,7 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
     };
   }
 
-  async getProductsPricesByDate(
-    productIds: string[],
-    date: Date
-  ) {
+  async getProductsPricesByDate(productIds: string[], date: Date) {
     const prices = await this.priceCollection
       .find({
         productId: { $in: productIds.map((id) => new BSON.ObjectId(id)) },
@@ -157,15 +154,19 @@ export class PriceRepositoryMongo implements PriceRepositoryPort {
       })
       .toArray();
 
-    type ResKey = PriceType.market | PriceType.buylist | PriceType.ratio | PriceType.perBooster;
+    type ResKey =
+      | PriceType.market
+      | PriceType.buylist
+      | PriceType.ratio
+      | PriceType.perBooster;
     const result: Map<string, Record<ResKey, number | null>> = new Map();
-    
+
     for (const productId of productIds) {
       result.set(productId, {
         market: null,
         buylist: null,
         ratio: null,
-        perBooster: null
+        perBooster: null,
       });
     }
 

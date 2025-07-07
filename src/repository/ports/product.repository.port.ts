@@ -1,18 +1,23 @@
-import { Franchise, ProductEntity, ProductType, SetType } from "../../entities/product.entity";
+import {
+  Franchise,
+  ProductEntity,
+  ProductType,
+  Set,
+} from "../../entities/product.entity";
 
 export type GetProductsFilter = {
-  set?: SetType,
-  type?: ProductType | ProductType[],
-  franchise?: Franchise
-}
+  set?: Set;
+  type?: ProductType | ProductType[];
+  franchise?: Franchise;
+};
 
 export abstract class ProductRepositoryPort {
   abstract getProducts(
     filters?: GetProductsFilter,
     pagination?: {
-      take?: number,
-      page?: number,
-    }
+      take?: number;
+      page?: number;
+    },
   ): Promise<ProductEntity[]>;
 
   abstract getCard(productId: string): Promise<ProductEntity>;

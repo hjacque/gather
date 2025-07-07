@@ -8,13 +8,11 @@ export type Services = {
 export const initServices = ({
   syncUsecase,
 }: {
-  syncUsecase: SyncUsecase,
+  syncUsecase: SyncUsecase;
 }): Services => {
-  const syncSchedulerService = new SyncSchedulerService(
-    syncUsecase
-  );
+  const syncSchedulerService = new SyncSchedulerService(syncUsecase);
 
   return {
-    syncSchedulerService
+    syncSchedulerService,
   };
 };

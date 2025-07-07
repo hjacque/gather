@@ -11,7 +11,7 @@ export class GetBestRatioCardsTodayUsecase {
 
     const result = await this.priceRepository.getBestRatioCards(
       startOfDay,
-      endOfDay
+      endOfDay,
     );
     // if (!result) {
     //   return [];

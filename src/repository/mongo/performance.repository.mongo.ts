@@ -16,7 +16,7 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
 
   constructor(
     private readonly performanceCollection: Collection<PerformanceModel>,
-    private readonly productCollection: Collection<ProductModel>
+    private readonly productCollection: Collection<ProductModel>,
   ) {
     this.performanceMapper = new PerformanceMapper();
   }
@@ -26,7 +26,7 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
     value: number | null,
     date: Date,
     periodType: PerformancePeriodType,
-    type: PerformanceType
+    type: PerformanceType,
   ): Promise<void> {
     const existingPrice = await this.performanceCollection.findOne({
       productId: new BSON.ObjectId(productId),
@@ -42,7 +42,7 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
             productId: new BSON.ObjectId(productId),
             value,
           },
-        }
+        },
       );
       return;
     }
@@ -56,19 +56,23 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
     });
   }
 
-  async getTopPerformance(date: Date, franchise: Franchise, productType: ProductType) {
+  async getTopPerformance(
+    date: Date,
+    franchise: Franchise,
+    productType: ProductType,
+  ) {
     const topPerformance = (
       await this.performanceCollection
         .find(
           {
             date,
-            type: { $in : [ PerformanceType.market, PerformanceType.buylist ]},
+            type: { $in: [PerformanceType.market, PerformanceType.buylist] },
             value: { $gt: 0 },
           },
           {
             sort: { value: -1 },
             limit: 10,
-          }
+          },
         )
         .toArray()
     )[0];
@@ -117,26 +121,37 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
     return this.performanceMapper.toEntity(topPerformance);
   }
 
-  async getPerformances(
-    productIds: string[],
-    date: Date
-  ) {
-    const performances = await this.performanceCollection.find({
-      productId: { $in: productIds.map((id) => new BSON.ObjectId(id)) },
-      date,
-    }).toArray();
+  async getPerformances(productIds: string[], date: Date) {
+    const performances = await this.performanceCollection
+      .find({
+        productId: { $in: productIds.map((id) => new BSON.ObjectId(id)) },
+        date,
+      })
+      .toArray();
 
-    type Period = "oneDayMarketPricePerformance" | "oneDayBuylistPricePerformance" | "oneWeekMarketPricePerformance" | "oneWeekBuylistPricePerformance" | "oneMonthMarketPricePerformance" | "oneMonthBuylistPricePerformance";
+    type Period =
+      | "oneDayMarketPricePerformance"
+      | "oneDayBuylistPricePerformance"
+      | "oneWeekMarketPricePerformance"
+      | "oneWeekBuylistPricePerformance"
+      | "oneMonthMarketPricePerformance"
+      | "oneMonthBuylistPricePerformance";
     const result: Map<string, Record<Period, number | null>> = new Map();
 
     function getPerformanceKey(perf: WithId<PerformanceModel>): string | null {
       const { periodType, type } = perf;
-      if (type === "market" && periodType === "daily") return "oneDayMarketPricePerformance";
-      if (type === "buylist" && periodType === "daily") return "oneDayBuylistPricePerformance";
-      if (type === "market" && periodType === "weekly") return "oneWeekMarketPricePerformance";
-      if (type === "buylist" && periodType === "weekly") return "oneWeekBuylistPricePerformance";
-      if (type === "market" && periodType === "monthly") return "oneMonthMarketPricePerformance";
-      if (type === "buylist" && periodType === "monthly") return "oneMonthBuylistPricePerformance";
+      if (type === "market" && periodType === "daily")
+        return "oneDayMarketPricePerformance";
+      if (type === "buylist" && periodType === "daily")
+        return "oneDayBuylistPricePerformance";
+      if (type === "market" && periodType === "weekly")
+        return "oneWeekMarketPricePerformance";
+      if (type === "buylist" && periodType === "weekly")
+        return "oneWeekBuylistPricePerformance";
+      if (type === "market" && periodType === "monthly")
+        return "oneMonthMarketPricePerformance";
+      if (type === "buylist" && periodType === "monthly")
+        return "oneMonthBuylistPricePerformance";
       return null;
     }
 
@@ -152,10 +167,12 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
     }
     for (const perf of performances) {
       const key = getPerformanceKey(perf);
-      if (key) result.set(perf.productId.toString(), {
-        ...(result.get(perf.productId.toString()) || {}),
-        [key as Period]: perf.value,
-      } as Record<Period, number | null>);
+      if (key) {
+        result.set(perf.productId.toString(), {
+          ...(result.get(perf.productId.toString()) || {}),
+          [key as Period]: perf.value,
+        } as Record<Period, number | null>);
+      }
     }
 
     return result;

@@ -44,7 +44,7 @@ run().catch((e) => {
     // Prevents the server from hanging on exit
     setTimeout(() => {
       console.info(
-        "[graceful shutown] Forced exit after server hanged on close"
+        "[graceful shutown] Forced exit after server hanged on close",
       );
       process.exit(1);
     }, 5000);

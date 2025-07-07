@@ -11,20 +11,29 @@ export abstract class PerformanceRepositoryPort {
     value: number | null,
     date: Date,
     periodType: PerformancePeriodType,
-    type: PerformanceType
+    type: PerformanceType,
   ): Promise<void>;
 
-  abstract getTopPerformance(date: Date, franchise: Franchise, type: ProductType): Promise<PerformanceEntity | null>;
+  abstract getTopPerformance(
+    date: Date,
+    franchise: Franchise,
+    type: ProductType,
+  ): Promise<PerformanceEntity | null>;
 
   abstract getPerformances(
     productIds: string[],
-    date: Date
-  ): Promise<Map<string, {
-    oneDayMarketPricePerformance: number | null,
-      oneDayBuylistPricePerformance: number | null,
-      oneWeekMarketPricePerformance: number | null,
-      oneWeekBuylistPricePerformance: number | null,
-      oneMonthMarketPricePerformance: number  | null,
-      oneMonthBuylistPricePerformance: number | null,
-  }>>;
+    date: Date,
+  ): Promise<
+    Map<
+      string,
+      {
+        oneDayMarketPricePerformance: number | null;
+        oneDayBuylistPricePerformance: number | null;
+        oneWeekMarketPricePerformance: number | null;
+        oneWeekBuylistPricePerformance: number | null;
+        oneMonthMarketPricePerformance: number | null;
+        oneMonthBuylistPricePerformance: number | null;
+      }
+    >
+  >;
 }

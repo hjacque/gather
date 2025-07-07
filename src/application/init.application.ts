@@ -31,30 +31,30 @@ export const initApplication = ({
   const computePerformancesUsecase = new ComputePerformancesUsecase(
     productRepository,
     priceRepository,
-    performanceRepository
+    performanceRepository,
   );
   const syncUsecase = new SyncUsecase(
     productRepository,
     priceRepository,
-    computePerformancesUsecase
+    computePerformancesUsecase,
   );
   const getBestRatioCardsTodayUsecase = new GetBestRatioCardsTodayUsecase(
-    priceRepository
+    priceRepository,
   );
   const getCardsUsecase = new GetCardsUsecase(
     productRepository,
     priceRepository,
-    performanceRepository
+    performanceRepository,
   );
   const getCardUsecase = new GetCardUsecase(productRepository, priceRepository);
   const getProductOfTheDayUsecase = new GetProductOfTheDayUsecase(
     productRepository,
-    performanceRepository
+    performanceRepository,
   );
   const syncSingleUsecase = new SyncSingleUsecase(
     productRepository,
     priceRepository,
-    computePerformancesUsecase
+    computePerformancesUsecase,
   );
 
   return {

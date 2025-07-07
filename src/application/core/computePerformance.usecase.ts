@@ -1,4 +1,3 @@
-import puppeteer, { Browser } from "puppeteer";
 import puppeteerExtra from "puppeteer-extra";
 import Stealth from "puppeteer-extra-plugin-stealth";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
@@ -14,15 +13,15 @@ import { Franchise, ProductType, Set } from "../../entities/product.entity";
 
 export type ComputePerformancesInputDto = {
   set?: Set;
-  franchise?: Franchise,
-  type?: ProductType | ProductType[]
+  franchise?: Franchise;
+  type?: ProductType | ProductType[];
 };
 
 export class ComputePerformancesUsecase {
   constructor(
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
-    private readonly performanceRepository: PerformanceRepositoryPort
+    private readonly performanceRepository: PerformanceRepositoryPort,
   ) {}
 
   async execute({ set, franchise, type }: ComputePerformancesInputDto) {
@@ -33,7 +32,10 @@ export class ComputePerformancesUsecase {
     let i = 0;
     while (true) {
       const take = 20;
-      const products = await this.productRepository.getProducts({ set, franchise, type }, { take, page: i });
+      const products = await this.productRepository.getProducts(
+        { set, franchise, type },
+        { take, page: i },
+      );
       if (!products?.length) {
         console.log("No products found");
         i = 0;
@@ -53,12 +55,12 @@ export class ComputePerformancesUsecase {
         const todayMarketPrice = await this.priceRepository.getOne(
           product.id,
           PriceType.market,
-          today
+          today,
         );
         const todayBuylistPrice = await this.priceRepository.getOne(
           product.id,
           PriceType.buylist,
-          today
+          today,
         );
 
         const oneDayAgo = new Date(today);
@@ -66,12 +68,12 @@ export class ComputePerformancesUsecase {
         const oneDayOldMarketPrice = await this.priceRepository.getOne(
           product.id,
           PriceType.market,
-          oneDayAgo
+          oneDayAgo,
         );
         const oneDayOldBuylistPrice = await this.priceRepository.getOne(
           product.id,
           PriceType.buylist,
-          oneDayAgo
+          oneDayAgo,
         );
 
         const oneWeekAgo = new Date(today);
@@ -79,12 +81,12 @@ export class ComputePerformancesUsecase {
         const oneWeekOldMarketPrice = await this.priceRepository.getOne(
           product.id,
           PriceType.market,
-          oneWeekAgo
+          oneWeekAgo,
         );
         const oneWeekOldBuylistPrice = await this.priceRepository.getOne(
           product.id,
           PriceType.buylist,
-          oneWeekAgo
+          oneWeekAgo,
         );
 
         const thrityDaysAgo = new Date(today);
@@ -92,19 +94,21 @@ export class ComputePerformancesUsecase {
         const oneMonthOldMarketPrice = await this.priceRepository.getOne(
           product.id,
           PriceType.market,
-          thrityDaysAgo
+          thrityDaysAgo,
         );
         const oneMonthOldBuylistPrice = await this.priceRepository.getOne(
           product.id,
           PriceType.buylist,
-          thrityDaysAgo
+          thrityDaysAgo,
         );
 
         const oneDayMarketPricePerformance =
           oneDayOldMarketPrice?.value && todayMarketPrice?.value
             ? parseFloat(
-                ((todayMarketPrice.value / oneDayOldMarketPrice.value - 1) *
-                  100).toFixed(2)
+                (
+                  (todayMarketPrice.value / oneDayOldMarketPrice.value - 1) *
+                  100
+                ).toFixed(2),
               )
             : null;
         performances.push({
@@ -117,8 +121,10 @@ export class ComputePerformancesUsecase {
         const oneDayBuylistPricePerformance =
           oneDayOldBuylistPrice?.value && todayBuylistPrice?.value
             ? parseFloat(
-                ((todayBuylistPrice.value / oneDayOldBuylistPrice.value - 1) *
-                  100).toFixed(2)
+                (
+                  (todayBuylistPrice.value / oneDayOldBuylistPrice.value - 1) *
+                  100
+                ).toFixed(2),
               )
             : null;
         performances.push({
@@ -132,8 +138,10 @@ export class ComputePerformancesUsecase {
         const oneWeekMarketPricePerformance =
           oneWeekOldMarketPrice?.value && todayMarketPrice?.value
             ? parseFloat(
-                ((todayMarketPrice.value / oneWeekOldMarketPrice.value - 1) *
-                  100).toFixed(2)
+                (
+                  (todayMarketPrice.value / oneWeekOldMarketPrice.value - 1) *
+                  100
+                ).toFixed(2),
               )
             : null;
         performances.push({
@@ -146,8 +154,10 @@ export class ComputePerformancesUsecase {
         const oneWeekBuylistPricePerformance =
           oneWeekOldBuylistPrice?.value && todayBuylistPrice?.value
             ? parseFloat(
-                ((todayBuylistPrice.value / oneWeekOldBuylistPrice.value - 1) *
-                  100).toFixed(2)
+                (
+                  (todayBuylistPrice.value / oneWeekOldBuylistPrice.value - 1) *
+                  100
+                ).toFixed(2),
               )
             : null;
         performances.push({
@@ -161,8 +171,10 @@ export class ComputePerformancesUsecase {
         const oneMonthMarketPricePerformance =
           oneMonthOldMarketPrice?.value && todayMarketPrice?.value
             ? parseFloat(
-                ((todayMarketPrice.value / oneMonthOldMarketPrice.value - 1) *
-                  100).toFixed(2)
+                (
+                  (todayMarketPrice.value / oneMonthOldMarketPrice.value - 1) *
+                  100
+                ).toFixed(2),
               )
             : null;
         performances.push({
@@ -175,8 +187,11 @@ export class ComputePerformancesUsecase {
         const oneMonthBuylistPricePerformance =
           oneMonthOldBuylistPrice?.value && todayBuylistPrice?.value
             ? parseFloat(
-                ((todayBuylistPrice.value / oneMonthOldBuylistPrice.value - 1) *
-                  100).toFixed(2)
+                (
+                  (todayBuylistPrice.value / oneMonthOldBuylistPrice.value -
+                    1) *
+                  100
+                ).toFixed(2),
               )
             : null;
         performances.push({
@@ -193,7 +208,7 @@ export class ComputePerformancesUsecase {
             performance.value,
             today,
             PerformancePeriodType[performance.periodType],
-            PerformanceType[performance.type]
+            PerformanceType[performance.type],
           );
         }
       }

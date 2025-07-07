@@ -6,7 +6,7 @@ import { PriceRepositoryPort } from "../../repository/ports/price.repository.por
 export class GetCardUsecase {
   constructor(
     private readonly productRepository: ProductRepositoryPort,
-    private readonly priceRepository: PriceRepositoryPort
+    private readonly priceRepository: PriceRepositoryPort,
   ) {}
 
   async execute(productId: string): Promise<

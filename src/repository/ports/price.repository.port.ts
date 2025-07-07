@@ -5,7 +5,7 @@ export abstract class PriceRepositoryPort {
     productId: string,
     value: number | undefined,
     type: keyof typeof PriceType,
-    date: Date
+    date: Date,
   ): Promise<void>;
 
   abstract getBestRatioCards(startDate: Date, endDate: Date): Promise<any[]>;
@@ -19,16 +19,21 @@ export abstract class PriceRepositoryPort {
   abstract getOne(
     productId: string,
     type: PriceType,
-    date: Date
+    date: Date,
   ): Promise<PriceEntity | null>;
 
   abstract getProductsPricesByDate(
     productIds: string[],
-    date: Date
-  ): Promise<Map<string, {
-    market: number | null;
-    buylist: number | null;
-    ratio: number | null;
-    perBooster: number | null;
-  }>>;
+    date: Date,
+  ): Promise<
+    Map<
+      string,
+      {
+        market: number | null;
+        buylist: number | null;
+        ratio: number | null;
+        perBooster: number | null;
+      }
+    >
+  >;
 }

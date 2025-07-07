@@ -1,7 +1,12 @@
 import puppeteer, { Browser } from "puppeteer";
 import puppeteerExtra from "puppeteer-extra";
 import Stealth from "puppeteer-extra-plugin-stealth";
-import { Franchise, ProductEntity, ProductType, Set } from "../../entities/product.entity";
+import {
+  Franchise,
+  ProductEntity,
+  ProductType,
+  Set,
+} from "../../entities/product.entity";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
@@ -13,18 +18,18 @@ const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 export type SyncUsecaseInputDto = {
   filter: {
     set?: Set;
-    franchise?: Franchise,
-    type?: ProductType | ProductType[]
-  },
+    franchise?: Franchise;
+    type?: ProductType | ProductType[];
+  };
   mode: {
-    headless: boolean
-  }
+    headless: boolean;
+  };
 };
 export class SyncUsecase {
   constructor(
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
-    private readonly computePerformancesUsecase: ComputePerformancesUsecase
+    private readonly computePerformancesUsecase: ComputePerformancesUsecase,
   ) {}
 
   async execute({ filter, mode }: SyncUsecaseInputDto) {
@@ -39,7 +44,10 @@ export class SyncUsecase {
       await sleep(2 * 1000); // Sleep 2 second
 
       const take = 4;
-      const products = await this.productRepository.getProducts(filter, {take, page: i});
+      const products = await this.productRepository.getProducts(filter, {
+        take,
+        page: i,
+      });
       if (!products?.length) {
         console.log("No products found");
         i = 0;
@@ -48,20 +56,25 @@ export class SyncUsecase {
       i += take;
 
       for (const product of products) {
-        await sleep((Math.floor(Math.random() * 9 + 1)) * 1000); // Random sleep between 1 and 10 seconds
+        await sleep(Math.floor(Math.random() * 9 + 1) * 1000); // Random sleep between 1 and 10 seconds
         await this.syncProduct(product, today, i, mode);
       }
       // await Promise.all(products.map((product, i) =>
       //   this.syncProduct(product, today, i, mode)
       // ));
     }
-    
+
     await this.computePerformancesUsecase.execute(filter);
 
     console.log("end");
   }
 
-  async syncProduct(product: ProductEntity, today: Date, inc: number, { headless }: { headless: boolean}) {
+  async syncProduct(
+    product: ProductEntity,
+    today: Date,
+    inc: number,
+    { headless }: { headless: boolean },
+  ) {
     const browser = await puppeteer.launch({
       headless,
       args: [
@@ -93,7 +106,7 @@ export class SyncUsecase {
       priceChartingPrice,
       ckBuyListPrice,
       abugamesBuyListPrice,
-      starcitygamesBuyListPrice
+      starcitygamesBuyListPrice,
     );
 
     for (const key of prices.keys()) {
@@ -101,7 +114,7 @@ export class SyncUsecase {
         product.id,
         prices.get(key),
         key,
-        today
+        today,
       );
     }
 
@@ -113,18 +126,18 @@ export class SyncUsecase {
   // todo - implement factory pattern
   async syncCardMarket(
     product: ProductEntity,
-    browser: Browser
+    browser: Browser,
   ): Promise<number | undefined> {
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 });
     await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
     );
 
     try {
       await page.goto(
         product.cardMarketLink +
-          "?language=1&minCondition=2&isSigned=N&isAltered=N"
+          "?language=1&minCondition=2&isSigned=N&isAltered=N",
       );
       await page.waitForSelector("div.article-row", {
         visible: true,
@@ -139,8 +152,11 @@ export class SyncUsecase {
       await page.close();
       // console.log("data", data); // exemple: [ '3', 'K', 'menor-com', 'NM', 'nm+', '420,00 €', '1' ]
 
-      const price =
-        parseFloat(parseFloat(data[data.length - 2].replace(".", "").replace(",", ".")).toFixed(2)); // * (1 - CARDMARKET_FEE);
+      const price = parseFloat(
+        parseFloat(
+          data[data.length - 2].replace(".", "").replace(",", "."),
+        ).toFixed(2),
+      ); // * (1 - CARDMARKET_FEE);
 
       // console.log("CardMarket :", price);
       return price;
@@ -189,7 +205,7 @@ export class SyncUsecase {
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 });
     await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
     );
 
     try {
@@ -206,7 +222,7 @@ export class SyncUsecase {
 
       const price =
         parseFloat(
-          data[0].replace("$", "").replace(",", "").replace(".", ",")
+          data[0].replace("$", "").replace(",", "").replace(".", ","),
         ) * USD_TO_EUR;
 
       // console.log("cardkingdom buylist price", price);
@@ -222,7 +238,7 @@ export class SyncUsecase {
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 });
     await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
     );
 
     try {
@@ -235,13 +251,13 @@ export class SyncUsecase {
           const textContent = fristRow.innerText.trim(); // Get text content and trim any extra spaces
           const elements = textContent.split("\n"); // Split by line and take the first line
           return elements;
-        }
+        },
       );
       await page.close();
 
       const price =
         parseFloat(
-          data[0].replace("$", "").replace(",", "").replace(".", ",")
+          data[0].replace("$", "").replace(",", "").replace(".", ","),
         ) * USD_TO_EUR;
 
       // console.log("abugames buylist price", price);
@@ -280,7 +296,7 @@ export class SyncUsecase {
     priceChartingPrice: number | undefined,
     ckBuyListPrice: number | undefined,
     abugamesBuyListPrice: number | undefined,
-    starcitygamesBuyListPrice: number | undefined
+    starcitygamesBuyListPrice: number | undefined,
   ) {
     const pricesMap = new Map([
       [PriceType.cardmarket, cardMarketPrice],
@@ -293,10 +309,12 @@ export class SyncUsecase {
     const marketPrice = Math.min(cardMarketPrice || 0) || undefined;
     pricesMap.set(PriceType.market, marketPrice);
 
-    const buylistPrice = Math.max(
-      ckBuyListPrice || 0,
-      abugamesBuyListPrice || 0,
-      starcitygamesBuyListPrice || 0) || undefined;
+    const buylistPrice =
+      Math.max(
+        ckBuyListPrice || 0,
+        abugamesBuyListPrice || 0,
+        starcitygamesBuyListPrice || 0,
+      ) || undefined;
     pricesMap.set(PriceType.buylist, buylistPrice);
 
     const ratio =
@@ -306,7 +324,10 @@ export class SyncUsecase {
     pricesMap.set(PriceType.ratio, ratio);
 
     if (product.type !== "single" && typeof product.boosterCount === "number") {
-      const pricePerBooster = typeof marketPrice === "number" ? parseFloat((marketPrice / product.boosterCount).toFixed(2)) : undefined;
+      const pricePerBooster =
+        typeof marketPrice === "number"
+          ? parseFloat((marketPrice / product.boosterCount).toFixed(2))
+          : undefined;
       pricesMap.set(PriceType.perBooster, pricePerBooster);
     }
 
