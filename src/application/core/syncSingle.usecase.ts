@@ -15,6 +15,7 @@ import {
   PerformanceType,
 } from "../../entities/performance.entity";
 import { ComputePerformancesUsecase } from "./computePerformance.usecase";
+import { SetPerformancesUsecase } from "./setPerformances.usecase";
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -25,7 +26,7 @@ export class SyncSingleUsecase {
   constructor(
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
-    private readonly computePerformancesUsecase: ComputePerformancesUsecase,
+    private readonly setPerformancesUsecase: SetPerformancesUsecase,
   ) {}
 
   async execute(productId: string) {
@@ -37,13 +38,9 @@ export class SyncSingleUsecase {
     today.setUTCHours(0, 0, 0, 0);
 
     const product = await this.productRepository.getCard(productId);
-    await this.syncProduct(product, today, 0);
 
-    await this.computePerformancesUsecase.execute({
-      set: product.set as Set,
-      franchise: product.franchise,
-      type: product.type,
-    });
+    await this.syncProduct(product, today, 0);
+    await this.setPerformancesUsecase.execute({productIds: [product.id]});
 
     console.log("end");
   }

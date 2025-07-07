@@ -12,6 +12,7 @@ import { USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PriceType } from "../../entities/price.entity";
 import { ComputePerformancesUsecase } from "./computePerformance.usecase";
+import { SetPerformancesUsecase } from "./setPerformances.usecase";
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -29,7 +30,7 @@ export class SyncUsecase {
   constructor(
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
-    private readonly computePerformancesUsecase: ComputePerformancesUsecase,
+    private readonly setPerformancesUsecase: SetPerformancesUsecase,
   ) {}
 
   async execute({ filter, mode }: SyncUsecaseInputDto) {
@@ -64,8 +65,6 @@ export class SyncUsecase {
       // ));
     }
 
-    await this.computePerformancesUsecase.execute(filter);
-
     console.log("end");
   }
 
@@ -86,6 +85,7 @@ export class SyncUsecase {
       ],
     });
 
+    // prices
     const [
       cardMarketPrice,
       priceChartingPrice,
@@ -99,7 +99,6 @@ export class SyncUsecase {
       await this.syncAbugamesBuyList(product, browser),
       undefined, // await this.syncStarcitygamesBuyList(product, browser),
     ];
-
     const prices = await this.computePrices(
       product,
       cardMarketPrice,
@@ -108,7 +107,6 @@ export class SyncUsecase {
       abugamesBuyListPrice,
       starcitygamesBuyListPrice,
     );
-
     for (const key of prices.keys()) {
       await this.priceRepository.upsertPrice(
         product.id,
@@ -118,7 +116,10 @@ export class SyncUsecase {
       );
     }
 
-    console.log(product, prices);
+    // performances
+    await this.setPerformancesUsecase.execute({productIds: [product.id]});
+
+    console.debug(product, prices);
 
     await browser.close();
   }
