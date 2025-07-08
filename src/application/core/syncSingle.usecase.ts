@@ -118,9 +118,11 @@ export class SyncSingleUsecase {
       await page.close();
       // console.log("data", data); // exemple: [ '3', 'K', 'menor-com', 'NM', 'nm+', '420,00 €', '1' ]
 
-      const price =
-        parseFloat(data[data.length - 2].replace(".", "")) *
-        (1 - CARDMARKET_FEE);
+      const price = parseFloat(
+        parseFloat(
+          data[data.length - 2].replace(".", "").replace(",", "."),
+        ).toFixed(2),
+      ); // * (1 - CARDMARKET_FEE);
 
       // console.log("CardMarket :", price);
       return price;
