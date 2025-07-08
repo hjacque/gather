@@ -39,6 +39,7 @@ export const ProductEntitySchema = z.object({
   name: z.string(),
   releaseDate: z.date().optional(),
   msrp: z.number().optional(),
+  block: z.string(),
   set: z.union([
     z.literal("alpha"),
     z.literal("beta"),

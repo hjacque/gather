@@ -17,6 +17,7 @@ export class ProductMapper {
     abugamesBuyListLink,
     starcitygamesBuyListLink,
     boosterCount,
+    block
   }: ProductModel): ProductEntity {
     return {
       id: _id.toString(),
@@ -26,6 +27,7 @@ export class ProductMapper {
       releaseDate,
       msrp,
       set,
+      block,
       rarity,
       cardMarketLink,
       priceChartingLink,
