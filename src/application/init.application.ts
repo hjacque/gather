@@ -57,6 +57,7 @@ export const initApplication = ({
   const syncSingleUsecase = new SyncSingleUsecase(
     productRepository,
     priceRepository,
+    performanceRepository,
     setPerformancesUsecase,
   );
 

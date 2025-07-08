@@ -9,6 +9,8 @@ import { CARDMARKET_FEE, USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PriceType } from "../../entities/price.entity";
 import { SetPerformancesUsecase } from "./setPerformances.usecase";
+import { PerformanceEntity } from "entities/performance.entity";
+import { PerformanceRepositoryPort } from "repository/ports/performance.repository.port";
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -19,12 +21,11 @@ export class SyncSingleUsecase {
   constructor(
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
+    private readonly performanceRepository: PerformanceRepositoryPort,
     private readonly setPerformancesUsecase: SetPerformancesUsecase,
   ) {}
 
   async execute(productId: string) {
-    console.log("start");
-
     puppeteerExtra.use(Stealth());
 
     const today = new Date();
@@ -32,15 +33,20 @@ export class SyncSingleUsecase {
 
     const product = await this.productRepository.getCard(productId);
 
-    await this.syncProduct(product, today, 0);
-
-    console.log("end");
+    return this.syncProduct(product, today, 0);
   }
 
-  async syncProduct(product: ProductEntity, today: Date, inc: number) {
-    await sleep((Math.floor(Math.random() * (10 + (inc % 6))) + 1) * 1000); // Random sleep between 1 and 17 seconds
+  async syncProduct(product: ProductEntity, today: Date, inc: number): Promise<ProductEntity & {performance: {
+    oneDayMarketPricePerformance: number | null;
+    oneDayBuylistPricePerformance: number | null;
+    oneWeekMarketPricePerformance: number | null;
+    oneWeekBuylistPricePerformance: number | null;
+    oneMonthMarketPricePerformance: number | null;
+    oneMonthBuylistPricePerformance: number | null;
+}}> {
+    // await sleep((Math.floor(Math.random() * (10 + (inc % 6))) + 1) * 1000); // Random sleep between 1 and 17 seconds
     const browser = await puppeteer.launch({
-      headless: false,
+      headless: true,
       args: [
         "--ignore-certificate-errors",
         "--no-sandbox",
@@ -83,10 +89,17 @@ export class SyncSingleUsecase {
 
     // performances
     await this.setPerformancesUsecase.execute({productIds: [product.id]});
+    const performances = await this.performanceRepository.getPerformances(
+      [product.id],
+      today,
+    );
+    const performance = performances.get(product.id)!;
 
     console.debug(product, prices);
 
     await browser.close();
+
+    return {...product, ...Object.fromEntries(prices), performance};
   }
 
   // todo - implement factory pattern
@@ -114,7 +127,7 @@ export class SyncSingleUsecase {
         const textContent = fristRow.innerText.trim(); // Get text content and trim any extra spaces
         const elements = textContent.split("\n"); // Split by line and take the first line
         return elements;
-      });
+      })
       await page.close();
       // console.log("data", data); // exemple: [ '3', 'K', 'menor-com', 'NM', 'nm+', '420,00 €', '1' ]
 

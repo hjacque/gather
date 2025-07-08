@@ -37,6 +37,7 @@ export const http = async ({
   });
 
   app.get("/sync/product/:productid", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
     const result = await syncSingleUsecase.execute(req.params.productid);
 
     res.status(200);
