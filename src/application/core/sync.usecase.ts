@@ -11,7 +11,6 @@ import { ProductRepositoryPort } from "../../repository/ports/product.repository
 import { USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PriceType } from "../../entities/price.entity";
-import { ComputePerformancesUsecase } from "./computePerformance.usecase";
 import { SetPerformancesUsecase } from "./setPerformances.usecase";
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));

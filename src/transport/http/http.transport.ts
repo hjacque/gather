@@ -5,7 +5,6 @@ import { z } from "zod";
 import { errorHandler } from "./middlewares/http.errors";
 import { SyncUsecaseInputDto } from "application/core/sync.usecase";
 import { GetProductOfTheDayUsecaseInputDto } from "application/core/getProductOfTheDay.usecase";
-import { ComputePerformancesInputDto } from "application/core/computePerformance.usecase";
 require("express-async-errors");
 
 const app = express();
@@ -13,12 +12,10 @@ const port = 3000;
 
 export const http = async ({
   syncUsecase,
-  getBestRatioCardsTodayUsecase,
   getCardsUsecase,
   getCardUsecase,
   getProductOfTheDayUsecase,
   syncSingleUsecase,
-  computePerformancesUsecase,
 }: Usecases) => {
   // middlewares
   app.use(express.json());
@@ -44,31 +41,12 @@ export const http = async ({
     res.json(result);
   });
 
-  app.get("/sync/performances", async (req, res) => {
-    const { set, type, franchise } = req.query;
-    const result = await computePerformancesUsecase.execute({
-      set,
-      type,
-      franchise,
-    } as ComputePerformancesInputDto);
-
-    res.status(200);
-    res.json(result);
-  });
-
   app.get("/sync", async (req, res) => {
     const { set, type, franchise } = req.query;
     const result = await syncUsecase.execute({
       filter: { set, type, franchise },
       mode: { headless: false },
     } as SyncUsecaseInputDto);
-
-    res.status(200);
-    res.json(result);
-  });
-
-  app.get("/ratio-today", async (req, res) => {
-    const result = await getBestRatioCardsTodayUsecase.execute();
 
     res.status(200);
     res.json(result);

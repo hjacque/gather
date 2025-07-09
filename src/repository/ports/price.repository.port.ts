@@ -8,8 +8,6 @@ export abstract class PriceRepositoryPort {
     date: Date,
   ): Promise<void>;
 
-  abstract getBestRatioCards(startDate: Date, endDate: Date): Promise<any[]>;
-
   abstract getCardPrices(productId: string): Promise<{
     marketPrices: PriceEntity[];
     buylistPrices: PriceEntity[];
