@@ -44,6 +44,7 @@ export class PerformanceRepositoryPg implements PerformanceRepositoryPort {
         },
         data: {
             value,
+            updatedAt: new Date()
         }
       });
       return;

@@ -38,6 +38,7 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
             value,
             type,
             date,
+            updatedAt: new Date()
           },
       });
       return;
