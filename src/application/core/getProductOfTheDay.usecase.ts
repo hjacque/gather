@@ -1,8 +1,8 @@
 import {
   Set,
   Franchise,
-  ProductEntity,
   ProductType,
+  NewProductEntity,
 } from "../../entities/product.entity";
 import { PerformanceEntity } from "../../entities/performance.entity";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
@@ -23,7 +23,7 @@ export class GetProductOfTheDayUsecase {
   async execute(
     dto: GetProductOfTheDayUsecaseInputDto,
   ): Promise<
-    (ProductEntity & { topPerformance: PerformanceEntity }) | undefined
+    (NewProductEntity & { topPerformance: PerformanceEntity }) | undefined
   > {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
@@ -38,7 +38,7 @@ export class GetProductOfTheDayUsecase {
       return undefined;
     }
 
-    const product = await this.productRepository.getCard(
+    const product = await this.productRepository.getProduct(
       topPerformance.productId,
     );
 

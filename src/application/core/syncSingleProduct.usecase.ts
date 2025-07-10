@@ -2,22 +2,21 @@ import puppeteer, { Browser } from "puppeteer";
 import puppeteerExtra from "puppeteer-extra";
 import Stealth from "puppeteer-extra-plugin-stealth";
 import {
-  ProductEntity,
+  NewProductEntity,
 } from "../../entities/product.entity";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
-import { CARDMARKET_FEE, USD_TO_EUR } from "../../constants";
+import { USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
-import { PriceType } from "../../entities/price.entity";
 import { SetPerformancesUsecase } from "./setPerformances.usecase";
-import { PerformanceEntity } from "entities/performance.entity";
 import { PerformanceRepositoryPort } from "repository/ports/performance.repository.port";
+import { PriceType } from "../../types/priceType";
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 export type SyncUsecaseInputDto = {
   productId: string;
 };
-export class SyncSingleUsecase {
+export class SyncSingleProductUsecase {
   constructor(
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
@@ -31,12 +30,12 @@ export class SyncSingleUsecase {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 
-    const product = await this.productRepository.getCard(productId);
+    const product = await this.productRepository.getProduct(productId);
 
     return this.syncProduct(product, today, 0);
   }
 
-  async syncProduct(product: ProductEntity, today: Date, inc: number): Promise<ProductEntity & {performance: {
+  async syncProduct(product: NewProductEntity, today: Date, inc: number): Promise<NewProductEntity & {performance: {
     oneDayMarketPricePerformance: number | null;
     oneDayBuylistPricePerformance: number | null;
     oneWeekMarketPricePerformance: number | null;
@@ -59,24 +58,18 @@ export class SyncSingleUsecase {
     // prices
     const [
       cardMarketPrice,
-      priceChartingPrice,
       ckBuyListPrice,
       abugamesBuyListPrice,
-      starcitygamesBuyListPrice,
     ] = [
       await this.syncCardMarket(product, browser),
-      undefined, // await this.syncPriceCharting(product, browser),
       await this.syncCardkingdomBuyList(product, browser),
       await this.syncAbugamesBuyList(product, browser),
-      undefined, // await this.syncStarcitygamesBuyList(product, browser),
     ];
     const prices = await this.computePrices(
       product,
       cardMarketPrice,
-      priceChartingPrice,
       ckBuyListPrice,
       abugamesBuyListPrice,
-      starcitygamesBuyListPrice,
     );
     for (const key of prices.keys()) {
       await this.priceRepository.upsertPrice(
@@ -104,7 +97,7 @@ export class SyncSingleUsecase {
 
   // todo - implement factory pattern
   async syncCardMarket(
-    product: ProductEntity,
+    product: NewProductEntity,
     browser: Browser,
   ): Promise<number | undefined> {
     const page = await browser.newPage();
@@ -146,7 +139,7 @@ export class SyncSingleUsecase {
     }
   }
 
-  // async syncPriceCharting(product: ProductEntity, browser: Browser) {
+  // async syncPriceCharting(product: NewProductEntity, browser: Browser) {
   //   try {
   //     await page.goto(product.priceChartingLink);
 
@@ -180,7 +173,10 @@ export class SyncSingleUsecase {
   //   }
   // }
 
-  async syncCardkingdomBuyList(product: ProductEntity, browser: Browser) {
+  async syncCardkingdomBuyList(product: NewProductEntity, browser: Browser) {
+    if (!product.cardkingdomBuyListLink) {
+      return ;
+    }
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 });
     await page.setUserAgent(
@@ -213,7 +209,10 @@ export class SyncSingleUsecase {
     }
   }
 
-  async syncAbugamesBuyList(product: ProductEntity, browser: Browser) {
+  async syncAbugamesBuyList(product: NewProductEntity, browser: Browser) {
+    if (!product.abugamesBuyListLink) {
+      return ;
+    }
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 });
     await page.setUserAgent(
@@ -249,7 +248,7 @@ export class SyncSingleUsecase {
     }
   }
 
-  // async syncStarcitygamesBuyList(product: ProductEntity, browser: Browser) {
+  // async syncStarcitygamesBuyList(product: NewProductEntity, browser: Browser) {
   //   await page.goto(product.cardMarketLink);
 
   //   await page.waitForNetworkIdle();
@@ -270,44 +269,39 @@ export class SyncSingleUsecase {
   // }
 
   async computePrices(
-    product: ProductEntity,
+    product: NewProductEntity,
     cardMarketPrice: number | undefined,
-    priceChartingPrice: number | undefined,
     ckBuyListPrice: number | undefined,
     abugamesBuyListPrice: number | undefined,
-    starcitygamesBuyListPrice: number | undefined,
   ) {
-    const pricesMap = new Map([
-      [PriceType.cardmarket, cardMarketPrice],
-      [PriceType.pricecharting, priceChartingPrice],
-      [PriceType.cardkingdom, ckBuyListPrice],
-      [PriceType.abugames, abugamesBuyListPrice],
-      [PriceType.starcitygames, starcitygamesBuyListPrice],
+    const pricesMap: Map<PriceType, number | undefined> = new Map([
+      ["cardmarket", cardMarketPrice],
+      ["cardkingdom", ckBuyListPrice],
+      ["abugames", abugamesBuyListPrice],
     ]);
 
     const marketPrice = Math.min(cardMarketPrice || 0) || undefined;
-    pricesMap.set(PriceType.market, marketPrice);
+    pricesMap.set("market", marketPrice);
 
     const buylistPrice =
       Math.max(
         ckBuyListPrice || 0,
         abugamesBuyListPrice || 0,
-        starcitygamesBuyListPrice || 0,
       ) || undefined;
-    pricesMap.set(PriceType.buylist, buylistPrice);
+    pricesMap.set("buylist", buylistPrice);
 
     const ratio =
       marketPrice &&
       buylistPrice &&
       Math.round((marketPrice / buylistPrice) * 100) - 100;
-    pricesMap.set(PriceType.ratio, ratio);
+    pricesMap.set("ratio", ratio);
 
     if (product.type !== "single" && typeof product.boosterCount === "number") {
       const pricePerBooster =
         typeof marketPrice === "number"
           ? parseFloat((marketPrice / product.boosterCount).toFixed(2))
           : undefined;
-      pricesMap.set(PriceType.perBooster, pricePerBooster);
+      pricesMap.set("perBooster", pricePerBooster);
     }
 
     return pricesMap;

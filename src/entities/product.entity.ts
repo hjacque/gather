@@ -79,3 +79,18 @@ export const ProductEntitySchema = z.object({
 });
 
 export type ProductEntity = z.infer<typeof ProductEntitySchema>;
+
+export type NewProductEntity = {
+  id: string;
+  name: string;
+  type: ProductType;
+  boosterCount: number | null;
+  msrp: number | null;
+  productSetId: string;
+  rarity: string | null;
+  cardMarketLink: string;
+  cardkingdomBuyListLink: string |  null;
+  abugamesBuyListLink: string |  null;
+  createdAt: Date;
+  updatedAt: Date;
+}

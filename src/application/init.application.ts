@@ -1,19 +1,19 @@
 import { ProductRepositoryPort } from "../repository/ports/product.repository.port";
 import { PriceRepositoryPort } from "../repository/ports/price.repository.port";
 import { SyncUsecase } from "./core/sync.usecase";
-import { GetCardsUsecase } from "./core/getCards.usecase";
-import { GetCardUsecase } from "./core/getCard.usecase";
+import { GetProductsUsecase } from "./core/getProducts.usecase";
+import { GetProductUsecase } from "./core/getProduct.usecase";
 import { PerformanceRepositoryPort } from "../repository/ports/performance.repository.port";
 import { GetProductOfTheDayUsecase } from "./core/getProductOfTheDay.usecase";
-import { SyncSingleUsecase } from "./core/syncSingle.usecase";
+import { SyncSingleProductUsecase } from "./core/syncSingleProduct.usecase";
 import { SetPerformancesUsecase } from "./core/setPerformances.usecase";
 
 export type Usecases = {
   syncUsecase: SyncUsecase;
-  getCardsUsecase: GetCardsUsecase;
-  getCardUsecase: GetCardUsecase;
+  getProductsUsecase: GetProductsUsecase;
+  getProductUsecase: GetProductUsecase;
   getProductOfTheDayUsecase: GetProductOfTheDayUsecase;
-  syncSingleUsecase: SyncSingleUsecase;
+  syncSingleProductUsecase: SyncSingleProductUsecase;
   setPerformancesUsecase: SetPerformancesUsecase;
 };
 
@@ -32,17 +32,17 @@ export const initApplication = ({
     priceRepository,
     setPerformancesUsecase,
   );
-  const getCardsUsecase = new GetCardsUsecase(
+  const getProductsUsecase = new GetProductsUsecase(
     productRepository,
     priceRepository,
     performanceRepository,
   );
-  const getCardUsecase = new GetCardUsecase(productRepository, priceRepository);
+  const getProductUsecase = new GetProductUsecase(productRepository, priceRepository);
   const getProductOfTheDayUsecase = new GetProductOfTheDayUsecase(
     productRepository,
     performanceRepository,
   );
-  const syncSingleUsecase = new SyncSingleUsecase(
+  const syncSingleProductUsecase = new SyncSingleProductUsecase(
     productRepository,
     priceRepository,
     performanceRepository,
@@ -51,10 +51,10 @@ export const initApplication = ({
 
   return {
     syncUsecase,
-    getCardsUsecase,
-    getCardUsecase,
+    getProductsUsecase,
+    getProductUsecase,
     getProductOfTheDayUsecase,
-    syncSingleUsecase,
+    syncSingleProductUsecase,
     setPerformancesUsecase,
   };
 };

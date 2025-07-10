@@ -17,7 +17,7 @@ const run = async () => {
   const usecases = initApplication(repositories);
 
   // services
-  // const services = initServices({syncUsecase: usecases.syncUsecase});
+  const services = initServices({syncUsecase: usecases.syncUsecase});
   // await services.syncSchedulerService.execute();
 
   // transport

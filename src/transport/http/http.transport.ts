@@ -9,13 +9,14 @@ require("express-async-errors");
 
 const app = express();
 const port = 3000;
+// const port = 3008;
 
 export const http = async ({
   syncUsecase,
-  getCardsUsecase,
-  getCardUsecase,
+  getProductsUsecase,
+  getProductUsecase,
   getProductOfTheDayUsecase,
-  syncSingleUsecase,
+  syncSingleProductUsecase,
 }: Usecases) => {
   // middlewares
   app.use(express.json());
@@ -35,7 +36,7 @@ export const http = async ({
 
   app.get("/sync/product/:productid", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
-    const result = await syncSingleUsecase.execute(req.params.productid);
+    const result = await syncSingleProductUsecase.execute(req.params.productid);
 
     res.status(200);
     res.json(result);
@@ -69,7 +70,7 @@ export const http = async ({
   app.get("/products", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
 
-    const result = await getCardsUsecase.execute(req.query);
+    const result = await getProductsUsecase.execute(req.query);
 
     res.status(200);
     res.json(result);
@@ -77,7 +78,7 @@ export const http = async ({
 
   app.get("/products/:productid", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
-    const result = await getCardUsecase.execute(req.params.productid);
+    const result = await getProductUsecase.execute(req.params.productid);
 
     res.status(200);
     res.json(result);

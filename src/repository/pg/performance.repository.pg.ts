@@ -1,22 +1,16 @@
-import { BSON, Collection, WithId } from "mongodb";
-import { PerformanceModel } from "./models/performance.model.mongo";
+import { PerformanceModel } from "./models/performance.model.pg";
 import { PerformanceRepositoryPort } from "../ports/performance.repository.port";
-import {
-  PerformanceEntity,
-  PerformancePeriodType,
-  PerformanceType,
-} from "../../entities/performance.entity";
-import { PerformanceMapper } from "./mappers/performance.mapper.mongo";
+import { PerformanceMapper } from "./mappers/performance.mapper.pg";
 import { Franchise, ProductType } from "entities/product.entity";
-import { ProductModel } from "./models/product.model.mongo";
-import RessourceNotFoundError from "../../errors/ressourceNotFound.error";
+import { PerformanceType } from "../../types/performanceType";
+import { PerformancePeriod } from "../../types/performancePeriod";
+import { PrismaClient } from "@prisma/client";
 
-export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
+export class PerformanceRepositoryPg implements PerformanceRepositoryPort {
   private performanceMapper: PerformanceMapper;
 
   constructor(
-    private readonly performanceCollection: Collection<PerformanceModel>,
-    private readonly productCollection: Collection<ProductModel>,
+    private readonly prisma: PrismaClient
   ) {
     this.performanceMapper = new PerformanceMapper();
   }
@@ -25,34 +19,43 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
     productId: string,
     value: number | null,
     date: Date,
-    periodType: PerformancePeriodType,
+    periodType: PerformancePeriod,
     type: PerformanceType,
   ): Promise<void> {
-    const existingPrice = await this.performanceCollection.findOne({
-      productId: new BSON.ObjectId(productId),
-      type,
-      date,
-      periodType,
+    const existingPerformance = await this.prisma.performance.findUnique({
+        where: {
+            productId_date_periodType_type: {
+                productId,
+                type,
+                date,
+                periodType,
+            }
+        }
     });
-    if (existingPrice) {
-      await this.performanceCollection.updateOne(
-        { productId: new BSON.ObjectId(productId), type, date, periodType },
-        {
-          $set: {
-            productId: new BSON.ObjectId(productId),
-            value,
-          },
+    if (existingPerformance) {
+      await this.prisma.performance.update({
+        where: {
+            productId_date_periodType_type: {
+                productId,
+                type,
+                date,
+                periodType,
+            }
         },
-      );
+        data: {
+            value,
+        }
+      });
       return;
     }
-    await this.performanceCollection.insertOne({
-      _id: new BSON.ObjectId(),
-      productId: new BSON.ObjectId(productId),
-      value,
-      type,
-      date,
-      periodType,
+    await this.prisma.performance.create({
+        data: {
+            productId,
+            value,
+            type,
+            date,
+            periodType,
+        }
     });
   }
 
@@ -62,20 +65,18 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
     productType: ProductType,
   ) {
     const topPerformance = (
-      await this.performanceCollection
-        .find(
-          {
-            date,
-            type: { $in: [PerformanceType.market, PerformanceType.buylist] },
-            value: { $gt: 0 },
-          },
-          {
-            sort: { value: -1 },
-            limit: 10,
-          },
-        )
-        .toArray()
-    )[0];
+      await this.prisma.performance
+        .findFirstOrThrow({
+            where: {
+                date,
+                type: { in: ["market", "buylist"] },
+                value: { gt: 0 },
+            },
+            orderBy: {
+                value: "desc"
+            },
+            take: 1
+        }));
 
     // const res = this.productCollection.aggregate([
     //   {
@@ -122,12 +123,13 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
   }
 
   async getPerformances(productIds: string[], date: Date) {
-    const performances = await this.performanceCollection
-      .find({
-        productId: { $in: productIds.map((id) => new BSON.ObjectId(id)) },
-        date,
-      })
-      .toArray();
+    const performances = await this.prisma.performance
+      .findMany({
+        where: {
+            productId: { in: productIds },
+            date,
+        }
+      });
 
     type Period =
       | "oneDayMarketPricePerformance"
@@ -138,7 +140,7 @@ export class PerformanceRepositoryMongo implements PerformanceRepositoryPort {
       | "oneMonthBuylistPricePerformance";
     const result: Map<string, Record<Period, number | null>> = new Map();
 
-    function getPerformanceKey(perf: WithId<PerformanceModel>): string | null {
+    function getPerformanceKey(perf: PerformanceModel): string | null {
       const { periodType, type } = perf;
       if (type === "market" && periodType === "daily")
         return "oneDayMarketPricePerformance";

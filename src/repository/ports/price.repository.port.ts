@@ -1,14 +1,15 @@
-import { PriceEntity, PriceType } from "../../entities/price.entity";
+import { PriceType } from "../../types/priceType";
+import { PriceEntity } from "../../entities/price.entity";
 
 export abstract class PriceRepositoryPort {
   abstract upsertPrice(
     productId: string,
     value: number | undefined,
-    type: keyof typeof PriceType,
+    type: PriceType,
     date: Date,
   ): Promise<void>;
 
-  abstract getCardPrices(productId: string): Promise<{
+  abstract getProductPrices(productId: string): Promise<{
     marketPrices: PriceEntity[];
     buylistPrices: PriceEntity[];
     ratioPrices: PriceEntity[];

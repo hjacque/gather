@@ -1,12 +1,9 @@
 import puppeteerExtra from "puppeteer-extra";
 import Stealth from "puppeteer-extra-plugin-stealth";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
-import { PriceType } from "../../entities/price.entity";
 import { PerformanceRepositoryPort } from "../../repository/ports/performance.repository.port";
 import {
   PerformanceEntity,
-  PerformancePeriodType,
-  PerformanceType,
 } from "../../entities/performance.entity";
 
 export type SetPerformancesInputDto = {
@@ -34,11 +31,11 @@ export class SetPerformancesUsecase {
 
       const [todayMarketPrice, todayBuylistPrice] = await Promise.all([this.priceRepository.getOne(
         productId,
-        PriceType.market,
+        "market",
         today,
       ), this.priceRepository.getOne(
         productId,
-        PriceType.buylist,
+        "buylist",
         today,
       )]);
 
@@ -46,11 +43,11 @@ export class SetPerformancesUsecase {
       oneDayAgo.setUTCDate(today.getUTCDate() - 1);
       const [oneDayOldMarketPrice, oneDayOldBuylistPrice] = await Promise.all([this.priceRepository.getOne(
         productId,
-        PriceType.market,
+        "market",
         oneDayAgo,
       ), this.priceRepository.getOne(
         productId,
-        PriceType.buylist,
+        "buylist",
         oneDayAgo,
       )]);
 
@@ -58,11 +55,11 @@ export class SetPerformancesUsecase {
       oneWeekAgo.setUTCDate(today.getUTCDate() - 7);
       const [oneWeekOldMarketPrice, oneWeekOldBuylistPrice] = await Promise.all([this.priceRepository.getOne(
         productId,
-        PriceType.market,
+        "market",
         oneWeekAgo,
       ), this.priceRepository.getOne(
         productId,
-        PriceType.buylist,
+        "buylist",
         oneWeekAgo,
       )]);
 
@@ -70,11 +67,11 @@ export class SetPerformancesUsecase {
       thrityDaysAgo.setUTCDate(today.getUTCDate() - 30);
       const [oneMonthOldMarketPrice, oneMonthOldBuylistPrice] = await Promise.all([this.priceRepository.getOne(
         productId,
-        PriceType.market,
+        "market",
         thrityDaysAgo,
       ), this.priceRepository.getOne(
         productId,
-        PriceType.buylist,
+        "buylist",
         thrityDaysAgo,
       )]);
 
@@ -91,8 +88,8 @@ export class SetPerformancesUsecase {
         productId: productId,
         value: oneDayMarketPricePerformance,
         date: today,
-        periodType: PerformancePeriodType.daily,
-        type: PerformanceType.market,
+        periodType: "daily",
+        type: "market",
       });
       const oneDayBuylistPricePerformance =
         oneDayOldBuylistPrice?.value && todayBuylistPrice?.value
@@ -107,8 +104,8 @@ export class SetPerformancesUsecase {
         productId: productId,
         value: oneDayBuylistPricePerformance,
         date: today,
-        periodType: PerformancePeriodType.daily,
-        type: PerformanceType.buylist,
+        periodType: "daily",
+        type: "buylist",
       });
 
       const oneWeekMarketPricePerformance =
@@ -124,8 +121,8 @@ export class SetPerformancesUsecase {
         productId: productId,
         value: oneWeekMarketPricePerformance,
         date: today,
-        periodType: PerformancePeriodType.weekly,
-        type: PerformanceType.market,
+        periodType: "weekly",
+        type: "market",
       });
       const oneWeekBuylistPricePerformance =
         oneWeekOldBuylistPrice?.value && todayBuylistPrice?.value
@@ -140,8 +137,8 @@ export class SetPerformancesUsecase {
         productId: productId,
         value: oneWeekBuylistPricePerformance,
         date: today,
-        periodType: PerformancePeriodType.weekly,
-        type: PerformanceType.buylist,
+        periodType: "weekly",
+        type: "buylist",
       });
 
       const oneMonthMarketPricePerformance =
@@ -157,8 +154,8 @@ export class SetPerformancesUsecase {
         productId: productId,
         value: oneMonthMarketPricePerformance,
         date: today,
-        periodType: PerformancePeriodType.monthly,
-        type: PerformanceType.market,
+        periodType: "monthly",
+        type: "market",
       });
       const oneMonthBuylistPricePerformance =
         oneMonthOldBuylistPrice?.value && todayBuylistPrice?.value
@@ -174,8 +171,8 @@ export class SetPerformancesUsecase {
         productId: productId,
         value: oneMonthBuylistPricePerformance,
         date: today,
-        periodType: PerformancePeriodType.monthly,
-        type: PerformanceType.buylist,
+        periodType: "monthly",
+        type: "buylist",
       });
 
       for (const performance of performances) {
@@ -183,8 +180,8 @@ export class SetPerformancesUsecase {
           productId,
           performance.value,
           today,
-          PerformancePeriodType[performance.periodType],
-          PerformanceType[performance.type],
+          performance.periodType,
+          performance.type
         ));
       }
     }

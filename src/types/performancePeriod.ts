@@ -1,0 +1,1 @@
+export type PerformancePeriod = "daily" | "weekly" | "monthly" | "yearly";

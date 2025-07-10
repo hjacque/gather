@@ -11,7 +11,7 @@ export class SyncSchedulerService {
 
     // Run immediately on startup (for testing)
     // setTimeout(async () => {
-    //     await this.sync({type: ["booster_box", "collector_booster_box", "booster_bundle"]});
+    //     await this.sync({type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"]});
     // }, 5000);
   }
 
@@ -38,7 +38,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 0 * * *",
       async () => {
-        await this.sync({ type: "single", set: "alpha" as Set });
+        await this.sync({ type: "single", set: "Alpha" as Set });
       },
       {
         timezone: "UTC",
@@ -47,7 +47,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 0 * * *",
       async () => {
-        await this.sync({ type: "single", set: "beta" as Set });
+        await this.sync({ type: "single", set: "Beta" as Set });
       },
       {
         timezone: "UTC",
@@ -56,7 +56,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 1 * * *",
       async () => {
-        await this.sync({ type: "single", set: "unlimited" as Set });
+        await this.sync({ type: "single", set: "Unlimited" as Set });
       },
       {
         timezone: "UTC",
@@ -65,7 +65,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 1 * * *",
       async () => {
-        await this.sync({ type: "single", set: "arabian_nights" as Set });
+        await this.sync({ type: "single", set: "Arabian Nights" as Set });
       },
       {
         timezone: "UTC",
@@ -74,7 +74,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 2 * * *",
       async () => {
-        await this.sync({ type: "single", set: "antiquities" as Set });
+        await this.sync({ type: "single", set: "Antiquities" as Set });
       },
       {
         timezone: "UTC",
@@ -83,7 +83,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 2 * * *",
       async () => {
-        await this.sync({ type: "single", set: "legends" as Set });
+        await this.sync({ type: "single", set: "Legends" as Set });
       },
       {
         timezone: "UTC",
@@ -92,7 +92,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 3 * * *",
       async () => {
-        await this.sync({ type: "single", set: "the_dark" as Set });
+        await this.sync({ type: "single", set: "The Dark" as Set });
       },
       {
         timezone: "UTC",
@@ -103,7 +103,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 4 * * *",
       async () => {
-        await this.sync({ type: "single", set: "alpha" as Set });
+        await this.sync({ type: "single", set: "Alpha" as Set });
       },
       {
         timezone: "UTC",
@@ -112,7 +112,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 4 * * *",
       async () => {
-        await this.sync({ type: "single", set: "beta" as Set });
+        await this.sync({ type: "single", set: "Beta" as Set });
       },
       {
         timezone: "UTC",
@@ -121,7 +121,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 5 * * *",
       async () => {
-        await this.sync({ type: "single", set: "unlimited" as Set });
+        await this.sync({ type: "single", set: "Unlimited" as Set });
       },
       {
         timezone: "UTC",
@@ -130,7 +130,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 5 * * *",
       async () => {
-        await this.sync({ type: "single", set: "arabian_nights" as Set });
+        await this.sync({ type: "single", set: "Arabian Nights" as Set });
       },
       {
         timezone: "UTC",
@@ -139,7 +139,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 6 * * *",
       async () => {
-        await this.sync({ type: "single", set: "antiquities" as Set });
+        await this.sync({ type: "single", set: "Antiquities" as Set });
       },
       {
         timezone: "UTC",
@@ -148,7 +148,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 6 * * *",
       async () => {
-        await this.sync({ type: "single", set: "legends" as Set });
+        await this.sync({ type: "single", set: "Legends" as Set });
       },
       {
         timezone: "UTC",
@@ -157,7 +157,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 7 * * *",
       async () => {
-        await this.sync({ type: "single", set: "the_dark" as Set });
+        await this.sync({ type: "single", set: "The Dark" as Set });
       },
       {
         timezone: "UTC",
@@ -168,7 +168,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 8 * * *",
       async () => {
-        await this.sync({ type: "single", set: "alpha" as Set });
+        await this.sync({ type: "single", set: "Alpha" as Set });
       },
       {
         timezone: "UTC",
@@ -177,7 +177,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 8 * * *",
       async () => {
-        await this.sync({ type: "single", set: "beta" as Set });
+        await this.sync({ type: "single", set: "Beta" as Set });
       },
       {
         timezone: "UTC",
@@ -186,7 +186,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 9 * * *",
       async () => {
-        await this.sync({ type: "single", set: "unlimited" as Set });
+        await this.sync({ type: "single", set: "Unlimited" as Set });
       },
       {
         timezone: "UTC",
@@ -195,7 +195,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 9 * * *",
       async () => {
-        await this.sync({ type: "single", set: "arabian_nights" as Set });
+        await this.sync({ type: "single", set: "Arabian Nights" as Set });
       },
       {
         timezone: "UTC",
@@ -204,7 +204,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 10 * * *",
       async () => {
-        await this.sync({ type: "single", set: "antiquities" as Set });
+        await this.sync({ type: "single", set: "Antiquities" as Set });
       },
       {
         timezone: "UTC",
@@ -213,7 +213,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 10 * * *",
       async () => {
-        await this.sync({ type: "single", set: "legends" as Set });
+        await this.sync({ type: "single", set: "Legends" as Set });
       },
       {
         timezone: "UTC",
@@ -222,7 +222,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 11 * * *",
       async () => {
-        await this.sync({ type: "single", set: "the_dark" as Set });
+        await this.sync({ type: "single", set: "The Dark" as Set });
       },
       {
         timezone: "UTC",
@@ -233,7 +233,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 12 * * *",
       async () => {
-        await this.sync({ type: "single", set: "alpha" as Set });
+        await this.sync({ type: "single", set: "Alpha" as Set });
       },
       {
         timezone: "UTC",
@@ -242,7 +242,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 12 * * *",
       async () => {
-        await this.sync({ type: "single", set: "beta" as Set });
+        await this.sync({ type: "single", set: "Beta" as Set });
       },
       {
         timezone: "UTC",
@@ -251,7 +251,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 13 * * *",
       async () => {
-        await this.sync({ type: "single", set: "unlimited" as Set });
+        await this.sync({ type: "single", set: "Unlimited" as Set });
       },
       {
         timezone: "UTC",
@@ -260,7 +260,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 13 * * *",
       async () => {
-        await this.sync({ type: "single", set: "arabian_nights" as Set });
+        await this.sync({ type: "single", set: "Arabian Nights" as Set });
       },
       {
         timezone: "UTC",
@@ -269,7 +269,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 14 * * *",
       async () => {
-        await this.sync({ type: "single", set: "antiquities" as Set });
+        await this.sync({ type: "single", set: "Antiquities" as Set });
       },
       {
         timezone: "UTC",
@@ -278,7 +278,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 14 * * *",
       async () => {
-        await this.sync({ type: "single", set: "legends" as Set });
+        await this.sync({ type: "single", set: "Legends" as Set });
       },
       {
         timezone: "UTC",
@@ -287,7 +287,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 15 * * *",
       async () => {
-        await this.sync({ type: "single", set: "the_dark" as Set });
+        await this.sync({ type: "single", set: "The Dark" as Set });
       },
       {
         timezone: "UTC",
@@ -298,7 +298,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 16 * * *",
       async () => {
-        await this.sync({ type: "single", set: "alpha" as Set });
+        await this.sync({ type: "single", set: "Alpha" as Set });
       },
       {
         timezone: "UTC",
@@ -307,7 +307,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 16 * * *",
       async () => {
-        await this.sync({ type: "single", set: "beta" as Set });
+        await this.sync({ type: "single", set: "Beta" as Set });
       },
       {
         timezone: "UTC",
@@ -316,7 +316,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 17 * * *",
       async () => {
-        await this.sync({ type: "single", set: "unlimited" as Set });
+        await this.sync({ type: "single", set: "Unlimited" as Set });
       },
       {
         timezone: "UTC",
@@ -325,7 +325,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 17 * * *",
       async () => {
-        await this.sync({ type: "single", set: "arabian_nights" as Set });
+        await this.sync({ type: "single", set: "Arabian Nights" as Set });
       },
       {
         timezone: "UTC",
@@ -334,7 +334,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 18 * * *",
       async () => {
-        await this.sync({ type: "single", set: "antiquities" as Set });
+        await this.sync({ type: "single", set: "Antiquities" as Set });
       },
       {
         timezone: "UTC",
@@ -343,7 +343,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 18 * * *",
       async () => {
-        await this.sync({ type: "single", set: "legends" as Set });
+        await this.sync({ type: "single", set: "Legends" as Set });
       },
       {
         timezone: "UTC",
@@ -352,7 +352,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 19 * * *",
       async () => {
-        await this.sync({ type: "single", set: "the_dark" as Set });
+        await this.sync({ type: "single", set: "The Dark" as Set });
       },
       {
         timezone: "UTC",
@@ -363,7 +363,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 20 * * *",
       async () => {
-        await this.sync({ type: "single", set: "alpha" as Set });
+        await this.sync({ type: "single", set: "Alpha" as Set });
       },
       {
         timezone: "UTC",
@@ -372,7 +372,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 20 * * *",
       async () => {
-        await this.sync({ type: "single", set: "beta" as Set });
+        await this.sync({ type: "single", set: "Beta" as Set });
       },
       {
         timezone: "UTC",
@@ -381,7 +381,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 21 * * *",
       async () => {
-        await this.sync({ type: "single", set: "unlimited" as Set });
+        await this.sync({ type: "single", set: "Unlimited" as Set });
       },
       {
         timezone: "UTC",
@@ -390,7 +390,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 21 * * *",
       async () => {
-        await this.sync({ type: "single", set: "arabian_nights" as Set });
+        await this.sync({ type: "single", set: "Arabian Nights" as Set });
       },
       {
         timezone: "UTC",
@@ -399,7 +399,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 22 * * *",
       async () => {
-        await this.sync({ type: "single", set: "antiquities" as Set });
+        await this.sync({ type: "single", set: "Antiquities" as Set });
       },
       {
         timezone: "UTC",
@@ -408,7 +408,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "30 22 * * *",
       async () => {
-        await this.sync({ type: "single", set: "legends" as Set });
+        await this.sync({ type: "single", set: "Legends" as Set });
       },
       {
         timezone: "UTC",
@@ -417,7 +417,7 @@ export class SyncSchedulerService {
     cron.schedule(
       "0 23 * * *",
       async () => {
-        await this.sync({ type: "single", set: "the_dark" as Set });
+        await this.sync({ type: "single", set: "The Dark" as Set });
       },
       {
         timezone: "UTC",
@@ -428,10 +428,10 @@ export class SyncSchedulerService {
 
   async scheduleSealed() {
     cron.schedule(
-      "25 0 * * *",
+      "15 0 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -439,10 +439,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 0 * * *",
+      "45 0 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -450,10 +450,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 1 * * *",
+      "15 1 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -461,10 +461,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 1 * * *",
+      "45 1 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -472,10 +472,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 2 * * *",
+      "15 2 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -483,10 +483,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 2 * * *",
+      "45 2 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -494,10 +494,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 3 * * *",
+      "15 3 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -505,10 +505,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 3 * * *",
+      "45 3 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -516,10 +516,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 4 * * *",
+      "15 4 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -527,10 +527,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 4 * * *",
+      "45 4 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -538,10 +538,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 5 * * *",
+      "15 5 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -549,10 +549,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 5 * * *",
+      "45 5 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -560,10 +560,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 6 * * *",
+      "15 6 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -571,10 +571,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 6 * * *",
+      "45 6 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -582,10 +582,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 7 * * *",
+      "15 7 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -593,10 +593,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 7 * * *",
+      "45 7 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -604,10 +604,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 8 * * *",
+      "15 8 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -615,10 +615,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 8 * * *",
+      "45 8 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -626,10 +626,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 9 * * *",
+      "15 9 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -637,10 +637,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 9 * * *",
+      "45 9 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -648,10 +648,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 10 * * *",
+      "15 10 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -659,10 +659,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 10 * * *",
+      "45 10 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -670,10 +670,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 11 * * *",
+      "15 11 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -681,10 +681,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 11 * * *",
+      "45 11 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -692,10 +692,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 12 * * *",
+      "15 12 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -703,10 +703,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 12 * * *",
+      "45 12 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -714,10 +714,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 13 * * *",
+      "15 13 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -725,10 +725,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 13 * * *",
+      "45 13 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -736,10 +736,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 14 * * *",
+      "15 14 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -747,10 +747,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 14 * * *",
+      "45 14 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -758,10 +758,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 15 * * *",
+      "15 15 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -769,10 +769,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 15 * * *",
+      "45 15 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -780,10 +780,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 16 * * *",
+      "15 16 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -791,10 +791,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 16 * * *",
+      "45 16 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -802,10 +802,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 17 * * *",
+      "15 17 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -813,10 +813,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 17 * * *",
+      "45 17 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -824,10 +824,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 18 * * *",
+      "15 18 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -835,10 +835,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 18 * * *",
+      "45 18 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -846,10 +846,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 19 * * *",
+      "15 19 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -857,10 +857,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 19 * * *",
+      "45 19 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -868,10 +868,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 20 * * *",
+      "15 20 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -879,10 +879,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 20 * * *",
+      "45 20 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -890,10 +890,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 21 * * *",
+      "15 21 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -901,10 +901,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 21 * * *",
+      "45 21 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -912,10 +912,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 22 * * *",
+      "15 22 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -923,10 +923,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 22 * * *",
+      "45 22 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -934,10 +934,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "25 23 * * *",
+      "15 23 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -945,10 +945,10 @@ export class SyncSchedulerService {
       },
     );
     cron.schedule(
-      "55 23 * * *",
+      "45 23 * * *",
       async () => {
         await this.sync({
-          type: ["booster_box", "collector_booster_box", "booster_bundle"],
+          type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
         });
       },
       {
@@ -956,7 +956,7 @@ export class SyncSchedulerService {
       },
     );
     console.log("📅 Sync scheduler started (runs every 15 minutes)", {
-      type: ["booster_box", "collector_booster_box", "booster_bundle"],
+      type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
     });
   }
 }

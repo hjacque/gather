@@ -1,16 +1,16 @@
 import { Franchise, ProductType } from "entities/product.entity";
 import {
   PerformanceEntity,
-  PerformancePeriodType,
-  PerformanceType,
 } from "../../entities/performance.entity";
+import { PerformancePeriod } from "../../types/performancePeriod";
+import { PerformanceType } from "../../types/performanceType";
 
 export abstract class PerformanceRepositoryPort {
   abstract upsertPerformance(
     productId: string,
     value: number | null,
     date: Date,
-    periodType: PerformancePeriodType,
+    periodType: PerformancePeriod,
     type: PerformanceType,
   ): Promise<void>;
 

@@ -3,15 +3,15 @@ import puppeteerExtra from "puppeteer-extra";
 import Stealth from "puppeteer-extra-plugin-stealth";
 import {
   Franchise,
-  ProductEntity,
+  NewProductEntity,
   ProductType,
   Set,
 } from "../../entities/product.entity";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
-import { PriceType } from "../../entities/price.entity";
 import { SetPerformancesUsecase } from "./setPerformances.usecase";
+import { PriceType } from "../../types/priceType";
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -68,7 +68,7 @@ export class SyncUsecase {
   }
 
   async syncProduct(
-    product: ProductEntity,
+    product: NewProductEntity,
     today: Date,
     inc: number,
     { headless }: { headless: boolean },
@@ -125,7 +125,7 @@ export class SyncUsecase {
 
   // todo - implement factory pattern
   async syncCardMarket(
-    product: ProductEntity,
+    product: NewProductEntity,
     browser: Browser,
   ): Promise<number | undefined> {
     const page = await browser.newPage();
@@ -167,41 +167,10 @@ export class SyncUsecase {
     }
   }
 
-  // async syncPriceCharting(product: ProductEntity, browser: Browser) {
-  //   try {
-  //     await page.goto(product.priceChartingLink);
-
-  //     await page.waitForNetworkIdle();
-
-  //     const data = await page.$eval("table.info_box", (fristRow) => {
-  //       const textContent = fristRow.innerText.trim(); // Get text content and trim any extra spaces
-  //       const elements = textContent.split("\n"); // Split by line and take the first line
-  //       return elements;
-  //     });
-
-  //     const [_ungradedPrice, _grade7Price, grade8Price, grade9Price] = data[3]
-  //       .split("\t")
-  //       .map((price) =>
-  //         price
-  //           .split(" ")[0]
-  //           .replace("$", "")
-  //           .replace(/\.\w{2}/g, "")
-  //           .replace(",", "")
-  //       );
-
-  //     const price =
-  //       ((parseFloat(grade8Price) + parseFloat(grade9Price)) / 2) *
-  //       USD_TO_EUR *
-  //       (1 - EBAY_FEE);
-  //     console.log("Pricecharting :", price);
-  //     return price;
-  //   } catch (error) {
-  //     console.log("No PriceCharting listing");
-  //     return undefined;
-  //   }
-  // }
-
-  async syncCardkingdomBuyList(product: ProductEntity, browser: Browser) {
+  async syncCardkingdomBuyList(product: NewProductEntity, browser: Browser) {
+    if (!product.cardkingdomBuyListLink) {
+      return
+    }
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 });
     await page.setUserAgent(
@@ -234,7 +203,10 @@ export class SyncUsecase {
     }
   }
 
-  async syncAbugamesBuyList(product: ProductEntity, browser: Browser) {
+  async syncAbugamesBuyList(product: NewProductEntity, browser: Browser) {
+    if (!product.abugamesBuyListLink) {
+      return
+    }
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 });
     await page.setUserAgent(
@@ -270,44 +242,22 @@ export class SyncUsecase {
     }
   }
 
-  // async syncStarcitygamesBuyList(product: ProductEntity, browser: Browser) {
-  //   await page.goto(product.cardMarketLink);
-
-  //   await page.waitForNetworkIdle();
-
-  //   // handle paginated tables
-  //   const data = await page.evaluate(() => {
-  //     const tds = Array.from(document.querySelectorAll("table tr td"));
-  //     return tds.map((td) => (td as any).innerText);
-  //   });
-  //   console.log(data);
-  //   // await page.waitForSelector(".lot-container");
-  //   // const element = await page.$(".lot-container");
-  //   // const value = await element?.evaluate((el) => el.textContent);
-  //   // console.log(value);
-
-  //   const price = 0;
-  //   return price;
-  // }
-
   async computePrices(
-    product: ProductEntity,
+    product: NewProductEntity,
     cardMarketPrice: number | undefined,
     priceChartingPrice: number | undefined,
     ckBuyListPrice: number | undefined,
     abugamesBuyListPrice: number | undefined,
     starcitygamesBuyListPrice: number | undefined,
   ) {
-    const pricesMap = new Map([
-      [PriceType.cardmarket, cardMarketPrice],
-      [PriceType.pricecharting, priceChartingPrice],
-      [PriceType.cardkingdom, ckBuyListPrice],
-      [PriceType.abugames, abugamesBuyListPrice],
-      [PriceType.starcitygames, starcitygamesBuyListPrice],
+    const pricesMap: Map<PriceType, number | undefined> = new Map([
+      ["cardmarket", cardMarketPrice],
+      ["cardkingdom", ckBuyListPrice],
+      ["abugames", abugamesBuyListPrice],
     ]);
 
     const marketPrice = Math.min(cardMarketPrice || 0) || undefined;
-    pricesMap.set(PriceType.market, marketPrice);
+    pricesMap.set("market", marketPrice);
 
     const buylistPrice =
       Math.max(
@@ -315,20 +265,20 @@ export class SyncUsecase {
         abugamesBuyListPrice || 0,
         starcitygamesBuyListPrice || 0,
       ) || undefined;
-    pricesMap.set(PriceType.buylist, buylistPrice);
+    pricesMap.set("buylist", buylistPrice);
 
     const ratio =
       marketPrice &&
       buylistPrice &&
       Math.round((marketPrice / buylistPrice) * 100) - 100;
-    pricesMap.set(PriceType.ratio, ratio);
+    pricesMap.set("ratio", ratio);
 
     if (product.type !== "single" && typeof product.boosterCount === "number") {
       const pricePerBooster =
         typeof marketPrice === "number"
           ? parseFloat((marketPrice / product.boosterCount).toFixed(2))
           : undefined;
-      pricesMap.set(PriceType.perBooster, pricePerBooster);
+      pricesMap.set("perBooster", pricePerBooster);
     }
 
     return pricesMap;

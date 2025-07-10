@@ -1,16 +1,5 @@
+import { PriceType } from "../types/priceType";
 import { z } from "zod";
-
-export enum PriceType {
-  cardmarket = "cardmarket",
-  pricecharting = "pricecharting",
-  cardkingdom = "cardkingdom",
-  abugames = "abugames",
-  starcitygames = "starcitygames",
-  buylist = "buylist",
-  market = "market",
-  ratio = "ratio",
-  perBooster = "perBooster",
-}
 
 export const PriceEntitySchema = z.object({
   id: z.string(),
@@ -31,3 +20,27 @@ export const PriceEntitySchema = z.object({
 });
 
 export type PriceEntity = z.infer<typeof PriceEntitySchema>;
+
+// model Price {
+//   id        String      @id @default(uuid())
+//   product   Product     @relation("ProductPrices", fields: [productId], references: [id])
+//   productId String
+//   date      DateTime
+//   value     Float?
+//   type      PriceType
+
+//   createdAt DateTime    @default(now())
+//   updatedAt   DateTime  @updatedAt
+
+//   @@unique([productId, date, type])
+// }
+
+export type NewPriceEntity = {
+  id: string;
+  productId: string;
+  date: Date;
+  value: number | null;
+  type: PriceType;
+  createdAt: Date;
+  updatedAt: Date;
+}

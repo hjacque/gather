@@ -3,7 +3,7 @@ import { PerformanceRepositoryPort } from "../../repository/ports/performance.re
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { Franchise, ProductType } from "entities/product.entity";
 
-export class GetCardsUsecase {
+export class GetProductsUsecase {
   constructor(
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,

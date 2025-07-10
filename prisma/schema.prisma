@@ -1,0 +1,128 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProductType {
+  single
+  booster_box
+  collector_booster_box
+  booster_box_18
+  booster_bundle
+  elite_trainer_box
+}
+
+enum Block {
+  scarlet_and_violet
+  sword_and_shield
+}
+
+enum Franchise {
+  mtg
+  pokemon
+}
+
+enum Rarity {
+  common
+  uncommon
+  rare
+}
+
+enum PriceType {
+  cardmarket
+  cardkingdom
+  abugames
+  buylist
+  market
+  ratio
+  perBooster
+}
+
+enum PerformancePeriodType {
+  daily
+  weekly
+  monthly
+  yearly
+}
+
+enum PerformanceType {
+  market
+  buylist
+}
+
+model Product {
+  id                        String        @id @default(uuid())
+  name                      String
+  type                      ProductType
+  boosterCount              Int?
+  msrp                      Float?
+  productSet                ProductSet           @relation(fields: [productSetId], references: [id])
+  productSetId              String
+  rarity                    Rarity?
+
+  cardMarketLink            String
+  cardkingdomBuyListLink    String?
+  abugamesBuyListLink       String?
+
+  prices                    Price[]       @relation("ProductPrices")
+  performances              Performance[] @relation("ProductPerformances")
+
+  createdAt                 DateTime      @default(now())
+  updatedAt                 DateTime      @updatedAt
+
+  @@unique([name, productSetId, type])
+}
+
+model ProductSet {
+  id          String     @id @default(uuid())
+  code        String
+  name        String
+  franchise   Franchise
+  releaseDate DateTime
+  block       Block?
+  products    Product[]
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([code, franchise])
+}
+
+model Price {
+  id        String      @id @default(uuid())
+  product   Product     @relation("ProductPrices", fields: [productId], references: [id])
+  productId String
+  date      DateTime
+  value     Float?
+  type      PriceType
+
+  createdAt DateTime    @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([productId, date, type])
+}
+
+model Performance {
+  id          String           @id @default(uuid())
+  product     Product          @relation("ProductPerformances", fields: [productId], references: [id])
+  productId   String
+  date        DateTime
+  value       Float?
+  periodType  PerformancePeriodType
+  type        PerformanceType
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([productId, date, periodType, type])
+}

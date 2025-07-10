@@ -1,6 +1,6 @@
 # gather
 
-usecases: - getCards - sync - getFavoriteCards
+usecases: - getProducts - sync - getFavoriteCards
 
 debug tool:
 
