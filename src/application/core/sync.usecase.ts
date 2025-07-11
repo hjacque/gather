@@ -53,7 +53,7 @@ export class SyncUsecase {
         i = 0;
         break;
       }
-      i += take;
+      i++;
 
       for (const product of products) {
         await sleep(Math.floor(Math.random() * 9 + 1) * 1000); // Random sleep between 1 and 10 seconds
