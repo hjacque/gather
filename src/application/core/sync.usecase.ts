@@ -86,25 +86,21 @@ export class SyncUsecase {
 
     // prices
     const [
-      cardMarketPrice,
-      priceChartingPrice,
+      cardMarket,
       ckBuyListPrice,
       abugamesBuyListPrice,
-      starcitygamesBuyListPrice,
     ] = [
       await this.syncCardMarket(product, browser),
-      undefined, // await this.syncPriceCharting(product, browser),
       await this.syncCardkingdomBuyList(product, browser),
       await this.syncAbugamesBuyList(product, browser),
-      undefined, // await this.syncStarcitygamesBuyList(product, browser),
     ];
-    const prices = await this.computePrices(
+    const prices = await this.computePrices({
       product,
-      cardMarketPrice,
-      priceChartingPrice,
+      cardMarketPrice: cardMarket?.price,
       ckBuyListPrice,
       abugamesBuyListPrice,
-      starcitygamesBuyListPrice,
+      cardMarketListingCount: cardMarket?.listingCount
+      }
     );
     for (const key of prices.keys()) {
       await this.priceRepository.upsertPrice(
@@ -127,7 +123,7 @@ export class SyncUsecase {
   async syncCardMarket(
     product: NewProductEntity,
     browser: Browser,
-  ): Promise<number | undefined> {
+  ): Promise<{price: number | undefined, listingCount: number | undefined} | undefined> {
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 });
     await page.setUserAgent(
@@ -149,6 +145,17 @@ export class SyncUsecase {
         const elements = textContent.split("\n"); // Split by line and take the first line
         return elements;
       });
+      const listingCount = await page.evaluate(() => {
+        const dtElements = document.querySelectorAll('dl.labeled dt');
+        for (let dt of dtElements) {
+          if (dt.textContent?.trim() === 'Available items') {
+            const dd = dt.nextElementSibling;
+            return dd ? dd.textContent?.trim() : undefined;
+          }
+        }
+        return undefined;
+      }) || undefined;
+
       await page.close();
       // console.log("data", data); // exemple: [ '3', 'K', 'menor-com', 'NM', 'nm+', '420,00 €', '1' ]
 
@@ -159,7 +166,10 @@ export class SyncUsecase {
       ); // * (1 - CARDMARKET_FEE);
 
       // console.log("CardMarket :", price);
-      return price;
+      return {
+        price,
+        listingCount: listingCount ? parseInt(listingCount) : undefined
+      };
     } catch (error) {
       console.log("No CardMarket listing", product.name);
       await page.close();
@@ -242,18 +252,25 @@ export class SyncUsecase {
     }
   }
 
-  async computePrices(
-    product: NewProductEntity,
-    cardMarketPrice: number | undefined,
-    priceChartingPrice: number | undefined,
-    ckBuyListPrice: number | undefined,
-    abugamesBuyListPrice: number | undefined,
-    starcitygamesBuyListPrice: number | undefined,
+  async computePrices({
+    product,
+    cardMarketPrice,
+    ckBuyListPrice,
+    abugamesBuyListPrice,
+    cardMarketListingCount
+  } : {
+      product: NewProductEntity,
+      cardMarketPrice: number | undefined,
+      ckBuyListPrice: number | undefined,
+      abugamesBuyListPrice: number | undefined,
+      cardMarketListingCount: number | undefined
+    }
   ) {
     const pricesMap: Map<PriceType, number | undefined> = new Map([
       ["cardmarket", cardMarketPrice],
       ["cardkingdom", ckBuyListPrice],
       ["abugames", abugamesBuyListPrice],
+      ["cardmarketListingCount", cardMarketListingCount]
     ]);
 
     const marketPrice = Math.min(cardMarketPrice || 0) || undefined;
@@ -263,7 +280,6 @@ export class SyncUsecase {
       Math.max(
         ckBuyListPrice || 0,
         abugamesBuyListPrice || 0,
-        starcitygamesBuyListPrice || 0,
       ) || undefined;
     pricesMap.set("buylist", buylistPrice);
 

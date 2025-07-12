@@ -84,11 +84,21 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
             date: "asc"
         }
       });
+    const cardmarketListingCount = await this.prisma.price.findMany({
+      where: {
+          productId,
+          type: "cardmarketListingCount",
+      },
+      orderBy: {
+          date: "asc"
+      }
+    })
 
     return {
       marketPrices: marketPrices.map((p) => this.priceMapper.toEntity(p)),
       buylistPrices: buylistPrices.map((p) => this.priceMapper.toEntity(p)),
       ratioPrices: ratioPrices.map((p) => this.priceMapper.toEntity(p)),
+      cardmarketListingCount: cardmarketListingCount.map((p) => this.priceMapper.toEntity(p))
     };
   }
 
@@ -98,7 +108,7 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
         where: {
             productId: { in: productIds },
             date,
-            type: { in: ["market", "buylist", "ratio", "perBooster"] },
+            type: { in: ["market", "buylist", "ratio", "perBooster", "cardmarketListingCount"] },
         }
       });
 
@@ -106,7 +116,8 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
       | "market"
       | "buylist"
       | "ratio"
-      | "perBooster";
+      | "perBooster"
+      | "cardmarketListingCount";
     const result: Map<string, Record<ResKey, number | null>> = new Map();
 
     for (const productId of productIds) {
@@ -115,6 +126,7 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
         buylist: null,
         ratio: null,
         perBooster: null,
+        cardmarketListingCount: null
       });
     }
 

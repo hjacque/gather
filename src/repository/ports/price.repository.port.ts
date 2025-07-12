@@ -13,6 +13,7 @@ export abstract class PriceRepositoryPort {
     marketPrices: PriceEntity[];
     buylistPrices: PriceEntity[];
     ratioPrices: PriceEntity[];
+    cardmarketListingCount: PriceEntity[];
   }>;
 
   abstract getOne(
@@ -32,6 +33,7 @@ export abstract class PriceRepositoryPort {
         buylist: number | null;
         ratio: number | null;
         perBooster: number | null;
+        cardmarketListingCount: number | null;
       }
     >
   >;
