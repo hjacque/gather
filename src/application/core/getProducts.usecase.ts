@@ -38,7 +38,7 @@ export class GetProductsUsecase {
         buylist,
         ratio,
         perBooster,
-        listingCount: cardmarketListingCount,
+        cardmarketListingCount,
         performance,
       };
     });
