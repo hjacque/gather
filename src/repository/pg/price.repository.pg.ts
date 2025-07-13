@@ -12,7 +12,7 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
 
   async upsertPrice(
     productId: string,
-    value: number,
+    value: number | undefined,
     type: PriceType,
     date: Date,
   ): Promise<void> {
@@ -35,7 +35,7 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
             }
         },
         data: {
-            value,
+            value: value ?? null,
             type,
             date,
             updatedAt: new Date()
