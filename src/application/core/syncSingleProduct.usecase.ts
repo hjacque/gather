@@ -1,6 +1,5 @@
-import puppeteer, { Browser } from "puppeteer";
-import puppeteerExtra from "puppeteer-extra";
-import Stealth from "puppeteer-extra-plugin-stealth";
+import type { Page } from "rebrowser-puppeteer-core";
+import { connect } from "puppeteer-real-browser";
 import {
   NewProductEntity,
 } from "../../entities/product.entity";
@@ -25,17 +24,33 @@ export class SyncSingleProductUsecase {
   ) {}
 
   async execute(productId: string) {
-    puppeteerExtra.use(Stealth());
 
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 
+    const { browser, page } = await connect({
+      headless: false,
+      disableXvfb: false, // set to true to go headless
+      args: [],
+      customConfig: {},
+      turnstile: true,
+      connectOption: {
+        defaultViewport: null // uncomment in headful
+      },
+      ignoreAllFlags: false,
+      plugins: [require("puppeteer-extra-plugin-stealth")()]
+    });
+
     const product = await this.productRepository.getProduct(productId);
 
-    return this.syncProduct(product, today, 0);
+    const res = await this.syncProduct(product, today, page);
+
+    await page.close();
+    await browser.close();
+    return res;
   }
 
-  async syncProduct(product: NewProductEntity, today: Date, inc: number): Promise<NewProductEntity & {performance: {
+  async syncProduct(product: NewProductEntity, today: Date, page: Page): Promise<NewProductEntity & {performance: {
     oneDayMarketPricePerformance: number | null;
     oneDayBuylistPricePerformance: number | null;
     oneWeekMarketPricePerformance: number | null;
@@ -43,27 +58,15 @@ export class SyncSingleProductUsecase {
     oneMonthMarketPricePerformance: number | null;
     oneMonthBuylistPricePerformance: number | null;
 }}> {
-    // await sleep((Math.floor(Math.random() * (10 + (inc % 6))) + 1) * 1000); // Random sleep between 1 and 17 seconds
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        "--ignore-certificate-errors",
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-accelerated-2d-canvas",
-        "--disable-gpu",
-      ],
-    });
-
     // prices
     const [
       cardMarket,
       ckBuyListPrice,
       abugamesBuyListPrice,
     ] = [
-      await this.syncCardMarket(product, browser),
-      await this.syncCardkingdomBuyList(product, browser),
-      await this.syncAbugamesBuyList(product, browser),
+      await this.syncCardMarket(product, page),
+      await this.syncCardkingdomBuyList(product, page),
+      await this.syncAbugamesBuyList(product, page),
     ];
     const prices = await this.computePrices({
       product,
@@ -92,22 +95,14 @@ export class SyncSingleProductUsecase {
 
     console.debug(product, prices);
 
-    await browser.close();
-
     return {...product, ...Object.fromEntries(prices), performance};
   }
 
   // todo - implement factory pattern
   async syncCardMarket(
     product: NewProductEntity,
-    browser: Browser,
+    page: Page,
   ): Promise<{price: number | undefined, listingCount: number | undefined} | undefined> {
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1920, height: 1080 });
-    await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-    );
-
     try {
       await page.goto(
         product.cardMarketLink +
@@ -115,8 +110,8 @@ export class SyncSingleProductUsecase {
       );
       await page.waitForSelector("div.article-row", {
         visible: true,
+        timeout: 3000
       });
-      await page.waitForNetworkIdle();
 
       const data = await page.$eval("div.article-row", (fristRow) => {
         const textContent = fristRow.innerText.trim(); // Get text content and trim any extra spaces
@@ -133,7 +128,6 @@ export class SyncSingleProductUsecase {
         }
         return undefined;
       }) || undefined;
-      await page.close();
       // console.log("data", data); // exemple: [ '3', 'K', 'menor-com', 'NM', 'nm+', '420,00 €', '1' ]
 
       const price = parseFloat(
@@ -142,38 +136,32 @@ export class SyncSingleProductUsecase {
         ).toFixed(2),
       ); // * (1 - CARDMARKET_FEE);
 
-      // console.log("CardMarket :", price);
       return {
         price,
         listingCount: listingCount ? parseInt(listingCount) : undefined
       };
     } catch (error) {
       console.log("No CardMarket listing", product.name);
-      await page.close();
       return undefined;
     }
   }
 
-  async syncCardkingdomBuyList(product: NewProductEntity, browser: Browser) {
+  async syncCardkingdomBuyList(product: NewProductEntity, page: Page) {
     if (!product.cardkingdomBuyListLink) {
       return ;
     }
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1920, height: 1080 });
-    await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-    );
 
     try {
       await page.goto(product.cardkingdomBuyListLink);
-      await page.waitForNetworkIdle();
-
+      await page.waitForSelector("span.sellDollarAmount", {
+        visible: true,
+        timeout: 3000
+      });
       const data = await page.$eval("span.sellDollarAmount", (fristRow) => {
         const textContent = fristRow.innerText.trim(); // Get text content and trim any extra spaces
         const elements = textContent.split("\n"); // Split by line and take the first line
         return elements;
       });
-      await page.close();
       // console.log("cardkingdomBuyListLink", data);
 
       const price =
@@ -181,28 +169,24 @@ export class SyncSingleProductUsecase {
           data[0].replace("$", "").replace(",", "").replace(".", ","),
         ) * USD_TO_EUR;
 
-      // console.log("cardkingdom buylist price", price);
       return price;
     } catch (error) {
-      await page.close();
       console.log("Not in Cardkingdom BuyList", product.name);
       return undefined;
     }
   }
 
-  async syncAbugamesBuyList(product: NewProductEntity, browser: Browser) {
+  async syncAbugamesBuyList(product: NewProductEntity, page: Page) {
     if (!product.abugamesBuyListLink) {
       return ;
     }
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1920, height: 1080 });
-    await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-    );
 
     try {
       await page.goto(product.abugamesBuyListLink);
-      await page.waitForNetworkIdle();
+      await page.waitForSelector("div.buylist span.ng-star-inserted", {
+        visible: true,
+        timeout: 3000
+      });
 
       const data = await page.$eval(
         "div.buylist span.ng-star-inserted",
@@ -212,18 +196,14 @@ export class SyncSingleProductUsecase {
           return elements;
         },
       );
-      await page.close();
 
       const price =
         parseFloat(
           data[0].replace("$", "").replace(",", "").replace(".", ","),
         ) * USD_TO_EUR;
 
-      // console.log("abugames buylist price", price);
-
       return price;
     } catch (error) {
-      await page.close();
       console.log("Not in Abugames BuyList", product.name);
       return undefined;
     }

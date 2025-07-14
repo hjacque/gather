@@ -1,5 +1,3 @@
-import puppeteerExtra from "puppeteer-extra";
-import Stealth from "puppeteer-extra-plugin-stealth";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PerformanceRepositoryPort } from "../../repository/ports/performance.repository.port";
 import {
@@ -18,8 +16,6 @@ export class SetPerformancesUsecase {
 
   async execute({ productIds }: SetPerformancesInputDto) {
     console.log("start");
-
-    puppeteerExtra.use(Stealth());
 
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
