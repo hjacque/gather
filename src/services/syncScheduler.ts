@@ -45,13 +45,13 @@ export class SyncSchedulerService {
         },
       );
     }
-    console.log("📅 Sync scheduler started", { type: "single" });
+    console.log("📅 Sync scheduler started (runs every 4 hours)", { type: "single" });
   }
 
   async scheduleSealed() {
     for (let hours = 0; hours < 24; hours++) {
-      if ((hours + 1) % 4 === 0) continue; // Skip every 4th hour for sealed products
-      for (const minutes of ["10", "30", "50"]) {
+      const minutesArr = (hours + 1) % 4 === 0 ? ["30", "50"] : ["10", "30", "50"];
+      for (const minutes of minutesArr) {
         cron.schedule(
           `${minutes} ${hours} * * *`,
           async () => {
