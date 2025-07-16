@@ -50,7 +50,7 @@ export class SyncSchedulerService {
 
   async scheduleSealed() {
     for (let hours = 0; hours < 24; hours++) {
-      const minutesArr = (hours + 1) % 4 === 0 ? ["30", "50"] : ["10", "30", "50"];
+      const minutesArr = hours % 4 === 0 ? ["30", "50"] : ["10", "30", "50"];
       for (const minutes of minutesArr) {
         cron.schedule(
           `${minutes} ${hours} * * *`,
