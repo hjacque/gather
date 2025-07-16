@@ -1,1 +1,1 @@
-export type Block = "scarlet_and_violet" | "sword_and_shield" | "sun_and_moon";
+export type Block = "scarlet_and_violet" | "sword_and_shield" | "sun_and_moon" | "x_y";
