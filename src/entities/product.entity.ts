@@ -91,6 +91,7 @@ export type NewProductEntity = {
   cardMarketLink: string;
   cardkingdomBuyListLink: string |  null;
   abugamesBuyListLink: string |  null;
+  fullSetLink: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

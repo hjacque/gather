@@ -14,6 +14,7 @@ export class GetProductUsecase {
       marketPrices: PriceEntity[];
       buylistPrices: PriceEntity[];
       ratioPrices: PriceEntity[];
+      fullSetPrices: PriceEntity[];
     }
   > {
     const product = await this.productRepository.getProduct(productId);

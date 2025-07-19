@@ -100,10 +100,12 @@ export class SyncUsecase {
       cardMarket,
       ckBuyListPrice,
       abugamesBuyListPrice,
+      fullSetPrice
     ] = [
       await this.syncCardMarket(product, page),
       await this.syncCardkingdomBuyList(product, page),
       await this.syncAbugamesBuyList(product, page),
+      product.type !== "single" ? await this.syncFullSet(product, page) : undefined
     ];
 
     const prices = await this.computePrices({
@@ -111,7 +113,8 @@ export class SyncUsecase {
       cardMarketPrice: cardMarket?.price,
       ckBuyListPrice,
       abugamesBuyListPrice,
-      cardMarketListingCount: cardMarket?.listingCount
+      cardMarketListingCount: cardMarket?.listingCount,
+      fullSetPrice
       }
     );
     for (const key of prices.keys()) {
@@ -242,25 +245,56 @@ export class SyncUsecase {
     }
   }
 
+  async syncFullSet(product: NewProductEntity, page: Page) {
+    if (!product.fullSetLink) {
+      return
+    }
+
+    try {
+      await page.goto(product.fullSetLink, { waitUntil: "networkidle2" });
+      const totalValue = await page.evaluate(() => {
+        const elements = Array.from(document.querySelectorAll('span'));
+        const label = elements.find(el => el.textContent?.trim() === 'TOTAL VALUE');
+        if (label && label.nextElementSibling) {
+          return label.nextElementSibling.textContent?.trim();
+        }
+        return null;
+      });
+
+      const price = totalValue ?
+        parseFloat((parseFloat(
+          totalValue.replace("$", "").replace(",", "").replace(".", ","),
+        ) * USD_TO_EUR).toFixed(2)) : undefined;
+
+      return price;
+    } catch (error) {
+      console.log("Not in Full Set Link", product.name);
+      return undefined;
+    }
+  }
+
   async computePrices({
     product,
     cardMarketPrice,
     ckBuyListPrice,
     abugamesBuyListPrice,
-    cardMarketListingCount
+    cardMarketListingCount,
+    fullSetPrice
   } : {
       product: NewProductEntity,
       cardMarketPrice: number | undefined,
       ckBuyListPrice: number | undefined,
       abugamesBuyListPrice: number | undefined,
-      cardMarketListingCount: number | undefined
+      cardMarketListingCount: number | undefined,
+      fullSetPrice: number | undefined
     }
   ) {
     const pricesMap: Map<PriceType, number | undefined> = new Map([
       ["cardmarket", cardMarketPrice],
       ["cardkingdom", ckBuyListPrice],
       ["abugames", abugamesBuyListPrice],
-      ["cardmarketListingCount", cardMarketListingCount]
+      ["cardmarketListingCount", cardMarketListingCount],
+      ["fullSet", fullSetPrice]
     ]);
 
     const marketPrice = Math.min(cardMarketPrice || 0) || undefined;

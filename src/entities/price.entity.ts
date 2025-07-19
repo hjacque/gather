@@ -16,7 +16,8 @@ export const PriceEntitySchema = z.object({
     z.literal("market"),
     z.literal("ratio"),
     z.literal("perBooster"),
-    z.literal("cardmarketListingCount")
+    z.literal("cardmarketListingCount"),
+    z.literal("fullSet"),
   ]),
 });
 
