@@ -1,7 +1,7 @@
 import type { Page } from "rebrowser-puppeteer-core";
 import { connect } from "puppeteer-real-browser";
 import {
-  NewProductEntity,
+  ProductEntity,
 } from "../../entities/product.entity";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { USD_TO_EUR } from "../../constants";
@@ -50,7 +50,7 @@ export class SyncSingleProductUsecase {
     return res;
   }
 
-  async syncProduct(product: NewProductEntity, today: Date, page: Page): Promise<NewProductEntity & {performance: {
+  async syncProduct(product: ProductEntity, today: Date, page: Page): Promise<ProductEntity & {performance: {
     oneDayMarketPricePerformance: number | null;
     oneDayBuylistPricePerformance: number | null;
     oneWeekMarketPricePerformance: number | null;
@@ -103,7 +103,7 @@ export class SyncSingleProductUsecase {
 
   // todo - implement factory pattern
   async syncCardMarket(
-    product: NewProductEntity,
+    product: ProductEntity,
     page: Page,
   ): Promise<{price: number | undefined, listingCount: number | undefined} | undefined> {
     try {
@@ -149,7 +149,7 @@ export class SyncSingleProductUsecase {
     }
   }
 
-  async syncCardkingdomBuyList(product: NewProductEntity, page: Page) {
+  async syncCardkingdomBuyList(product: ProductEntity, page: Page) {
     if (!product.cardkingdomBuyListLink) {
       return ;
     }
@@ -179,7 +179,7 @@ export class SyncSingleProductUsecase {
     }
   }
 
-  async syncAbugamesBuyList(product: NewProductEntity, page: Page) {
+  async syncAbugamesBuyList(product: ProductEntity, page: Page) {
     if (!product.abugamesBuyListLink) {
       return ;
     }
@@ -212,7 +212,7 @@ export class SyncSingleProductUsecase {
     }
   }
 
-  async syncFullSet(product: NewProductEntity, page: Page) {
+  async syncFullSet(product: ProductEntity, page: Page) {
     if (!product.fullSetLink) {
       return
     }
@@ -248,7 +248,7 @@ export class SyncSingleProductUsecase {
     cardMarketListingCount,
     fullSetPrice
   } : {
-      product: NewProductEntity,
+      product: ProductEntity,
       cardMarketPrice: number | undefined,
       ckBuyListPrice: number | undefined,
       abugamesBuyListPrice: number | undefined,

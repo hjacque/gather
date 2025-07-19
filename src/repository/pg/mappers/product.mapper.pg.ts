@@ -1,4 +1,4 @@
-import { NewProductEntity, ProductEntity } from "../../../entities/product.entity";
+import { ProductEntity } from "../../../entities/product.entity";
 import { ProductModel } from "../models/product.model.pg";
 
 export class ProductMapper {
@@ -16,7 +16,7 @@ export class ProductMapper {
     productSetId,
     createdAt,
     updatedAt
-  }: ProductModel): NewProductEntity {
+  }: ProductModel): ProductEntity {
     return {
       id,
       type,

@@ -2,7 +2,7 @@ import type { Page } from "rebrowser-puppeteer-core";
 import { connect } from "puppeteer-real-browser";
 import {
   Franchise,
-  NewProductEntity,
+  ProductEntity,
   ProductType,
   Set,
 } from "../../entities/product.entity";
@@ -90,7 +90,7 @@ export class SyncUsecase {
   }
 
   async syncProduct(
-    product: NewProductEntity,
+    product: ProductEntity,
     today: Date,
     page: Page
   ) {
@@ -134,7 +134,7 @@ export class SyncUsecase {
 
   // todo - implement factory pattern
   async syncCardMarket(
-    product: NewProductEntity,
+    product: ProductEntity,
     page: Page
   ): Promise<{price: number | undefined, listingCount: number | undefined} | undefined> {
     try {
@@ -181,7 +181,7 @@ export class SyncUsecase {
     }
   }
 
-  async syncCardkingdomBuyList(product: NewProductEntity, page: Page) {
+  async syncCardkingdomBuyList(product: ProductEntity, page: Page) {
     if (!product.cardkingdomBuyListLink) {
       return
     }
@@ -212,7 +212,7 @@ export class SyncUsecase {
     }
   }
 
-  async syncAbugamesBuyList(product: NewProductEntity, page: Page) {
+  async syncAbugamesBuyList(product: ProductEntity, page: Page) {
     if (!product.abugamesBuyListLink) {
       return
     }
@@ -245,7 +245,7 @@ export class SyncUsecase {
     }
   }
 
-  async syncFullSet(product: NewProductEntity, page: Page) {
+  async syncFullSet(product: ProductEntity, page: Page) {
     if (!product.fullSetLink) {
       return
     }
@@ -281,7 +281,7 @@ export class SyncUsecase {
     cardMarketListingCount,
     fullSetPrice
   } : {
-      product: NewProductEntity,
+      product: ProductEntity,
       cardMarketPrice: number | undefined,
       ckBuyListPrice: number | undefined,
       abugamesBuyListPrice: number | undefined,

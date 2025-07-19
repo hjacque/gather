@@ -1,7 +1,7 @@
 import { ProductSetEntity } from "../../entities/productSet.entity";
 import {
   Franchise,
-  NewProductEntity,
+  ProductEntity,
   ProductType,
   Set,
 } from "../../entities/product.entity";
@@ -19,7 +19,7 @@ export abstract class ProductRepositoryPort {
       take?: number;
       page?: number;
     },
-  ): Promise<(NewProductEntity & {productSet: ProductSetEntity})[]>;
+  ): Promise<(ProductEntity & {productSet: ProductSetEntity})[]>;
 
-  abstract getProduct(productId: string): Promise<NewProductEntity & {productSet: ProductSetEntity}>;
+  abstract getProduct(productId: string): Promise<ProductEntity & {productSet: ProductSetEntity}>;
 }

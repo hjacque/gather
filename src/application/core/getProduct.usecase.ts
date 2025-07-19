@@ -1,4 +1,4 @@
-import { NewProductEntity } from "../../entities/product.entity";
+import { ProductEntity } from "../../entities/product.entity";
 import { PriceEntity } from "../../entities/price.entity";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
@@ -10,7 +10,7 @@ export class GetProductUsecase {
   ) {}
 
   async execute(productId: string): Promise<
-    NewProductEntity & {
+    ProductEntity & {
       marketPrices: PriceEntity[];
       buylistPrices: PriceEntity[];
       ratioPrices: PriceEntity[];

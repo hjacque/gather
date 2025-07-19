@@ -1,4 +1,4 @@
-import { NewProductEntity, ProductType } from "../../entities/product.entity";
+import { ProductEntity, ProductType } from "../../entities/product.entity";
 import { ProductMapper } from "./mappers/product.mapper.pg";
 import {
   GetProductsFilter,
@@ -23,7 +23,7 @@ export class ProductRepositoryPg implements ProductRepositoryPort {
       take?: number;
       page?: number;
     },
-  ): Promise<(NewProductEntity & {productSet: ProductSetEntity})[]> {
+  ): Promise<(ProductEntity & {productSet: ProductSetEntity})[]> {
     // for (let [key, value] of Object.entries(where)) {
     //   if (value === undefined) {
     //     delete where[key as keyof GetProductsFilter];
@@ -74,7 +74,7 @@ export class ProductRepositoryPg implements ProductRepositoryPort {
     });
   }
 
-  async getProduct(productId: string): Promise<(NewProductEntity & {productSet: ProductSetEntity})> {
+  async getProduct(productId: string): Promise<(ProductEntity & {productSet: ProductSetEntity})> {
     const product = await this.prisma.product.findUniqueOrThrow({
       where: { id: productId },
       include: {
