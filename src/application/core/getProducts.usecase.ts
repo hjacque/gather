@@ -30,7 +30,7 @@ export class GetProductsUsecase {
     );
 
     return products.map((product) => {
-      const { market, buylist, ratio, perBooster, cardmarketListingCount, fullSet } = prices.get(product.id)!;
+      const { market, buylist, ratio, perBooster, cardmarketListingCount, fullSet, tcgp } = prices.get(product.id)!;
       const performance = performances.get(product.id)!;
       return {
         ...product,
@@ -40,7 +40,8 @@ export class GetProductsUsecase {
         perBooster,
         cardmarketListingCount,
         performance,
-        fullSet
+        fullSet,
+        tcgp,
       };
     });
   }

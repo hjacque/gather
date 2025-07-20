@@ -35,6 +35,7 @@ export type ProductEntity = {
   cardkingdomBuyListLink: string |  null;
   abugamesBuyListLink: string |  null;
   fullSetLink: string | null;
+  tcgpLink: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

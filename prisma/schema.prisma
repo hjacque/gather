@@ -50,6 +50,7 @@ enum PriceType {
   perBooster
   cardmarketListingCount
   fullSet
+  tcgp
 }
 
 enum PerformancePeriodType {
@@ -78,6 +79,7 @@ model Product {
   cardkingdomBuyListLink    String?
   abugamesBuyListLink       String?
   fullSetLink               String?
+  tcgpLink                  String?
 
   prices                    Price[]       @relation("ProductPrices")
   performances              Performance[] @relation("ProductPerformances")

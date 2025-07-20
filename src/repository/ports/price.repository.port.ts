@@ -15,6 +15,7 @@ export abstract class PriceRepositoryPort {
     ratioPrices: PriceEntity[];
     cardmarketListingCount: PriceEntity[];
     fullSetPrices: PriceEntity[];
+    tcgpPrices: PriceEntity[];
   }>;
 
   abstract getOne(
@@ -36,6 +37,7 @@ export abstract class PriceRepositoryPort {
         perBooster: number | null;
         cardmarketListingCount: number | null;
         fullSet: number | null;
+        tcgp: number | null;
       }
     >
   >;

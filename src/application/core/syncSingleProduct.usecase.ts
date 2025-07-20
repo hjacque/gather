@@ -63,12 +63,14 @@ export class SyncSingleProductUsecase {
       cardMarket,
       ckBuyListPrice,
       abugamesBuyListPrice,
-      fullSetPrice
+      fullSetPrice,
+      tcgpPrice
     ] = [
       await this.syncCardMarket(product, page),
       await this.syncCardkingdomBuyList(product, page),
       await this.syncAbugamesBuyList(product, page),
-      product.type !== "single" ? await this.syncFullSet(product, page) : undefined
+      product.type !== "single" ? await this.syncFullSet(product, page) : undefined,
+      await this.syncTCGP(product, page)
     ];
     const prices = await this.computePrices({
       product,
@@ -76,7 +78,8 @@ export class SyncSingleProductUsecase {
       ckBuyListPrice,
       abugamesBuyListPrice,
       cardMarketListingCount: cardMarket?.listingCount,
-      fullSetPrice
+      fullSetPrice,
+      tcgpPrice
       }
     );
     for (const key of prices.keys()) {
@@ -240,20 +243,53 @@ export class SyncSingleProductUsecase {
     }
   }
 
+  async syncTCGP(product: ProductEntity, page: Page) {
+    if (!product.tcgpLink) {
+      return
+    }
+
+    try {
+      await page.goto(product.tcgpLink, { waitUntil: "networkidle0" });
+      const marketPrice = await page.evaluate(() => {
+        const rows = Array.from(document.querySelectorAll('table tr'));
+        for (const row of rows) {
+          const labelCell = row.querySelector('td span');
+          if (labelCell?.textContent?.trim() === 'Market Price') {
+            const priceCell = row.querySelector('td:last-child span');
+            return priceCell?.textContent?.trim() || null;
+          }
+        }
+        return null;
+      });
+
+      const price = marketPrice ?
+        parseFloat((parseFloat(
+          marketPrice.replace("$", "").replace(",", "").replace(".", ","),
+        ) * USD_TO_EUR).toFixed(2)) : undefined;
+
+      return price;
+    } catch (error) {
+      console.error("Error with sync TCGP", product.name);
+      return undefined;
+    }
+  }
+
   async computePrices({
     product,
     cardMarketPrice,
     ckBuyListPrice,
     abugamesBuyListPrice,
     cardMarketListingCount,
-    fullSetPrice
+    fullSetPrice,
+    tcgpPrice
   } : {
       product: ProductEntity,
       cardMarketPrice: number | undefined,
       ckBuyListPrice: number | undefined,
       abugamesBuyListPrice: number | undefined,
       cardMarketListingCount: number | undefined,
-      fullSetPrice: number | undefined
+      fullSetPrice: number | undefined,
+      tcgpPrice: number | undefined
     }
   ) {
     const pricesMap: Map<PriceType, number | undefined> = new Map([
@@ -261,7 +297,8 @@ export class SyncSingleProductUsecase {
       ["cardkingdom", ckBuyListPrice],
       ["abugames", abugamesBuyListPrice],
       ["cardmarketListingCount", cardMarketListingCount],
-      ["fullSet", fullSetPrice]
+      ["fullSet", fullSetPrice],
+      ["tcgp", tcgpPrice],
     ]);
 
     const marketPrice = Math.min(cardMarketPrice || 0) || undefined;
