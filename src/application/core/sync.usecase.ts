@@ -283,21 +283,15 @@ export class SyncUsecase {
 
     try {
       await page.goto(product.tcgpLink, { waitUntil: "networkidle0" });
-      const marketPrice = await page.evaluate(() => {
-        const rows = Array.from(document.querySelectorAll('table tr'));
-        for (const row of rows) {
-          const labelCell = row.querySelector('td span');
-          if (labelCell?.textContent?.trim() === 'Market Price') {
-            const priceCell = row.querySelector('td:last-child span');
-            return priceCell?.textContent?.trim() || null;
-          }
-        }
-        return null;
-      });
+      const el = await page.waitForSelector('.spotlight__price', { timeout: 3000 });
+      if (!el) return undefined;
 
-      const price = marketPrice ?
+      const spotlightPrice = await page.evaluate(el => el.textContent, el);
+      if (!spotlightPrice) return undefined;
+
+      const price = spotlightPrice ?
         parseFloat((parseFloat(
-          marketPrice.replace("$", "").replace(",", "").replace(".", ","),
+          spotlightPrice.replace("$", "").replace(",", "").replace(".", ","),
         ) * USD_TO_EUR).toFixed(2)) : undefined;
 
       return price;
