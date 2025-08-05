@@ -1,0 +1,83 @@
+[
+    {
+        "name": "Underground Sea",
+        "type": "single",
+        "rarity": "rare",
+        "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Revised/Underground-Sea?language=1&minCondition=2",
+        "cardkingdomBuyListLink": "https://www.cardkingdom.com/purchasing/mtg_singles?filter%5Bsort%5D=price_desc&filter%5Bsearch%5D=mtg_advanced&filter%5Bname%5D=Underground+Sea&filter%5Bedition%5D=3rd-edition&filter%5Bformat%5D=&filter%5Bfoils%5D=1&filter%5Bsingles%5D=1&filter%5Bprice_op%5D=&filter%5Bprice%5D=",
+        "abugamesBuyListLink": "https://abugames.com/buylist?search=Underground%20Sea&magic_edition=%5B%22Revised%22%5D&language=%5B%22English%22%5D"
+    },
+    {
+        "name": "Volcanic Island",
+        "type": "single",
+        "rarity": "rare",
+        "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Revised/volcanic-island?language=1&minCondition=2",
+        "cardkingdomBuyListLink": "https://www.cardkingdom.com/purchasing/mtg_singles?filter%5Bsort%5D=price_desc&filter%5Bsearch%5D=mtg_advanced&filter%5Bname%5D=Volcanic+Island&filter%5Bedition%5D=3rd-edition&filter%5Bformat%5D=&filter%5Bfoils%5D=1&filter%5Bsingles%5D=1&filter%5Bprice_op%5D=&filter%5Bprice%5D=",
+        "abugamesBuyListLink": "https://abugames.com/buylist?search=Volcanic%20Island&magic_edition=%5B%22Revised%22%5D&language=%5B%22English%22%5D"
+    },
+    {
+        "name": "Tropical Island",
+        "type": "single",
+        "rarity": "rare",
+        "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Revised/tropical-island?language=1&minCondition=2",
+        "cardkingdomBuyListLink": "https://www.cardkingdom.com/purchasing/mtg_singles?filter%5Bsort%5D=price_desc&filter%5Bsearch%5D=mtg_advanced&filter%5Bname%5D=Tropical+Island&filter%5Bedition%5D=3rd-edition&filter%5Bformat%5D=&filter%5Bfoils%5D=1&filter%5Bsingles%5D=1&filter%5Bprice_op%5D=&filter%5Bprice%5D=",
+        "abugamesBuyListLink": "https://abugames.com/buylist?search=Tropical%20Island&magic_edition=%5B%22Revised%22%5D&language=%5B%22English%22%5D"
+    },
+    {
+        "name": "Tundra",
+        "type": "single",
+        "rarity": "rare",
+        "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Revised/tundra?language=1&minCondition=2",
+        "cardkingdomBuyListLink": "https://www.cardkingdom.com/purchasing/mtg_singles?filter%5Bsort%5D=price_desc&filter%5Bsearch%5D=mtg_advanced&filter%5Bname%5D=Tundra&filter%5Bedition%5D=3rd-edition&filter%5Bformat%5D=&filter%5Bfoils%5D=1&filter%5Bsingles%5D=1&filter%5Bprice_op%5D=&filter%5Bprice%5D=",
+        "abugamesBuyListLink": "https://abugames.com/buylist?search=Tundra&magic_edition=%5B%22Revised%22%5D&language=%5B%22English%22%5D"
+    },
+    {
+        "name": "Badlands",
+        "type": "single",
+        "rarity": "rare",
+        "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Revised/badlands?language=1&minCondition=2",
+        "cardkingdomBuyListLink": "https://www.cardkingdom.com/purchasing/mtg_singles?filter%5Bsort%5D=price_desc&filter%5Bsearch%5D=mtg_advanced&filter%5Bname%5D=Badlands&filter%5Bedition%5D=3rd-edition&filter%5Bformat%5D=&filter%5Bfoils%5D=1&filter%5Bsingles%5D=1&filter%5Bprice_op%5D=&filter%5Bprice%5D=",
+        "abugamesBuyListLink": "https://abugames.com/buylist?search=Badlands&magic_edition=%5B%22Revised%22%5D&language=%5B%22English%22%5D"
+    },
+    {
+        "name": "Bayou",
+        "type": "single",
+        "rarity": "rare",
+        "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Revised/bayou?language=1&minCondition=2",
+        "cardkingdomBuyListLink": "https://www.cardkingdom.com/purchasing/mtg_singles?filter%5Bsort%5D=price_desc&filter%5Bsearch%5D=mtg_advanced&filter%5Bname%5D=Bayou&filter%5Bedition%5D=3rd-edition&filter%5Bformat%5D=&filter%5Bfoils%5D=1&filter%5Bsingles%5D=1&filter%5Bprice_op%5D=&filter%5Bprice%5D=",
+        "abugamesBuyListLink": "https://abugames.com/buylist?search=Bayou&magic_edition=%5B%22Revised%22%5D&language=%5B%22English%22%5D"
+    },
+    {
+        "name": "Scrubland",
+        "type": "single",
+        "rarity": "rare",
+        "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Revised/scrubland?language=1&minCondition=2",
+        "cardkingdomBuyListLink": "https://www.cardkingdom.com/purchasing/mtg_singles?filter%5Bsort%5D=price_desc&filter%5Bsearch%5D=mtg_advanced&filter%5Bname%5D=Scrubland&filter%5Bedition%5D=3rd-edition&filter%5Bformat%5D=&filter%5Bfoils%5D=1&filter%5Bsingles%5D=1&filter%5Bprice_op%5D=&filter%5Bprice%5D=",
+        "abugamesBuyListLink": "https://abugames.com/buylist?search=Scrubland&magic_edition=%5B%22Revised%22%5D&language=%5B%22English%22%5D"
+    },
+    {
+        "name": "Taiga",
+        "type": "single",
+        "rarity": "rare",
+        "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Revised/taiga?language=1&minCondition=2",
+        "cardkingdomBuyListLink": "https://www.cardkingdom.com/purchasing/mtg_singles?filter%5Bsort%5D=price_desc&filter%5Bsearch%5D=mtg_advanced&filter%5Bname%5D=Taiga&filter%5Bedition%5D=3rd-edition&filter%5Bformat%5D=&filter%5Bfoils%5D=1&filter%5Bsingles%5D=1&filter%5Bprice_op%5D=&filter%5Bprice%5D=",
+        "abugamesBuyListLink": "https://abugames.com/buylist?search=Taiga&magic_edition=%5B%22Revised%22%5D&language=%5B%22English%22%5D"
+    },
+    {
+        "name": "Savannah",
+        "type": "single",
+        "rarity": "rare",
+        "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Revised/savannah?language=1&minCondition=2",
+        "cardkingdomBuyListLink": "https://www.cardkingdom.com/purchasing/mtg_singles?filter%5Bsort%5D=price_desc&filter%5Bsearch%5D=mtg_advanced&filter%5Bname%5D=Savannah&filter%5Bedition%5D=3rd-edition&filter%5Bformat%5D=&filter%5Bfoils%5D=1&filter%5Bsingles%5D=1&filter%5Bprice_op%5D=&filter%5Bprice%5D=",
+        "abugamesBuyListLink": "https://abugames.com/buylist?search=Savannah&magic_edition=%5B%22Revised%22%5D&language=%5B%22English%22%5D"
+    },
+    {
+        "name": "Plateau",
+        "type": "single",
+
+        "rarity": "rare",
+        "cardMarketLink": "https://www.cardmarket.com/en/Magic/Products/Singles/Revised/plateau?language=1&minCondition=2",
+        "cardkingdomBuyListLink": "https://www.cardkingdom.com/purchasing/mtg_singles?filter%5Bsort%5D=price_desc&filter%5Bsearch%5D=mtg_advanced&filter%5Bname%5D=Plateau&filter%5Bedition%5D=3rd-edition&filter%5Bformat%5D=&filter%5Bfoils%5D=1&filter%5Bsingles%5D=1&filter%5Bprice_op%5D=&filter%5Bprice%5D=",
+        "abugamesBuyListLink": "https://abugames.com/buylist/singles?search=Plateau&magic_edition=%5B%22Revised%22%5D&language=%5B%22English%22%5D"
+    }
+]
