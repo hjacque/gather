@@ -10,6 +10,7 @@ export type GetProductsFilter = {
   set?: Set;
   type?: ProductType | ProductType[];
   franchise?: Franchise;
+  tags?: string | string[];
 };
 
 export abstract class ProductRepositoryPort {

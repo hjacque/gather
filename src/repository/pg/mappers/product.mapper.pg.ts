@@ -15,6 +15,7 @@ export class ProductMapper {
     tcgpLink,
     boosterCount,
     productSetId,
+    tags,
     createdAt,
     updatedAt
   }: ProductModel): ProductEntity {
@@ -31,6 +32,7 @@ export class ProductMapper {
       tcgpLink,
       boosterCount,
       productSetId,
+      tags,
       createdAt,
       updatedAt
     };

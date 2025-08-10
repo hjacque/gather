@@ -70,7 +70,15 @@ export const http = async ({
   app.get("/products", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
 
-    const result = await getProductsUsecase.execute(req.query);
+    const dtoSchema = z.object({
+      set: z.string().optional(),
+      type: z.union([z.array(z.enum(["booster_box", "single", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"])), z.enum(["booster_box", "single", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"])]).optional(),
+      franchise: z.enum(["mtg", "pokemon"]),
+      tags: z.union([z.string(), z.array(z.string())]).optional(),
+    });
+    const dto = dtoSchema.parse(req.query);
+
+    const result = await getProductsUsecase.execute(dto);
 
     res.status(200);
     res.json(result);

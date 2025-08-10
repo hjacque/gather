@@ -41,9 +41,10 @@ export class ProductRepositoryPg implements ProductRepositoryPort {
         where: {
           productSet: {
             franchise: filters.franchise,
-            name: filters.set
+            name: filters.set,
           },
           type: filters.type ? (typeof filters.type === "string" ? filters.type : { in: [...filters.type] }) : undefined,
+          tags: filters.tags ? (typeof filters.tags === "string" ? { has: filters.tags } : { hasSome: filters.tags }) : undefined,
         },
         orderBy: [
           {

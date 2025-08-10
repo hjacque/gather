@@ -13,6 +13,7 @@ export class GetProductsUsecase {
   async execute(filter?: {
     franchise?: Franchise;
     type?: ProductType | ProductType[];
+    tags?: string | string[];
   }) {
     const products = await this.productRepository.getProducts(filter);
     const productIds = products.map((product) => product.id);

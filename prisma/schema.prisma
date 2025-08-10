@@ -38,6 +38,7 @@ enum Rarity {
   common
   uncommon
   rare
+  land
 }
 
 enum PriceType {
@@ -74,6 +75,7 @@ model Product {
   productSet                ProductSet           @relation(fields: [productSetId], references: [id])
   productSetId              String
   rarity                    Rarity?
+  tags                      String[]
 
   cardMarketLink            String
   cardkingdomBuyListLink    String?

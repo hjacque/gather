@@ -36,6 +36,8 @@ export type ProductEntity = {
   abugamesBuyListLink: string |  null;
   fullSetLink: string | null;
   tcgpLink: string | null;
+  tags: string[];
+  
   createdAt: Date;
   updatedAt: Date;
 }
