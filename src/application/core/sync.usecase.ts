@@ -201,7 +201,6 @@ export class SyncUsecase {
         const elements = textContent.split("\n"); // Split by line and take the first line
         return elements;
       });
-      // console.log("cardkingdomBuyListLink", data);
 
       const price =
         parseFloat(
@@ -217,7 +216,7 @@ export class SyncUsecase {
 
   async syncAbugamesBuyList(product: ProductEntity, page: Page) {
     if (!product.abugamesBuyListLink) {
-      return
+      return ;
     }
 
     try {
@@ -227,19 +226,37 @@ export class SyncUsecase {
         timeout: 3000
       });
 
-      const data = await page.$eval(
-        "div.buylist span.ng-star-inserted",
-        (fristRow) => {
-          const textContent = fristRow.innerText.trim(); // Get text content and trim any extra spaces
-          const elements = textContent.split("\n"); // Split by line and take the first line
-          return elements;
-        },
-      );
+      const data = await page.evaluate(() => {
+      // Find all product panels
+      const panels = Array.from(document.querySelectorAll('.row.panel.panel-default'));
+      for (const panel of panels) {
+        const cols = Array.from(panel.children).filter(ch => ch.classList && ch.classList.contains('col-md-2'));
 
-      const price =
+        // try to find the column that contains the NM label
+        let nmCol = cols.find(c => {
+          const tb = c.querySelector('.titleBox');
+          if (tb?.textContent && tb.textContent.trim() === 'NM') return true;
+          // fallback: check text content for 'NM'
+          return /\bNM\b/.test((c.textContent || '').trim());
+        });
+
+        // fallback: if we couldn't find by label, assume the second col-md-2 is NM (based on your markup)
+        if (!nmCol) nmCol = cols[1] || null;
+        if (!nmCol) return null;
+
+        // find the first $ price inside that column
+        const match = (nmCol.textContent || '').match(/\$\s*\d{1,3}(?:,\d{3})*(?:\.\d{2})?/);
+        return match ? match[0].replace(/\s+/g, '') : null;
+      }
+      return null;
+    });
+
+      const price = data !==  null ?
         parseFloat(
-          data[0].replace("$", "").replace(",", "").replace(".", ","),
-        ) * USD_TO_EUR;
+          data.replace("$", "").replace(",", "").replace(".", ","),
+        ) * USD_TO_EUR : undefined;
+
+              console.log("abugamesBuyListLink", data, price);
 
       return price;
     } catch (error) {
@@ -331,11 +348,11 @@ export class SyncUsecase {
     const marketPrice = Math.min(cardMarketPrice || 0) || undefined;
     pricesMap.set("market", marketPrice);
 
-    const buylistPrice =
+    const buylistPrice = (ckBuyListPrice || abugamesBuyListPrice) ?
       Math.max(
         ckBuyListPrice || 0,
         abugamesBuyListPrice || 0,
-      ) || undefined;
+      ) : undefined;
     pricesMap.set("buylist", buylistPrice);
 
     const ratio =
