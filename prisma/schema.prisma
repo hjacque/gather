@@ -109,7 +109,7 @@ model ProductSet {
 
 model Price {
   id        String      @id @default(uuid())
-  product   Product     @relation("ProductPrices", fields: [productId], references: [id])
+  product   Product     @relation("ProductPrices", fields: [productId], references: [id], onDelete: Cascade)
   productId String
   date      DateTime
   value     Float?
@@ -123,7 +123,7 @@ model Price {
 
 model Performance {
   id          String           @id @default(uuid())
-  product     Product          @relation("ProductPerformances", fields: [productId], references: [id])
+  product     Product          @relation("ProductPerformances", fields: [productId], references: [id], onDelete: Cascade)
   productId   String
   date        DateTime
   value       Float?
