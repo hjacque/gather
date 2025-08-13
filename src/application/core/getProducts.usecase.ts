@@ -14,6 +14,7 @@ export class GetProductsUsecase {
     franchise?: Franchise;
     type?: ProductType | ProductType[];
     tags?: string | string[];
+    set?: string;
   }) {
     const products = await this.productRepository.getProducts(filter);
     const productIds = products.map((product) => product.id);

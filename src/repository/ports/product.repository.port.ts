@@ -7,7 +7,7 @@ import {
 } from "../../entities/product.entity";
 
 export type GetProductsFilter = {
-  set?: Set;
+  set?: string;
   type?: ProductType | ProductType[];
   franchise?: Franchise;
   tags?: string | string[];
