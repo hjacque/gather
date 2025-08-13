@@ -19,6 +19,7 @@ export type SyncUsecaseInputDto = {
     set?: Set;
     franchise?: Franchise;
     type?: ProductType | ProductType[];
+    tags?: string | string[];
   };
   mode: {
     headless: boolean;

@@ -43,9 +43,9 @@ export const http = async ({
   });
 
   app.get("/sync", async (req, res) => {
-    const { set, type, franchise } = req.query;
+    const { set, type, franchise, tags } = req.query;
     const result = await syncUsecase.execute({
-      filter: { set, type, franchise },
+      filter: { set, type, franchise, tags },
       mode: { headless: true },
     } as SyncUsecaseInputDto);
 
