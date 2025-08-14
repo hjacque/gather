@@ -164,11 +164,10 @@ export class SyncSingleProductUsecase {
         timeout: 3000
       });
       const data = await page.$eval("span.sellDollarAmount", (fristRow) => {
-        const textContent = fristRow.innerText.trim(); // Get text content and trim any extra spaces
+        const textContent = fristRow.innerText.trim();
         const elements = textContent.split("\n"); // Split by line and take the first line
         return elements;
       });
-      // console.log("cardkingdomBuyListLink", data);
 
       const price =
         parseFloat(
@@ -322,7 +321,6 @@ export class SyncSingleProductUsecase {
         abugamesBuyListPrice || 0,
       ) : undefined;
     pricesMap.set("buylist", buylistPrice);
-    console.log("buylistPrice", buylistPrice, ckBuyListPrice, abugamesBuyListPrice);
 
     const ratio =
       marketPrice &&

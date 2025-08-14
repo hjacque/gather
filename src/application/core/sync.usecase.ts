@@ -152,7 +152,7 @@ export class SyncUsecase {
       });
 
       const data = await page.$eval("div.article-row", (fristRow) => {
-        const textContent = fristRow.innerText.trim(); // Get text content and trim any extra spaces
+        const textContent = fristRow.innerText.trim();
         const elements = textContent.split("\n"); // Split by line and take the first line
         return elements;
       });
@@ -256,8 +256,6 @@ export class SyncUsecase {
         parseFloat(
           data.replace("$", "").replace(",", "").replace(".", ","),
         ) * USD_TO_EUR : undefined;
-
-              console.log("abugamesBuyListLink", data, price);
 
       return price;
     } catch (error) {
