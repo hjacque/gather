@@ -4,11 +4,12 @@ import {
   ProductEntity,
 } from "../../entities/product.entity";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
-import { USD_TO_EUR } from "../../constants";
+import { DEFAULT_USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { SetPerformancesUsecase } from "./setPerformances.usecase";
 import { PerformanceRepositoryPort } from "repository/ports/performance.repository.port";
 import { PriceType } from "../../types/priceType";
+import { getEurToUsdRate } from "./helper";
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -16,6 +17,8 @@ export type SyncUsecaseInputDto = {
   productId: string;
 };
 export class SyncSingleProductUsecase {
+  private USD_TO_EUR: number = DEFAULT_USD_TO_EUR;
+
   constructor(
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
@@ -24,6 +27,10 @@ export class SyncSingleProductUsecase {
   ) {}
 
   async execute(productId: string) {
+
+    this.USD_TO_EUR = await getEurToUsdRate();
+
+      console.log("Using USD to EUR rate:", this.USD_TO_EUR);
 
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
@@ -172,7 +179,7 @@ export class SyncSingleProductUsecase {
       const price =
         parseFloat(
           data[0].replace("$", "").replace(",", "").replace(".", ","),
-        ) * USD_TO_EUR;
+        ) * this.USD_TO_EUR;
 
       return price;
     } catch (error) {
@@ -221,7 +228,7 @@ export class SyncSingleProductUsecase {
       const price = data !==  null ?
         parseFloat(
           data.replace("$", "").replace(",", "").replace(".", ","),
-        ) * USD_TO_EUR : undefined;
+        ) * this.USD_TO_EUR : undefined;
 
               console.log("abugamesBuyListLink", data, price);
 
@@ -251,7 +258,7 @@ export class SyncSingleProductUsecase {
       const price = totalValue ?
         parseFloat((parseFloat(
           totalValue.replace("$", "").replace(",", "").replace(".", ","),
-        ) * USD_TO_EUR).toFixed(2)) : undefined;
+        ) * this.USD_TO_EUR).toFixed(2)) : undefined;
 
       return price;
     } catch (error) {
@@ -276,7 +283,7 @@ export class SyncSingleProductUsecase {
       const price = spotlightPrice ?
         parseFloat((parseFloat(
           spotlightPrice.replace("$", "").replace(",", "").replace(".", ","),
-        ) * USD_TO_EUR).toFixed(2)) : undefined;
+        ) * this.USD_TO_EUR).toFixed(2)) : undefined;
 
       return price;
     } catch (error) {

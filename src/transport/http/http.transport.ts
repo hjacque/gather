@@ -3,8 +3,8 @@ import { Usecases } from "../../application/init.application";
 import { validateRequest } from "zod-express-middleware";
 import { z } from "zod";
 import { errorHandler } from "./middlewares/http.errors";
-import { SyncUsecaseInputDto } from "application/core/sync.usecase";
-import { GetProductOfTheDayUsecaseInputDto } from "application/core/getProductOfTheDay.usecase";
+import { SyncUsecaseInputDto } from "application/sync/sync.usecase";
+import { GetProductOfTheDayUsecaseInputDto } from "application/product/getProductOfTheDay.usecase";
 require("express-async-errors");
 
 const app = express();

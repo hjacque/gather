@@ -1,4 +1,4 @@
-import { SyncUsecase } from "application/core/sync.usecase";
+import { SyncUsecase } from "application/sync/sync.usecase";
 import { Franchise, ProductType, Set } from "../entities/product.entity";
 import cron from "node-cron";
 

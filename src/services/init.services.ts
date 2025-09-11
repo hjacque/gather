@@ -1,5 +1,5 @@
 import { SyncSchedulerService } from "./syncScheduler";
-import { SyncUsecase } from "application/core/sync.usecase";
+import { SyncUsecase } from "application/sync/sync.usecase";
 
 export type Services = {
   syncSchedulerService: SyncSchedulerService;

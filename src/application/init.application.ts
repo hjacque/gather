@@ -1,12 +1,12 @@
 import { ProductRepositoryPort } from "../repository/ports/product.repository.port";
 import { PriceRepositoryPort } from "../repository/ports/price.repository.port";
-import { SyncUsecase } from "./core/sync.usecase";
-import { GetProductsUsecase } from "./core/getProducts.usecase";
-import { GetProductUsecase } from "./core/getProduct.usecase";
+import { SyncUsecase } from "./sync/sync.usecase";
+import { GetProductsUsecase } from "./product/getProducts.usecase";
+import { GetProductUsecase } from "./product/getProduct.usecase";
 import { PerformanceRepositoryPort } from "../repository/ports/performance.repository.port";
-import { GetProductOfTheDayUsecase } from "./core/getProductOfTheDay.usecase";
-import { SyncSingleProductUsecase } from "./core/syncSingleProduct.usecase";
-import { SetPerformancesUsecase } from "./core/setPerformances.usecase";
+import { GetProductOfTheDayUsecase } from "./product/getProductOfTheDay.usecase";
+import { SyncSingleProductUsecase } from "./sync/syncSingleProduct.usecase";
+import { SetPerformancesUsecase } from "./sync/setPerformances.usecase";
 
 export type Usecases = {
   syncUsecase: SyncUsecase;

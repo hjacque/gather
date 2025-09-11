@@ -7,10 +7,11 @@ import {
   Set,
 } from "../../entities/product.entity";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
-import { USD_TO_EUR } from "../../constants";
+import { DEFAULT_USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { SetPerformancesUsecase } from "./setPerformances.usecase";
 import { PriceType } from "../../types/priceType";
+import { getEurToUsdRate } from "./helper";
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -26,14 +27,19 @@ export type SyncUsecaseInputDto = {
   };
 };
 export class SyncUsecase {
+  private USD_TO_EUR: number = DEFAULT_USD_TO_EUR;
+
   constructor(
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
     private readonly setPerformancesUsecase: SetPerformancesUsecase,
-  ) {}
+  ) {
+  }
 
   async execute({ filter, mode }: SyncUsecaseInputDto) {
     console.log("start");
+
+    this.USD_TO_EUR = await getEurToUsdRate();;
 
     let paginationPage = 1;
     const today = new Date();
@@ -206,7 +212,7 @@ export class SyncUsecase {
       const price =
         parseFloat(
           data[0].replace("$", "").replace(",", "").replace(".", ","),
-        ) * USD_TO_EUR;
+        ) * this.USD_TO_EUR;
 
       return price;
     } catch (error) {
@@ -255,7 +261,7 @@ export class SyncUsecase {
       const price = data !==  null ?
         parseFloat(
           data.replace("$", "").replace(",", "").replace(".", ","),
-        ) * USD_TO_EUR : undefined;
+        ) * this.USD_TO_EUR : undefined;
 
       return price;
     } catch (error) {
@@ -283,7 +289,7 @@ export class SyncUsecase {
       const price = totalValue ?
         parseFloat((parseFloat(
           totalValue.replace("$", "").replace(",", "").replace(".", ","),
-        ) * USD_TO_EUR).toFixed(2)) : undefined;
+        ) * this.USD_TO_EUR).toFixed(2)) : undefined;
 
       return price;
     } catch (error) {
@@ -308,7 +314,7 @@ export class SyncUsecase {
       const price = spotlightPrice ?
         parseFloat((parseFloat(
           spotlightPrice.replace("$", "").replace(",", "").replace(".", ","),
-        ) * USD_TO_EUR).toFixed(2)) : undefined;
+        ) * this.USD_TO_EUR).toFixed(2)) : undefined;
 
       return price;
     } catch (error) {
