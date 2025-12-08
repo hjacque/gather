@@ -39,7 +39,7 @@ export class SyncUsecase {
   async execute({ filter, mode }: SyncUsecaseInputDto) {
     console.log("start");
 
-    this.USD_TO_EUR = await getEurToUsdRate();;
+    this.USD_TO_EUR = await getEurToUsdRate();
 
     let paginationPage = 1;
     const today = new Date();
