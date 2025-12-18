@@ -1,8 +1,6 @@
 import type { Page } from "rebrowser-puppeteer-core";
 import { connect } from "puppeteer-real-browser";
-import {
-  ProductEntity,
-} from "../../entities/product.entity";
+import { ProductEntity } from "../../entities/product.entity";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { DEFAULT_USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
@@ -23,14 +21,13 @@ export class SyncSingleProductUsecase {
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
     private readonly performanceRepository: PerformanceRepositoryPort,
-    private readonly setPerformancesUsecase: SetPerformancesUsecase,
+    private readonly setPerformancesUsecase: SetPerformancesUsecase
   ) {}
 
   async execute(productId: string) {
-
     this.USD_TO_EUR = await getEurToUsdRate();
 
-      console.log("Using USD to EUR rate:", this.USD_TO_EUR);
+    console.log("Using USD to EUR rate:", this.USD_TO_EUR);
 
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
@@ -42,10 +39,14 @@ export class SyncSingleProductUsecase {
       customConfig: {},
       turnstile: true,
       connectOption: {
-        defaultViewport: null // uncomment in headful
+        defaultViewport: null, // uncomment in headful
       },
       ignoreAllFlags: false,
-      plugins: [require("puppeteer-extra-plugin-stealth")()]
+      plugins: [require("puppeteer-extra-plugin-stealth")()],
+    });
+    await page.setViewport({
+      width: Math.floor(1024 + Math.random() * 100),
+      height: Math.floor(768 + Math.random() * 100),
     });
 
     const product = await this.productRepository.getProduct(productId);
@@ -57,27 +58,37 @@ export class SyncSingleProductUsecase {
     return res;
   }
 
-  async syncProduct(product: ProductEntity, today: Date, page: Page): Promise<ProductEntity & {performance: {
-    oneDayMarketPricePerformance: number | null;
-    oneDayBuylistPricePerformance: number | null;
-    oneWeekMarketPricePerformance: number | null;
-    oneWeekBuylistPricePerformance: number | null;
-    oneMonthMarketPricePerformance: number | null;
-    oneMonthBuylistPricePerformance: number | null;
-}}> {
+  async syncProduct(
+    product: ProductEntity,
+    today: Date,
+    page: Page
+  ): Promise<
+    ProductEntity & {
+      performance: {
+        oneDayMarketPricePerformance: number | null;
+        oneDayBuylistPricePerformance: number | null;
+        oneWeekMarketPricePerformance: number | null;
+        oneWeekBuylistPricePerformance: number | null;
+        oneMonthMarketPricePerformance: number | null;
+        oneMonthBuylistPricePerformance: number | null;
+      };
+    }
+  > {
     // prices
     const [
       cardMarket,
       ckBuyListPrice,
       abugamesBuyListPrice,
       fullSetPrice,
-      tcgpPrice
+      tcgpPrice,
     ] = [
       await this.syncCardMarket(product, page),
       await this.syncCardkingdomBuyList(product, page),
       await this.syncAbugamesBuyList(product, page),
-      product.type !== "single" ? await this.syncFullSet(product, page) : undefined,
-      await this.syncTCGP(product, page)
+      product.type !== "single"
+        ? await this.syncFullSet(product, page)
+        : undefined,
+      await this.syncTCGP(product, page),
     ];
     const prices = await this.computePrices({
       product,
@@ -86,44 +97,55 @@ export class SyncSingleProductUsecase {
       abugamesBuyListPrice,
       cardMarketListingCount: cardMarket?.listingCount,
       fullSetPrice,
-      tcgpPrice
-      }
-    );
+      tcgpPrice,
+    });
     for (const key of prices.keys()) {
       await this.priceRepository.upsertPrice(
         product.id,
         prices.get(key),
         key,
-        today,
+        today
       );
     }
 
     // performances
-    await this.setPerformancesUsecase.execute({productIds: [product.id]});
+    await this.setPerformancesUsecase.execute({ productIds: [product.id] });
     const performances = await this.performanceRepository.getPerformances(
       [product.id],
-      today,
+      today
     );
     const performance = performances.get(product.id)!;
 
     console.debug(product, prices);
 
-    return {...product, ...Object.fromEntries(prices), performance};
+    return { ...product, ...Object.fromEntries(prices), performance };
   }
 
   // todo - implement factory pattern
   async syncCardMarket(
     product: ProductEntity,
-    page: Page,
-  ): Promise<{price: number | undefined, listingCount: number | undefined} | undefined> {
+    page: Page
+  ): Promise<
+    { price: number | undefined; listingCount: number | undefined } | undefined
+  > {
     try {
       await page.goto(
         product.cardMarketLink +
-          "?language=1&minCondition=2&isSigned=N&isAltered=N",
+          "?language=1&minCondition=2&isSigned=N&isAltered=N"
       );
+
+      const isCaptcha = await page.$(
+        'iframe[src*="captcha"], iframe[src*="turnstile"]'
+      );
+
+      if (isCaptcha) {
+        console.log("CAPTCHA triggered");
+        // You may want to skip, retry with a new proxy, or solve it with a 3rd-party service
+      }
+
       await page.waitForSelector("div.article-row", {
         visible: true,
-        timeout: 3000
+        timeout: 3000,
       });
 
       const data = await page.$eval("div.article-row", (fristRow) => {
@@ -131,27 +153,28 @@ export class SyncSingleProductUsecase {
         const elements = textContent.split("\n"); // Split by line and take the first line
         return elements;
       });
-      const listingCount = await page.evaluate(() => {
-        const dtElements = document.querySelectorAll('dl.labeled dt');
-        for (let dt of dtElements) {
-          if (dt.textContent?.trim() === 'Available items') {
-            const dd = dt.nextElementSibling;
-            return dd ? dd.textContent?.trim() : undefined;
+      const listingCount =
+        (await page.evaluate(() => {
+          const dtElements = document.querySelectorAll("dl.labeled dt");
+          for (let dt of dtElements) {
+            if (dt.textContent?.trim() === "Available items") {
+              const dd = dt.nextElementSibling;
+              return dd ? dd.textContent?.trim() : undefined;
+            }
           }
-        }
-        return undefined;
-      }) || undefined;
+          return undefined;
+        })) || undefined;
       // console.log("data", data); // exemple: [ '3', 'K', 'menor-com', 'NM', 'nm+', '420,00 €', '1' ]
 
       const price = parseFloat(
         parseFloat(
-          data[data.length - 2].replace(".", "").replace(",", "."),
-        ).toFixed(2),
+          data[data.length - 2].replace(".", "").replace(",", ".")
+        ).toFixed(2)
       ); // * (1 - CARDMARKET_FEE);
 
       return {
         price,
-        listingCount: listingCount ? parseInt(listingCount) : undefined
+        listingCount: listingCount ? parseInt(listingCount) : undefined,
       };
     } catch (error) {
       console.log("No CardMarket listing", product.name);
@@ -161,14 +184,14 @@ export class SyncSingleProductUsecase {
 
   async syncCardkingdomBuyList(product: ProductEntity, page: Page) {
     if (!product.cardkingdomBuyListLink) {
-      return ;
+      return;
     }
 
     try {
       await page.goto(product.cardkingdomBuyListLink);
       await page.waitForSelector("span.sellDollarAmount", {
         visible: true,
-        timeout: 3000
+        timeout: 3000,
       });
       const data = await page.$eval("span.sellDollarAmount", (fristRow) => {
         const textContent = fristRow.innerText.trim();
@@ -178,7 +201,7 @@ export class SyncSingleProductUsecase {
 
       const price =
         parseFloat(
-          data[0].replace("$", "").replace(",", "").replace(".", ","),
+          data[0].replace("$", "").replace(",", "").replace(".", ",")
         ) * this.USD_TO_EUR;
 
       return price;
@@ -190,47 +213,55 @@ export class SyncSingleProductUsecase {
 
   async syncAbugamesBuyList(product: ProductEntity, page: Page) {
     if (!product.abugamesBuyListLink) {
-      return ;
+      return;
     }
 
     try {
       await page.goto(product.abugamesBuyListLink);
       await page.waitForSelector("div.buylist span.ng-star-inserted", {
         visible: true,
-        timeout: 3000
+        timeout: 3000,
       });
 
       const data = await page.evaluate(() => {
-      // Find all product panels
-      const panels = Array.from(document.querySelectorAll('.row.panel.panel-default'));
-      for (const panel of panels) {
-        const cols = Array.from(panel.children).filter(ch => ch.classList && ch.classList.contains('col-md-2'));
+        // Find all product panels
+        const panels = Array.from(
+          document.querySelectorAll(".row.panel.panel-default")
+        );
+        for (const panel of panels) {
+          const cols = Array.from(panel.children).filter(
+            (ch) => ch.classList && ch.classList.contains("col-md-2")
+          );
 
-        // try to find the column that contains the NM label
-        let nmCol = cols.find(c => {
-          const tb = c.querySelector('.titleBox');
-          if (tb?.textContent && tb.textContent.trim() === 'NM') return true;
-          // fallback: check text content for 'NM'
-          return /\bNM\b/.test((c.textContent || '').trim());
-        });
+          // try to find the column that contains the NM label
+          let nmCol = cols.find((c) => {
+            const tb = c.querySelector(".titleBox");
+            if (tb?.textContent && tb.textContent.trim() === "NM") return true;
+            // fallback: check text content for 'NM'
+            return /\bNM\b/.test((c.textContent || "").trim());
+          });
 
-        // fallback: if we couldn't find by label, assume the second col-md-2 is NM (based on your markup)
-        if (!nmCol) nmCol = cols[1] || null;
-        if (!nmCol) return null;
+          // fallback: if we couldn't find by label, assume the second col-md-2 is NM (based on your markup)
+          if (!nmCol) nmCol = cols[1] || null;
+          if (!nmCol) return null;
 
-        // find the first $ price inside that column
-        const match = (nmCol.textContent || '').match(/\$\s*\d{1,3}(?:,\d{3})*(?:\.\d{2})?/);
-        return match ? match[0].replace(/\s+/g, '') : null;
-      }
-      return null;
-    });
+          // find the first $ price inside that column
+          const match = (nmCol.textContent || "").match(
+            /\$\s*\d{1,3}(?:,\d{3})*(?:\.\d{2})?/
+          );
+          return match ? match[0].replace(/\s+/g, "") : null;
+        }
+        return null;
+      });
 
-      const price = data !==  null ?
-        parseFloat(
-          data.replace("$", "").replace(",", "").replace(".", ","),
-        ) * this.USD_TO_EUR : undefined;
+      const price =
+        data !== null
+          ? parseFloat(
+              data.replace("$", "").replace(",", "").replace(".", ",")
+            ) * this.USD_TO_EUR
+          : undefined;
 
-              console.log("abugamesBuyListLink", data, price);
+      console.log("abugamesBuyListLink", data, price);
 
       return price;
     } catch (error) {
@@ -241,24 +272,31 @@ export class SyncSingleProductUsecase {
 
   async syncFullSet(product: ProductEntity, page: Page) {
     if (!product.fullSetLink) {
-      return
+      return;
     }
 
     try {
       await page.goto(product.fullSetLink, { waitUntil: "networkidle2" });
       const totalValue = await page.evaluate(() => {
-        const elements = Array.from(document.querySelectorAll('span'));
-        const label = elements.find(el => el.textContent?.trim() === 'TOTAL VALUE');
+        const elements = Array.from(document.querySelectorAll("span"));
+        const label = elements.find(
+          (el) => el.textContent?.trim() === "TOTAL VALUE"
+        );
         if (label && label.nextElementSibling) {
           return label.nextElementSibling.textContent?.trim();
         }
         return null;
       });
 
-      const price = totalValue ?
-        parseFloat((parseFloat(
-          totalValue.replace("$", "").replace(",", "").replace(".", ","),
-        ) * this.USD_TO_EUR).toFixed(2)) : undefined;
+      const price = totalValue
+        ? parseFloat(
+            (
+              parseFloat(
+                totalValue.replace("$", "").replace(",", "").replace(".", ",")
+              ) * this.USD_TO_EUR
+            ).toFixed(2)
+          )
+        : undefined;
 
       return price;
     } catch (error) {
@@ -269,21 +307,31 @@ export class SyncSingleProductUsecase {
 
   async syncTCGP(product: ProductEntity, page: Page) {
     if (!product.tcgpLink) {
-      return
+      return;
     }
 
     try {
       await page.goto(product.tcgpLink, { waitUntil: "networkidle0" });
-      const el = await page.waitForSelector('.spotlight__price', { timeout: 3000 });
+      const el = await page.waitForSelector(".spotlight__price", {
+        timeout: 3000,
+      });
       if (!el) return undefined;
 
-      const spotlightPrice = await page.evaluate(el => el.textContent, el);
+      const spotlightPrice = await page.evaluate((el) => el.textContent, el);
       if (!spotlightPrice) return undefined;
 
-      const price = spotlightPrice ?
-        parseFloat((parseFloat(
-          spotlightPrice.replace("$", "").replace(",", "").replace(".", ","),
-        ) * this.USD_TO_EUR).toFixed(2)) : undefined;
+      const price = spotlightPrice
+        ? parseFloat(
+            (
+              parseFloat(
+                spotlightPrice
+                  .replace("$", "")
+                  .replace(",", "")
+                  .replace(".", ",")
+              ) * this.USD_TO_EUR
+            ).toFixed(2)
+          )
+        : undefined;
 
       return price;
     } catch (error) {
@@ -299,17 +347,16 @@ export class SyncSingleProductUsecase {
     abugamesBuyListPrice,
     cardMarketListingCount,
     fullSetPrice,
-    tcgpPrice
-  } : {
-      product: ProductEntity,
-      cardMarketPrice: number | undefined,
-      ckBuyListPrice: number | undefined,
-      abugamesBuyListPrice: number | undefined,
-      cardMarketListingCount: number | undefined,
-      fullSetPrice: number | undefined,
-      tcgpPrice: number | undefined
-    }
-  ) {
+    tcgpPrice,
+  }: {
+    product: ProductEntity;
+    cardMarketPrice: number | undefined;
+    ckBuyListPrice: number | undefined;
+    abugamesBuyListPrice: number | undefined;
+    cardMarketListingCount: number | undefined;
+    fullSetPrice: number | undefined;
+    tcgpPrice: number | undefined;
+  }) {
     const pricesMap: Map<PriceType, number | undefined> = new Map([
       ["cardmarket", cardMarketPrice],
       ["cardkingdom", ckBuyListPrice],
@@ -322,11 +369,10 @@ export class SyncSingleProductUsecase {
     const marketPrice = Math.min(cardMarketPrice || 0) || undefined;
     pricesMap.set("market", marketPrice);
 
-    const buylistPrice = (ckBuyListPrice || abugamesBuyListPrice) ?
-      Math.max(
-        ckBuyListPrice || 0,
-        abugamesBuyListPrice || 0,
-      ) : undefined;
+    const buylistPrice =
+      ckBuyListPrice || abugamesBuyListPrice
+        ? Math.max(ckBuyListPrice || 0, abugamesBuyListPrice || 0)
+        : undefined;
     pricesMap.set("buylist", buylistPrice);
 
     const ratio =
