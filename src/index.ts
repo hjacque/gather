@@ -17,7 +17,7 @@ const run = async () => {
   const usecases = initApplication(repositories);
 
   // services
-  const services = initServices({syncUsecase: usecases.syncUsecase});
+  const services = initServices({ syncUsecase: usecases.syncUsecase });
   // await services.syncSchedulerService.execute();
 
   // transport
@@ -44,7 +44,7 @@ run().catch((e) => {
     // Prevents the server from hanging on exit
     setTimeout(() => {
       console.info(
-        "[graceful shutown] Forced exit after server hanged on close",
+        "[graceful shutown] Forced exit after server hanged on close"
       );
       process.exit(1);
     }, 5000);
