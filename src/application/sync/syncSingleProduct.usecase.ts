@@ -9,8 +9,6 @@ import { PerformanceRepositoryPort } from "repository/ports/performance.reposito
 import { PriceType } from "../../types/priceType";
 import { getEurToUsdRate } from "./helper";
 
-const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
-
 export type SyncUsecaseInputDto = {
   productId: string;
 };
@@ -90,6 +88,7 @@ export class SyncSingleProductUsecase {
         : undefined,
       await this.syncTCGP(product, page),
     ];
+
     const prices = await this.computePrices({
       product,
       cardMarketPrice: cardMarket?.price,
@@ -131,16 +130,20 @@ export class SyncSingleProductUsecase {
     try {
       await page.goto(
         product.cardMarketLink +
-          "?language=1&minCondition=2&isSigned=N&isAltered=N"
+          "?language=1&minCondition=2&isSigned=N&isAltered=N",
+        {
+          waitUntil: "networkidle2",
+        }
       );
 
-      const isCaptcha = await page.$(
-        'iframe[src*="captcha"], iframe[src*="turnstile"]'
-      );
-
-      if (isCaptcha) {
-        console.log("CAPTCHA triggered");
-        // You may want to skip, retry with a new proxy, or solve it with a 3rd-party service
+      const isTurnTile = await page.evaluate(() => {
+        return document.body.innerText.includes(
+          "Verify you are human by completing the action below."
+        );
+      });
+      if (isTurnTile) {
+        console.log("Cloudflare turntile detected");
+        await new Promise((resolve) => setTimeout(resolve, 2500));
       }
 
       await page.waitForSelector("div.article-row", {

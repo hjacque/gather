@@ -13,8 +13,6 @@ import { SetPerformancesUsecase } from "./setPerformances.usecase";
 import { PriceType } from "../../types/priceType";
 import { getEurToUsdRate } from "./helper";
 
-const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
-
 export type SyncUsecaseInputDto = {
   filter: {
     set?: Set;
@@ -84,7 +82,7 @@ export class SyncUsecase {
       paginationPage++;
 
       for (const product of products) {
-        await sleep(1500);
+        await new Promise((resolve) => setTimeout(resolve, 1500));
         await this.syncProduct(product, today, page);
       }
     }
@@ -147,8 +145,22 @@ export class SyncUsecase {
     try {
       await page.goto(
         product.cardMarketLink +
-          "?language=1&minCondition=2&isSigned=N&isAltered=N"
+          "?language=1&minCondition=2&isSigned=N&isAltered=N",
+        {
+          waitUntil: "networkidle2",
+        }
       );
+
+      const isTurnTile = await page.evaluate(() => {
+        return document.body.innerText.includes(
+          "Verify you are human by completing the action below."
+        );
+      });
+      if (isTurnTile) {
+        console.log("Cloudflare turntile detected");
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+      }
+
       await page.waitForSelector("div.article-row", {
         visible: true,
         timeout: 3000,
