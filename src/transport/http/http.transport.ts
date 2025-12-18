@@ -72,8 +72,31 @@ export const http = async ({
 
     const dtoSchema = z.object({
       set: z.string().optional(),
-      type: z.union([z.array(z.enum(["booster_box", "single", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"])), z.enum(["booster_box", "single", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"])]).optional(),
-      franchise: z.enum(["mtg", "pokemon"]),
+      type: z
+        .union([
+          z.array(
+            z.enum([
+              "booster_box",
+              "single",
+              "collector_booster_box",
+              "booster_bundle",
+              "booster_box_18",
+              "elite_trainer_box",
+              "premium_booster_box",
+            ])
+          ),
+          z.enum([
+            "booster_box",
+            "single",
+            "collector_booster_box",
+            "booster_bundle",
+            "booster_box_18",
+            "elite_trainer_box",
+            "premium_booster_box",
+          ]),
+        ])
+        .optional(),
+      franchise: z.enum(["mtg", "pokemon", "one_piece", "riftbound"]),
       tags: z.union([z.string(), z.array(z.string())]).optional(),
     });
     const dto = dtoSchema.parse(req.query);

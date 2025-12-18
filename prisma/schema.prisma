@@ -20,6 +20,7 @@ enum ProductType {
   booster_box_18
   booster_bundle
   elite_trainer_box
+  premium_booster_box
 }
 
 enum Block {
@@ -32,6 +33,8 @@ enum Block {
 enum Franchise {
   mtg
   pokemon
+  one_piece
+  riftbound
 }
 
 enum Rarity {
