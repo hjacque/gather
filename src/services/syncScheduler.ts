@@ -20,7 +20,7 @@ export class SyncSchedulerService {
       set?: Set;
       franchise?: Franchise;
       type?: ProductType | ProductType[];
-    } = {},
+    } = {}
   ) {
     try {
       console.log("🔄 Starting price update job...");
@@ -34,7 +34,7 @@ export class SyncSchedulerService {
   }
 
   async scheduleSingles() {
-    for (let hours = 0; hours < 24; hours+= 1) {
+    for (let hours = 0; hours < 24; hours += 2) {
       cron.schedule(
         `0 ${hours} * * *`,
         async () => {
@@ -42,31 +42,49 @@ export class SyncSchedulerService {
         },
         {
           timezone: "UTC",
-        },
+        }
       );
     }
-    console.log("📅 Sync scheduler started (runs every hour at 00)", { type: "single" });
+    console.log("📅 Sync scheduler started (runs every two hour at 00)", {
+      type: "single",
+    });
   }
 
   async scheduleSealed() {
-    for (let hours = 0; hours < 24; hours++) {
-      const minutesArr = ["45"];
+    for (let hours = 1; hours < 24; hours += 2) {
+      const minutesArr = ["30"];
       for (const minutes of minutesArr) {
         cron.schedule(
           `${minutes} ${hours} * * *`,
           async () => {
             await this.sync({
-              type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
+              type: [
+                "booster_box",
+                "collector_booster_box",
+                "booster_bundle",
+                "booster_box_18",
+                "elite_trainer_box",
+                "premium_booster_box",
+                "extra_booster_box",
+              ],
             });
           },
           {
             timezone: "UTC",
-          },
+          }
         );
       }
     }
-    console.log("📅 Sync scheduler started (runs every hour at 45)", {
-      type: ["booster_box", "collector_booster_box", "booster_bundle", "booster_box_18", "elite_trainer_box"],
+    console.log("📅 Sync scheduler started (runs every two hour at 30)", {
+      type: [
+        "booster_box",
+        "collector_booster_box",
+        "booster_bundle",
+        "booster_box_18",
+        "elite_trainer_box",
+        "premium_booster_box",
+        "extra_booster_box",
+      ],
     });
   }
 }
