@@ -43,6 +43,9 @@ enum Rarity {
   uncommon
   rare
   land
+  special_illustration_rare
+  rainbow_rare
+  promo
 }
 
 enum PriceType {
