@@ -83,6 +83,7 @@ export const http = async ({
               "booster_box_18",
               "elite_trainer_box",
               "premium_booster_box",
+              "extra_booster_box",
             ])
           ),
           z.enum([
@@ -93,6 +94,7 @@ export const http = async ({
             "booster_box_18",
             "elite_trainer_box",
             "premium_booster_box",
+            "extra_booster_box",
           ]),
         ])
         .optional(),

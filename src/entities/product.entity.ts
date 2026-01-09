@@ -21,7 +21,8 @@ export type ProductType =
   | "booster_bundle"
   | "booster_box_18"
   | "elite_trainer_box"
-  | "premium_booster_box";
+  | "premium_booster_box"
+  | "extra_booster_box";
 export type Franchise = "mtg" | "pokemon" | "one_piece" | "riftbound";
 
 export type ProductEntity = {

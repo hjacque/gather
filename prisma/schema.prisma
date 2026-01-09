@@ -21,6 +21,7 @@ enum ProductType {
   booster_bundle
   elite_trainer_box
   premium_booster_box
+  extra_booster_box
 }
 
 enum Block {
