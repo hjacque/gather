@@ -143,7 +143,7 @@ export class SyncSingleProductUsecase {
       });
       if (isTurnTile) {
         console.log("Cloudflare turntile detected");
-        await new Promise((resolve) => setTimeout(resolve, 2500));
+        await new Promise((resolve) => setTimeout(resolve, 5500));
       }
 
       await page.waitForSelector("div.article-row", {
@@ -315,12 +315,14 @@ export class SyncSingleProductUsecase {
 
     try {
       await page.goto(product.tcgpLink, { waitUntil: "networkidle0" });
-      const el = await page.waitForSelector(".spotlight__price", {
+      const el = await page.waitForSelector(".price-points__upper__price", {
         timeout: 3000,
       });
+      console.log("TCGP Element:", el);
       if (!el) return undefined;
 
       const spotlightPrice = await page.evaluate((el) => el.textContent, el);
+      console.log("TCGP spotlightPrice:", spotlightPrice);
       if (!spotlightPrice) return undefined;
 
       const price = spotlightPrice
@@ -338,7 +340,7 @@ export class SyncSingleProductUsecase {
 
       return price;
     } catch (error) {
-      console.log("Not in Full Set Link", product.name);
+      console.log("Not in TCG Link", product.name);
       return undefined;
     }
   }

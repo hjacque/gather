@@ -158,7 +158,7 @@ export class SyncUsecase {
       });
       if (isTurnTile) {
         console.log("Cloudflare turntile detected");
-        await new Promise((resolve) => setTimeout(resolve, 2500));
+        await new Promise((resolve) => setTimeout(resolve, 5500));
       }
 
       await page.waitForSelector("div.article-row", {
@@ -330,7 +330,7 @@ export class SyncUsecase {
 
     try {
       await page.goto(product.tcgpLink, { waitUntil: "networkidle0" });
-      const el = await page.waitForSelector(".spotlight__price", {
+      const el = await page.waitForSelector(".price-points__upper__price", {
         timeout: 3000,
       });
       if (!el) return undefined;
