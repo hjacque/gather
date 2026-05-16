@@ -1,6 +1,52 @@
 # Gather
 
-A price aggregation and performance tracking platform for collectible trading cards and LEGO products. It scrapes prices from multiple external marketplaces and surfaces performance metrics to users via a dashboard.
+A price aggregation and performance tracking platform for collectible trading cards and LEGO products. It fetches prices from multiple external marketplaces (Price Sources) and surfaces Derived Prices and Performance metrics to users via a dashboard.
+
+## Monorepo layout
+
+```
+apps/
+  api/   — Node.js + Express HTTP server (price sync, data queries)
+  web/   — Next.js dashboard (server actions call the API)
+packages/
+  types/        — canonical domain types (ProductEntity, Franchise, PriceType, …)
+  api-contract/ — typed request/response shapes shared between api and web
+```
+
+`packages/types` is the single source of truth for domain types.  
+`packages/api-contract` re-exports from types and adds the HTTP contract shapes (`GetProductsResponse`, `GetProductResponse`, etc.) — the web app imports from here, never from types directly.
+
+## API architecture
+
+The API is layered. Dependency direction: `transport → application → repository`.
+
+| Layer | Location | Responsibility |
+|---|---|---|
+| Transport | `src/transport/http/` | Express routes, request validation (zod), CORS |
+| Application | `src/application/` | Use cases, sync orchestration, price aggregation |
+| Repository | `src/repository/` | Port interfaces + Prisma/PostgreSQL implementations |
+| Services | `src/services/` | Background services (SyncScheduler via node-cron) |
+
+Repositories are injected into use cases via port interfaces — concrete Prisma implementations are wired in `initRepository()`.
+
+## API routes
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/products` | List products with today's Derived Prices and Performance |
+| GET | `/products/:id` | Single product with full price history |
+| GET | `/product-of-the-day` | Top-performing product for a given day |
+| GET | `/sync` | Trigger a full Sync (filter by franchise/type/set/tags) |
+| GET | `/sync/product/:id` | Trigger a Sync for a single product |
+| GET | `/sync/set/:set` | Trigger a Sync for an entire Product Set |
+
+## Tech stack
+
+- **Language:** TypeScript throughout
+- **API runtime:** Node.js, Express, Prisma ORM, PostgreSQL
+- **Web:** Next.js (App Router), server actions call the API via `apiClient`
+- **Build:** Turborepo monorepo
+- **Scheduling:** node-cron inside `SyncSchedulerService`
 
 ## Language
 
@@ -47,6 +93,35 @@ _Avoid_: Delta, change, trend, gain/loss
 **Sync**:
 The process of fetching Raw Prices from all applicable Price Sources for one or more Products and persisting the results.
 _Avoid_: Scrape, update, refresh, import
+
+## Price Sources
+
+| Source | Type | Franchises | Notes |
+|---|---|---|---|
+| CardMarket | Sell listings | MTG, Pokémon, One Piece, Riftbound | Lowest listing → Market Price |
+| CardKingdom | Buylist | MTG | Contributes to Buylist Price |
+| ABUGames | Buylist | MTG | Contributes to Buylist Price |
+| TCGPlayer | Sell listings | MTG | Raw Price only, stored as `tcgp` |
+| BrickLink | Sell listings | LEGO | Raw Price for minifigures |
+| BrickLink Average | Market average | LEGO | Used instead of Buylist for minifigure Ratio |
+| FullSet | Sell listings | MTG | Full-set bundle price |
+
+## Derived Price computation
+
+All derivation happens in `priceAggregator.ts` after Raw Prices are collected:
+
+- **Market Price** — `min(cardmarket)` (currently single source; architecture supports multiple)
+- **Buylist Price** — `max(cardkingdom, abugames)`; whichever is higher wins
+- **Ratio** — non-minifigures: `round((market / buylist) * 100) - 100`; minifigures: `round((market / bricklinkAverage) * 100) - 100`
+- **Per Booster** — `market / boosterCount`; only for sealed products with a known booster count
+
+## Sync schedule (UTC, via node-cron)
+
+| Product type | Frequency | Times |
+|---|---|---|
+| Singles | Every 2 hours | :00 on even hours (0, 2, 4, … 22) |
+| Sealed products | Every 2 hours | :30 on odd hours (1:30, 3:30, … 23:30) |
+| Minifigures | Every 15 minutes | (defined but not scheduled by default) |
 
 ## Relationships
 
