@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { initRepository } from "./repository/init.repository";
 import { initApplication } from "./application/init.application";
 import { initTransport } from "./transport/init.transport";
