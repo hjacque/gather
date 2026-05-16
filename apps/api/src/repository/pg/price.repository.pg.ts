@@ -1,6 +1,6 @@
 import { PriceRepositoryPort } from "../ports/price.repository.port";
 import { PriceMapper } from "./mappers/price.mapper.pg";
-import { PriceType } from "../../types/priceType";
+import { PriceType } from "@gather/types";
 import { PrismaClient } from "@prisma/client";
 
 export class PriceRepositoryPg implements PriceRepositoryPort {

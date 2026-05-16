@@ -1,4 +1,4 @@
-import { PriceType } from "../../types/priceType";
+import { PriceType } from "@gather/types";
 import { PriceEntity } from "../../entities/price.entity";
 
 export abstract class PriceRepositoryPort {

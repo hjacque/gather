@@ -5,7 +5,7 @@ import { ProductRepositoryPort } from "../../repository/ports/product.repository
 import { DEFAULT_USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { SetPerformancesUsecase } from "./setPerformances.usecase";
-import { PriceType } from "../../types/priceType";
+import { PriceType } from "@gather/types";
 import { getEurToUsdRate } from "./helper";
 import { ProductType } from "@prisma/client";
 

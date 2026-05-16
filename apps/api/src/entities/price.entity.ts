@@ -1,4 +1,4 @@
-import { PriceType } from "../types/priceType";
+import { PriceType } from "@gather/types";
 import { z } from "zod";
 
 export const PriceEntitySchema = z.object({

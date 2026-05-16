@@ -1,5 +1,4 @@
-import { Block } from "../types/block";
-import { Franchise } from "../types/franchise";
+import { Block, Franchise } from "@gather/types";
 
 export type ProductSetEntity = {
     id: string;
