@@ -1,15 +1,14 @@
 import express from "express";
 import { Usecases } from "../../application/init.application";
-import { validateRequest } from "zod-express-middleware";
 import { z } from "zod";
 import { errorHandler } from "./middlewares/http.errors";
 import { SyncUsecaseInputDto } from "application/sync/sync.usecase";
 import { GetProductOfTheDayUsecaseInputDto } from "application/product/getProductOfTheDay.usecase";
+import { PRODUCT_TYPES, FRANCHISES } from "@gather/types";
 require("express-async-errors");
 
 const app = express();
 const port = 3000;
-// const port = 3008;
 
 export const http = async ({
   syncUsecase,
@@ -73,36 +72,9 @@ export const http = async ({
     const dtoSchema = z.object({
       set: z.string().optional(),
       type: z
-        .union([
-          z.array(
-            z.enum([
-              "booster_box",
-              "single",
-              "collector_booster_box",
-              "booster_bundle",
-              "booster_box_18",
-              "elite_trainer_box",
-              "premium_booster_box",
-              "extra_booster_box",
-              "minifigure",
-            ])
-          ),
-          z.enum([
-            "booster_box",
-            "single",
-            "collector_booster_box",
-            "booster_bundle",
-            "booster_box_18",
-            "elite_trainer_box",
-            "premium_booster_box",
-            "extra_booster_box",
-            "minifigure",
-          ]),
-        ])
+        .union([z.array(z.enum(PRODUCT_TYPES)), z.enum(PRODUCT_TYPES)])
         .optional(),
-      franchise: z
-        .enum(["mtg", "pokemon", "one_piece", "riftbound", "lego"])
-        .optional(),
+      franchise: z.enum(FRANCHISES).optional(),
       tags: z.union([z.string(), z.array(z.string())]).optional(),
     });
     const dto = dtoSchema.parse(req.query);

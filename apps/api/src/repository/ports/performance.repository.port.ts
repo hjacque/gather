@@ -2,8 +2,7 @@ import { Franchise, ProductType } from "entities/product.entity";
 import {
   PerformanceEntity,
 } from "../../entities/performance.entity";
-import { PerformancePeriod } from "../../types/performancePeriod";
-import { PerformanceType } from "../../types/performanceType";
+import { PerformancePeriod, PerformanceType } from "@gather/types";
 
 export abstract class PerformanceRepositoryPort {
   abstract upsertPerformance(

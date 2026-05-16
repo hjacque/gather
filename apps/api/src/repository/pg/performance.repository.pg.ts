@@ -2,8 +2,7 @@ import { PerformanceModel } from "./models/performance.model.pg";
 import { PerformanceRepositoryPort } from "../ports/performance.repository.port";
 import { PerformanceMapper } from "./mappers/performance.mapper.pg";
 import { Franchise, ProductType } from "entities/product.entity";
-import { PerformanceType } from "../../types/performanceType";
-import { PerformancePeriod } from "../../types/performancePeriod";
+import { PerformancePeriod, PerformanceType } from "@gather/types";
 import { PrismaClient } from "@prisma/client";
 
 export class PerformanceRepositoryPg implements PerformanceRepositoryPort {
