@@ -1,7 +1,8 @@
 node_modules
-
 build
-
+.next
+.turbo
+*.env
+.env*
+!.env.example
 /src/generated/prisma
-
-.env
