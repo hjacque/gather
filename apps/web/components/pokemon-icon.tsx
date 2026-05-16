@@ -1,0 +1,11 @@
+const PokemonIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <path d="M12 2a10 10 0 00-9.95 9h4.06a6 6 0 0111.78 0h4.06A10 10 0 0012 2zm0 8a2 2 0 110 4 2 2 0 010-4zm0 12a10 10 0 009.95-9h-4.06a6 6 0 01-11.78 0H2.05A10 10 0 0012 22z" />
+  </svg>
+);
+export default PokemonIcon;
