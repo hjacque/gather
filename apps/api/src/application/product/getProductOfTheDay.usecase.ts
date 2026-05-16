@@ -1,12 +1,7 @@
-import {
-  Set,
-  Franchise,
-  ProductType,
-  ProductEntity,
-} from "../../entities/product.entity";
-import { PerformanceEntity } from "../../entities/performance.entity";
+import { Set, Franchise, ProductType } from "../../entities/product.entity";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { PerformanceRepositoryPort } from "../../repository/ports/performance.repository.port";
+import type { GetProductOfTheDayResponse } from "@gather/api-contract";
 
 export type GetProductOfTheDayUsecaseInputDto = {
   set?: Set;
@@ -22,9 +17,7 @@ export class GetProductOfTheDayUsecase {
 
   async execute(
     dto: GetProductOfTheDayUsecaseInputDto,
-  ): Promise<
-    (ProductEntity & { topPerformance: PerformanceEntity }) | undefined
-  > {
+  ): Promise<GetProductOfTheDayResponse | undefined> {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 

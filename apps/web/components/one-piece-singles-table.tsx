@@ -44,7 +44,6 @@ import {
   VisibilityState,
 } from '@tanstack/react-table';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { z } from 'zod';
 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Badge } from '@/components/ui/badge';
@@ -100,14 +99,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { getProductsResSchema } from '@/app/actions/getProducts';
+import type { GetProductsResponseItem } from '@/app/actions/getProducts';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { ProductSetMultiSelectFilter } from './set-multiselect-filter';
 
 function DraggableRow({
   row,
 }: {
-  row: Row<z.infer<typeof getProductsResSchema>>;
+  row: Row<GetProductsResponseItem>;
 }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
     id: row.original.id,
@@ -138,7 +137,7 @@ export function OnePieceSinglesTable({
   productSet,
   pageSize = 10,
 }: {
-  dataPromise: Promise<z.infer<typeof getProductsResSchema>[]>;
+  dataPromise: Promise<GetProductsResponseItem[]>;
   productSet?: boolean;
   pageSize?: number;
 }) {
@@ -182,7 +181,7 @@ export function OnePieceSinglesTable({
     [data],
   );
 
-  const columns: ColumnDef<z.infer<typeof getProductsResSchema>>[] = [
+  const columns: ColumnDef<GetProductsResponseItem>[] = [
     {
       accessorKey: 'name',
       header: ({ column }) => {
@@ -627,7 +626,7 @@ export function OnePieceSinglesTable({
 function TableCellViewer({
   item,
 }: {
-  item: z.infer<typeof getProductsResSchema>;
+  item: GetProductsResponseItem;
 }) {
   const isMobile = useIsMobile();
   const [chartData, setChartData] = useState<

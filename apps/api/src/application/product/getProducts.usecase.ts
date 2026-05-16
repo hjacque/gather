@@ -2,6 +2,7 @@ import { ProductRepositoryPort } from "../../repository/ports/product.repository
 import { PerformanceRepositoryPort } from "../../repository/ports/performance.repository.port";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { Franchise, ProductType } from "entities/product.entity";
+import type { GetProductsResponse } from "@gather/api-contract";
 
 export class GetProductsUsecase {
   constructor(
@@ -15,7 +16,7 @@ export class GetProductsUsecase {
     type?: ProductType | ProductType[];
     tags?: string | string[];
     set?: string;
-  }) {
+  }): Promise<GetProductsResponse> {
     const products = await this.productRepository.getProducts(filter);
     const productIds = products.map((product) => product.id);
 

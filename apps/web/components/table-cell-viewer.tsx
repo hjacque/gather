@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import { useState } from 'react';
-import { z } from 'zod';
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -22,12 +21,13 @@ import {
   ChartTooltipContent,
   ChartConfig,
 } from '@/components/ui/chart';
-import { getProduct, getProductResSchema } from '@/app/actions/getProduct';
+import { getProduct } from '@/app/actions/getProduct';
+import type { GetProductResponse } from '@/app/actions/getProduct';
 
 export function TableCellViewer({
   item,
 }: {
-  item: z.infer<typeof getProductResSchema>;
+  item: GetProductResponse;
 }) {
   const isMobile = useIsMobile();
   const [chartData, setChartData] = useState<

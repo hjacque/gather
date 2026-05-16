@@ -44,7 +44,6 @@ import {
   VisibilityState,
 } from '@tanstack/react-table';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { z } from 'zod';
 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Badge } from '@/components/ui/badge';
@@ -103,13 +102,13 @@ import {
 } from './ui/dropdown-menu';
 import { syncProduct } from '@/app/actions/syncProduct';
 import { BlockMultiSelectFilter } from './block-multiselect-filter';
-import { getProductsResSchema } from '@/app/actions/getProducts';
+import type { GetProductsResponseItem } from '@/app/actions/getProducts';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 function DraggableRow({
   row,
 }: {
-  row: Row<z.infer<typeof getProductsResSchema>>;
+  row: Row<GetProductsResponseItem>;
 }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
     id: row.original.id,
@@ -142,7 +141,7 @@ export function MtgSealedProductsTable({
   block,
   pageSize = 10,
 }: {
-  dataPromise: Promise<z.infer<typeof getProductsResSchema>[]>;
+  dataPromise: Promise<GetProductsResponseItem[]>;
   type?: boolean;
   set?: boolean;
   block?: boolean;
@@ -188,7 +187,7 @@ export function MtgSealedProductsTable({
     [data],
   );
 
-  const columns: ColumnDef<z.infer<typeof getProductsResSchema>>[] = [
+  const columns: ColumnDef<GetProductsResponseItem>[] = [
     {
       accessorKey: 'name',
       header: ({ column }) => {
@@ -751,7 +750,7 @@ export function MtgSealedProductsTable({
 function TableCellViewer({
   item,
 }: {
-  item: z.infer<typeof getProductsResSchema>;
+  item: GetProductsResponseItem;
 }) {
   const isMobile = useIsMobile();
   const [chartData, setChartData] = useState<

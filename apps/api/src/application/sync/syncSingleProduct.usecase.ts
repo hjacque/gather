@@ -6,6 +6,8 @@ import { PerformanceRepositoryPort } from "repository/ports/performance.reposito
 import { PriceSourcePort } from "./sources/priceSource.port";
 import { getEurToUsdRate } from "./helper";
 import { syncProduct } from "./syncProduct";
+import type { SyncProductResponse } from "@gather/api-contract";
+import type { PriceType } from "@gather/types";
 
 export class SyncSingleProductUsecase {
   constructor(
@@ -16,7 +18,7 @@ export class SyncSingleProductUsecase {
     private readonly priceSources: PriceSourcePort[]
   ) {}
 
-  async execute(productId: string) {
+  async execute(productId: string): Promise<SyncProductResponse> {
     const usdToEur = await getEurToUsdRate();
     console.log("Using USD to EUR rate:", usdToEur);
 
@@ -59,6 +61,18 @@ export class SyncSingleProductUsecase {
     await page.close();
     await browser.close();
 
-    return { ...product, ...Object.fromEntries(prices), performance };
+    const toPrice = (key: PriceType) => prices.get(key) ?? null;
+    return {
+      ...product,
+      market: toPrice("market"),
+      buylist: toPrice("buylist"),
+      ratio: toPrice("ratio"),
+      perBooster: toPrice("perBooster"),
+      cardmarketListingCount: toPrice("cardmarketListingCount"),
+      fullSet: toPrice("fullSet"),
+      tcgp: toPrice("tcgp"),
+      bricklinkAverage: toPrice("bricklinkAverage"),
+      performance,
+    };
   }
 }

@@ -42,7 +42,9 @@
     "sonner": "^2.0.6",
     "tailwind-merge": "^3.3.1",
     "vaul": "^1.1.2",
-    "zod": "^3.25.73"
+    "zod": "^3.25.73",
+    "@gather/types": "*",
+    "@gather/api-contract": "*"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
