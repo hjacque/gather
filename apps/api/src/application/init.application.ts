@@ -7,6 +7,13 @@ import { PerformanceRepositoryPort } from "../repository/ports/performance.repos
 import { GetProductOfTheDayUsecase } from "./product/getProductOfTheDay.usecase";
 import { SyncSingleProductUsecase } from "./sync/syncSingleProduct.usecase";
 import { SetPerformancesUsecase } from "./sync/setPerformances.usecase";
+import { CardMarketSource } from "./sync/sources/cardmarket.source";
+import { CardKingdomSource } from "./sync/sources/cardkingdom.source";
+import { AbugamesSource } from "./sync/sources/abugames.source";
+import { FullSetSource } from "./sync/sources/fullSet.source";
+import { TcgpSource } from "./sync/sources/tcgp.source";
+import { BricklinkSource } from "./sync/sources/bricklink.source";
+import { BricklinkAverageSource } from "./sync/sources/bricklinkAverage.source";
 
 export type Usecases = {
   syncUsecase: SyncUsecase;
@@ -26,27 +33,45 @@ export const initApplication = ({
   priceRepository: PriceRepositoryPort;
   performanceRepository: PerformanceRepositoryPort;
 }): Usecases => {
-  const setPerformancesUsecase = new SetPerformancesUsecase(priceRepository, performanceRepository);
+  const priceSources = [
+    new CardMarketSource(),
+    new BricklinkSource(),
+    new CardKingdomSource(),
+    new AbugamesSource(),
+    new FullSetSource(),
+    new TcgpSource(),
+    new BricklinkAverageSource(),
+  ];
+
+  const setPerformancesUsecase = new SetPerformancesUsecase(
+    priceRepository,
+    performanceRepository
+  );
   const syncUsecase = new SyncUsecase(
     productRepository,
     priceRepository,
     setPerformancesUsecase,
+    priceSources
   );
   const getProductsUsecase = new GetProductsUsecase(
     productRepository,
     priceRepository,
-    performanceRepository,
+    performanceRepository
   );
-  const getProductUsecase = new GetProductUsecase(productRepository, priceRepository);
+  const getProductUsecase = new GetProductUsecase(
+    productRepository,
+    priceRepository
+  );
   const getProductOfTheDayUsecase = new GetProductOfTheDayUsecase(
     productRepository,
-    performanceRepository,
+    performanceRepository
   );
   const syncSingleProductUsecase = new SyncSingleProductUsecase(
     productRepository,
     priceRepository,
     performanceRepository,
     setPerformancesUsecase,
+    priceSources
   );
 
   return {
