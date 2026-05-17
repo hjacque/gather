@@ -131,6 +131,9 @@ function ChartTooltipContent({
     indicator?: 'line' | 'dot' | 'dashed';
     nameKey?: string;
     labelKey?: string;
+    // recharts v3 omits these from TooltipProps — they're injected via context
+    payload?: RechartsPrimitive.TooltipPayload;
+    label?: string | number;
   }) {
   const { config } = useChart();
 
@@ -192,7 +195,7 @@ function ChartTooltipContent({
 
           return (
             <div
-              key={item.dataKey}
+              key={String(item.dataKey ?? '')}
               className={cn(
                 '[&>svg]:text-muted-foreground flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5',
                 indicator === 'dot' && 'items-center',
@@ -241,7 +244,7 @@ function ChartTooltipContent({
                     {item.value && (
                       <span className="text-foreground font-mono font-medium tabular-nums px-2">
                         {valueFormatter
-                          ? valueFormatter(item.value, item.dataKey)
+                          ? valueFormatter(item.value, typeof item.dataKey === 'string' ? item.dataKey : undefined)
                           : item.value.toLocaleString()}
                       </span>
                     )}
@@ -264,10 +267,12 @@ function ChartLegendContent({
   payload,
   verticalAlign = 'bottom',
   nameKey,
-}: React.ComponentProps<'div'> &
-  Pick<RechartsPrimitive.LegendProps, 'payload' | 'verticalAlign'> & {
+}: React.ComponentProps<'div'> & {
     hideIcon?: boolean;
     nameKey?: string;
+    // recharts v3 omits these from LegendProps — they're injected via context
+    payload?: ReadonlyArray<RechartsPrimitive.LegendPayload>;
+    verticalAlign?: 'top' | 'bottom' | 'middle';
   }) {
   const { config } = useChart();
 
