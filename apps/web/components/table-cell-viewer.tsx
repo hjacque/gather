@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useState } from 'react';
-import Image from 'next/image';
+import { ProductCardImage } from '@/components/product-card-image';
 import { Pencil, Save } from 'lucide-react';
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 
@@ -110,15 +110,11 @@ export function TableCellViewer({
               <>
                 <div className="flex gap-4 items-start">
                   {item.imageUrl && (
-                    <div className="shrink-0">
-                      <Image
-                        src={item.imageUrl}
-                        alt={item.name}
-                        width={160}
-                        height={220}
-                        className="rounded-md object-contain"
-                      />
-                    </div>
+                    <ProductCardImage
+                      src={item.imageUrl}
+                      alt={item.name}
+                      containerClassName="shrink-0 relative w-40 h-[220px]"
+                    />
                   )}
                   <ChartContainer
                     className="flex-1"

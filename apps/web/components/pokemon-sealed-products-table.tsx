@@ -1,9 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import Image from 'next/image';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { ArrowUpDown, LinkIcon, ShoppingCart, Store } from 'lucide-react';
+import { ProductCardImage } from '@/components/product-card-image';
 import { useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 
@@ -496,14 +496,7 @@ function TableCellViewer({
         {!isMobile && (
           <div className="flex gap-6 items-stretch px-4 lg:px-6">
             {item.imageUrl && (
-              <a href={item.imageUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 w-56 relative">
-                <Image
-                  src={item.imageUrl}
-                  alt={item.name}
-                  fill
-                  className="rounded-xl object-contain drop-shadow-md"
-                />
-              </a>
+              <ProductCardImage src={item.imageUrl} alt={item.name} />
             )}
             <div className="flex-1 min-w-0">
             <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
