@@ -92,6 +92,7 @@ export type ProductEntity = {
   productSetId: string;
   rarity: Rarity | null;
   imageUrl: string | null;
+  releaseDate: Date | null;
   cardMarketLink: string | null;
   cardkingdomBuyListLink: string | null;
   abugamesBuyListLink: string | null;

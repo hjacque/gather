@@ -91,6 +91,7 @@ model Product {
   blocked                   String[]
 
   imageUrl                  String?
+  releaseDate               DateTime?
 
   cardMarketLink            String?
   cardkingdomBuyListLink    String?

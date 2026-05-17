@@ -140,7 +140,7 @@ export function PokemonJapanesePromosTable({
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'releaseDate', desc: false }]);
   const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize });
   const sortableId = React.useId();
   const sensors = useSensors(
@@ -180,6 +180,23 @@ export function PokemonJapanesePromosTable({
       ),
       cell: ({ row }) => <TableCellViewer item={row.original} />,
       enableHiding: false,
+      enableSorting: true,
+    },
+    {
+      accessorKey: 'releaseDate',
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          Release <ArrowUpDown />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const date = row.original.releaseDate;
+        return (
+          <div className="text-muted-foreground text-sm whitespace-nowrap">
+            {date ? new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' }) : '-'}
+          </div>
+        );
+      },
       enableSorting: true,
     },
     {
