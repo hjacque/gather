@@ -16,6 +16,7 @@ export const http = async ({
   getProductUsecase,
   getProductOfTheDayUsecase,
   syncSingleProductUsecase,
+  syncPsaPopReportsUsecase,
 }: Usecases) => {
   // middlewares
   app.use(express.json());
@@ -52,6 +53,13 @@ export const http = async ({
     res.json(result);
   });
 
+  app.get("/sync/psa", async (req, res) => {
+    await syncPsaPopReportsUsecase.execute();
+
+    res.status(200);
+    res.json({ success: true });
+  });
+
   app.get("/product-of-the-day", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
 
@@ -76,6 +84,7 @@ export const http = async ({
         .optional(),
       franchise: z.enum(FRANCHISES).optional(),
       tags: z.union([z.string(), z.array(z.string())]).optional(),
+      rarity: z.string().optional(),
     });
     const dto = dtoSchema.parse(req.query);
 

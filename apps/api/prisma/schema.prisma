@@ -96,9 +96,11 @@ model Product {
   fullSetLink               String?
   tcgpLink                  String?
   bricklinkLink             String?
+  psaLink                   String?
 
   prices                    Price[]       @relation("ProductPrices")
   performances              Performance[] @relation("ProductPerformances")
+  psaPopReport              PsaPopReport?
 
   createdAt                 DateTime      @default(now())
   updatedAt                 DateTime      @updatedAt
@@ -148,4 +150,24 @@ model Performance {
   updatedAt   DateTime  @updatedAt
 
   @@unique([productId, date, periodType, type])
+}
+
+model PsaPopReport {
+  id          String   @id @default(uuid())
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   String   @unique
+  grade1      Int?
+  grade2      Int?
+  grade3      Int?
+  grade4      Int?
+  grade5      Int?
+  grade6      Int?
+  grade7      Int?
+  grade8      Int?
+  grade9      Int?
+  grade10     Int?
+  total       Int?
+  syncedAt    DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

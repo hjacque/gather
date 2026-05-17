@@ -123,6 +123,20 @@ All derivation happens in `priceAggregator.ts` after Raw Prices are collected:
 | Sealed products | Every 2 hours | :30 on odd hours (1:30, 3:30, … 23:30) |
 | Minifigures | Every 15 minutes | (defined but not scheduled by default) |
 
+## PSA Pop Report
+
+**PSA Pop Report**:
+A snapshot of the number of cards graded at each PSA grade (1–10) for a given Product, sourced by scraping the Product's `psaLink` (PSA pop report URL). Stored as one flat row per Product (`grade1`…`grade10` integer counts + `syncedAt`). Synced independently from price Syncs on a daily schedule via `/sync/psa`.
+_Avoid_: PSA data, grading data, certification count
+
+**PSA Grade**:
+A numeric quality rating (1–10) assigned by PSA to a graded card. 10 is gem mint; 1 is poor.
+_Avoid_: PSA score, condition score
+
+**PSA Total**:
+The sum of all PSA Grade counts (grades 1–10) for a Product — surfaced as a single column in the table. The full per-grade breakdown is only shown in the side panel.
+_Avoid_: Total pop, total graded
+
 ## Relationships
 
 - A **Product** belongs to exactly one **Product Set**
@@ -130,6 +144,7 @@ All derivation happens in `priceAggregator.ts` after Raw Prices are collected:
 - **Derived Prices** are computed from a Product's **Raw Prices** for a given day
 - **Performance** is computed from a Product's **Market Price** or **Buylist Price** across two dates
 - A **Sync** produces **Raw Prices** for each applicable **Price Source**, then derives **Derived Prices** and **Performance**
+- A **Product** has at most one **PSA Pop Report** (latest snapshot); a PSA Sync updates it via `/sync/psa`
 
 ## Example dialogue
 

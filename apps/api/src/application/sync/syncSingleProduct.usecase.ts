@@ -1,9 +1,11 @@
 import { connect } from "puppeteer-real-browser";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
+import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import { SetPerformancesUsecase } from "./setPerformances.usecase";
 import { PerformanceRepositoryPort } from "repository/ports/performance.repository.port";
 import { PriceSourcePort } from "./sources/priceSource.port";
+import { scrapePsaPopReport } from "./sources/psa.source";
 import { getEurToUsdRate } from "./helper";
 import { syncProduct } from "./syncProduct";
 import type { SyncProductResponse } from "@gather/api-contract";
@@ -15,7 +17,8 @@ export class SyncSingleProductUsecase {
     private readonly priceRepository: PriceRepositoryPort,
     private readonly performanceRepository: PerformanceRepositoryPort,
     private readonly setPerformancesUsecase: SetPerformancesUsecase,
-    private readonly priceSources: PriceSourcePort[]
+    private readonly priceSources: PriceSourcePort[],
+    private readonly psaPopReportRepository: PsaPopReportRepositoryPort
   ) {}
 
   async execute(productId: string): Promise<SyncProductResponse> {
@@ -58,8 +61,19 @@ export class SyncSingleProductUsecase {
     );
     const performance = performances.get(product.id)!;
 
+    if (product.psaLink) {
+      try {
+        const grades = await scrapePsaPopReport(product.psaLink, product.name, page);
+        await this.psaPopReportRepository.upsert(product.id, grades, new Date());
+      } catch (error) {
+        console.error(`[Sync] Failed to sync PSA pop report for product ${product.id}:`, error);
+      }
+    }
+
     await page.close();
     await browser.close();
+
+    const psaReport = await this.psaPopReportRepository.findByProductId(product.id);
 
     const toPrice = (key: PriceType) => prices.get(key) ?? null;
     return {
@@ -73,6 +87,7 @@ export class SyncSingleProductUsecase {
       tcgp: toPrice("tcgp"),
       bricklinkAverage: toPrice("bricklinkAverage"),
       performance,
+      psaTotal: psaReport?.total ?? null,
     };
   }
 }

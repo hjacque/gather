@@ -3,6 +3,7 @@ import type {
   ProductSetEntity,
   Franchise,
   ProductType,
+  Rarity,
   PriceType,
   PerformancePeriod,
   PerformanceType,
@@ -49,6 +50,23 @@ export type DailyPrices = {
   bricklinkAverage: number | null;
 };
 
+// ─── PSA Pop Report ───────────────────────────────────────────────────────────
+
+export type PsaPopReportSummary = {
+  grade1: number | null;
+  grade2: number | null;
+  grade3: number | null;
+  grade4: number | null;
+  grade5: number | null;
+  grade6: number | null;
+  grade7: number | null;
+  grade8: number | null;
+  grade9: number | null;
+  grade10: number | null;
+  total: number | null;
+  syncedAt: Date;
+};
+
 // ─── GET /products ────────────────────────────────────────────────────────────
 
 export type GetProductsQuery = {
@@ -56,11 +74,13 @@ export type GetProductsQuery = {
   type?: ProductType | ProductType[];
   tags?: string | string[];
   set?: string;
+  rarity?: Rarity;
 };
 
 export type GetProductsResponseItem = ProductEntity & DailyPrices & {
   productSet: ProductSetEntity;
   performance: PerformanceSummary;
+  psaTotal: number | null;
 };
 
 export type GetProductsResponse = GetProductsResponseItem[];
@@ -76,6 +96,7 @@ export type GetProductResponse = ProductEntity & {
   fullSetPrices: PriceRecord[];
   tcgpPrices: PriceRecord[];
   bricklinkAveragePrices: PriceRecord[];
+  psaPopReport: PsaPopReportSummary | null;
 };
 
 // ─── GET /product-of-the-day ─────────────────────────────────────────────────
@@ -94,4 +115,5 @@ export type GetProductOfTheDayResponse = ProductEntity & {
 export type SyncProductResponse = ProductEntity & DailyPrices & {
   productSet: ProductSetEntity;
   performance: PerformanceSummary;
+  psaTotal: number | null;
 };

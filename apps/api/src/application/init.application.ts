@@ -1,5 +1,6 @@
 import { ProductRepositoryPort } from "../repository/ports/product.repository.port";
 import { PriceRepositoryPort } from "../repository/ports/price.repository.port";
+import { PsaPopReportRepositoryPort } from "../repository/ports/psaPopReport.repository.port";
 import { SyncUsecase } from "./sync/sync.usecase";
 import { GetProductsUsecase } from "./product/getProducts.usecase";
 import { GetProductUsecase } from "./product/getProduct.usecase";
@@ -7,6 +8,7 @@ import { PerformanceRepositoryPort } from "../repository/ports/performance.repos
 import { GetProductOfTheDayUsecase } from "./product/getProductOfTheDay.usecase";
 import { SyncSingleProductUsecase } from "./sync/syncSingleProduct.usecase";
 import { SetPerformancesUsecase } from "./sync/setPerformances.usecase";
+import { SyncPsaPopReportsUsecase } from "./sync/syncPsaPopReports.usecase";
 import { CardMarketSource } from "./sync/sources/cardmarket.source";
 import { CardKingdomSource } from "./sync/sources/cardkingdom.source";
 import { AbugamesSource } from "./sync/sources/abugames.source";
@@ -22,16 +24,19 @@ export type Usecases = {
   getProductOfTheDayUsecase: GetProductOfTheDayUsecase;
   syncSingleProductUsecase: SyncSingleProductUsecase;
   setPerformancesUsecase: SetPerformancesUsecase;
+  syncPsaPopReportsUsecase: SyncPsaPopReportsUsecase;
 };
 
 export const initApplication = ({
   productRepository,
   priceRepository,
   performanceRepository,
+  psaPopReportRepository,
 }: {
   productRepository: ProductRepositoryPort;
   priceRepository: PriceRepositoryPort;
   performanceRepository: PerformanceRepositoryPort;
+  psaPopReportRepository: PsaPopReportRepositoryPort;
 }): Usecases => {
   const priceSources = [
     new CardMarketSource(),
@@ -56,11 +61,13 @@ export const initApplication = ({
   const getProductsUsecase = new GetProductsUsecase(
     productRepository,
     priceRepository,
-    performanceRepository
+    performanceRepository,
+    psaPopReportRepository
   );
   const getProductUsecase = new GetProductUsecase(
     productRepository,
-    priceRepository
+    priceRepository,
+    psaPopReportRepository
   );
   const getProductOfTheDayUsecase = new GetProductOfTheDayUsecase(
     productRepository,
@@ -71,7 +78,12 @@ export const initApplication = ({
     priceRepository,
     performanceRepository,
     setPerformancesUsecase,
-    priceSources
+    priceSources,
+    psaPopReportRepository
+  );
+  const syncPsaPopReportsUsecase = new SyncPsaPopReportsUsecase(
+    productRepository,
+    psaPopReportRepository
   );
 
   return {
@@ -81,5 +93,6 @@ export const initApplication = ({
     getProductOfTheDayUsecase,
     syncSingleProductUsecase,
     setPerformancesUsecase,
+    syncPsaPopReportsUsecase,
   };
 };

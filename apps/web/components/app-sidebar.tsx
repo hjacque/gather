@@ -77,6 +77,10 @@ const data: {
           title: 'Sealed Products',
           url: '/pokemon/sealed-products',
         },
+        {
+          title: 'Japanese Promos',
+          url: '/pokemon/japanese-promos',
+        },
       ],
     },
     {

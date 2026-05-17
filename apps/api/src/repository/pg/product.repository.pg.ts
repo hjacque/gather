@@ -37,6 +37,7 @@ export class ProductRepositoryPg implements ProductRepositoryPort {
     const take = pagination?.take ?? undefined;
     const skip = pagination?.page ? (pagination.page - 1) * (take || 1) : 0;
 
+    const include = { productSet: true } as const;
     const products = await this.prisma.product.findMany({
         where: {
           productSet: {
@@ -45,20 +46,13 @@ export class ProductRepositoryPg implements ProductRepositoryPort {
           },
           type: filters.type ? (typeof filters.type === "string" ? filters.type : { in: [...filters.type] }) : undefined,
           tags: filters.tags ? (typeof filters.tags === "string" ? { has: filters.tags } : { hasSome: filters.tags }) : undefined,
+          rarity: filters.rarity,
         },
         orderBy: [
-          {
-            productSet: {
-              releaseDate: 'desc'
-            }
-          },
-          {
-            name: 'asc'
-          },
+          { productSet: { releaseDate: 'desc' } },
+          { name: 'asc' },
         ],
-        include: {
-          productSet: true,
-        },
+        include,
         take,
         skip,
     });
@@ -70,8 +64,8 @@ export class ProductRepositoryPg implements ProductRepositoryPort {
     return products.map((product) => {
       return {
         ...this.productMapper.toEntity(product),
-        productSet: this.productSetMapper.toEntity(product.productSet)
-      }
+        productSet: this.productSetMapper.toEntity(product.productSet),
+      };
     });
   }
 

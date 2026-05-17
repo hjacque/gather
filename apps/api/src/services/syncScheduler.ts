@@ -1,13 +1,18 @@
 import { SyncUsecase } from "application/sync/sync.usecase";
+import { SyncPsaPopReportsUsecase } from "application/sync/syncPsaPopReports.usecase";
 import { Franchise, ProductType, Set } from "../entities/product.entity";
 import cron from "node-cron";
 
 export class SyncSchedulerService {
-  constructor(private readonly syncUsecase: SyncUsecase) {}
+  constructor(
+    private readonly syncUsecase: SyncUsecase,
+    private readonly syncPsaPopReportsUsecase: SyncPsaPopReportsUsecase
+  ) {}
 
   async execute() {
     await this.scheduleSingles();
     await this.scheduleSealed();
+    await this.schedulePsaPopReports();
 
     // Run immediately on startup (for testing)
     // setTimeout(async () => {
@@ -86,6 +91,25 @@ export class SyncSchedulerService {
         "extra_booster_box",
       ],
     });
+  }
+
+  async schedulePsaPopReports() {
+    cron.schedule(
+      "0 3 * * *",
+      async () => {
+        try {
+          console.log("[PSA Sync] Starting scheduled PSA pop report sync...");
+          await this.syncPsaPopReportsUsecase.execute();
+          console.log("[PSA Sync] Scheduled PSA pop report sync complete");
+        } catch (error) {
+          console.error("[PSA Sync] Error in scheduled PSA pop report sync:", error);
+        }
+      },
+      {
+        timezone: "UTC",
+      }
+    );
+    console.log("PSA pop report scheduler started (runs daily at 03:00 UTC)");
   }
 
   async scheduleMinifigures() {

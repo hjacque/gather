@@ -5,31 +5,32 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("Creating or finding Alpha set...");
 
-  // const productSet = await prisma.productSet.create({
-  //   data: {
-  //     name: "EB02 Anime 25th Collection",
-  //     code: "EB02",
-  //     releaseDate: new Date("2025-05-09"),
-  //     franchise: "one_piece",
-  //   },
-  // });
-  const productSet = await prisma.productSet.findFirst({
-    where: {
-      code: "OP01",
+  const productSet = await prisma.productSet.create({
+    data: {
+      name: "Unnumbered Promos",
+      code: "UNP",
+      releaseDate: new Date("1996-10-01"),
+      franchise: "pokemon",
     },
   });
+  // const productSet = await prisma.productSet.findFirst({
+  //   where: {
+  //     code: "OP01",
+  //   },
+  // });
   console.log("Found product set:", productSet);
   // return;
 
   await prisma.product.create({
     data: {
-      name: "Booster Box (Pre-Errata)",
+      name: "University Magikarp Tamamushi University Prize",
       productSetId: productSet.id,
-      type: "booster_box",
+      type: "single",
+      rarity: "promo",
       cardMarketLink:
-        "https://www.cardmarket.com/en/OnePiece/Products/Booster-Boxes/Romance-Dawn-Booster-Box-Pre-Errata?language=1",
+        "https://www.cardmarket.com/en/Pokemon/Products/Singles/Unnumbered-Promos/Magikarp",
+      psaLink: "https://www.psacard.com/pop/tcg-cards/1998/pokemon-japanese-promo/79839",
       tags: [],
-      boosterCount: 24,
     },
   });
 

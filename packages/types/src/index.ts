@@ -60,6 +60,18 @@ export type PerformancePeriod = typeof PERFORMANCE_PERIODS[number];
 export const PERFORMANCE_TYPES = ['market', 'buylist'] as const;
 export type PerformanceType = typeof PERFORMANCE_TYPES[number];
 
+export const RARITIES = [
+  'common',
+  'uncommon',
+  'rare',
+  'land',
+  'special_illustration_rare',
+  'rainbow_rare',
+  'promo',
+  'holo_rare',
+] as const;
+export type Rarity = typeof RARITIES[number];
+
 export type ProductSetEntity = {
   id: string;
   name: string;
@@ -78,13 +90,14 @@ export type ProductEntity = {
   boosterCount: number | null;
   msrp: number | null;
   productSetId: string;
-  rarity: string | null;
+  rarity: Rarity | null;
   cardMarketLink: string | null;
   cardkingdomBuyListLink: string | null;
   abugamesBuyListLink: string | null;
   fullSetLink: string | null;
   tcgpLink: string | null;
   bricklinkLink: string | null;
+  psaLink: string | null;
   tags: string[];
   keyword: string | null;
   blocked: string[];
