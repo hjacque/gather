@@ -440,7 +440,7 @@ function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
                 )}
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+                <div className="grid grid-cols-5 sm:grid-cols-11 gap-2">
                   {grades.map(({ grade, count }) => (
                     <div
                       key={grade}
@@ -454,6 +454,12 @@ function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
                       </span>
                     </div>
                   ))}
+                  <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-primary/10 col-span-1">
+                    <span className="text-xs text-muted-foreground font-medium">Total</span>
+                    <span className="text-sm font-semibold">
+                      {psaReport?.total != null ? psaReport.total.toLocaleString() : '—'}
+                    </span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
