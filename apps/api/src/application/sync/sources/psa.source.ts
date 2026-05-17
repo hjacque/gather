@@ -49,7 +49,7 @@ const GRADE_COLUMNS: [number, keyof PsaGrades][] = [
 function parseGradeText(text: string): number | null {
   const trimmed = text.trim();
   if (trimmed === "–" || trimmed === "-" || trimmed === "") return null;
-  const num = parseInt(trimmed, 10);
+  const num = parseInt(trimmed.replace(/,/g, ""), 10);
   return isNaN(num) ? null : num;
 }
 
@@ -123,7 +123,7 @@ export async function scrapePsaPopReport(
           if (text === "–" || text === "-" || text === "") {
             result[key] = null;
           } else {
-            const num = parseInt(text, 10);
+            const num = parseInt(text.replace(/,/g, ""), 10);
             result[key] = isNaN(num) ? null : num;
           }
         }

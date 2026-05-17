@@ -45,6 +45,28 @@ describe("parsePsaPopReportHtml", () => {
     expect(result.grade10).toBeNull();
   });
 
+  it("parses comma-formatted numbers (e.g. 1,009) correctly", () => {
+    const commaHtml = `
+      <table id="tablePSA">
+        <tbody>
+          <tr>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td><div>1,009</div></td>
+            <td><div>0</div></td>
+            <td><div>2,500</div></td>
+            <td><div>0</div></td><td><div>0</div></td><td><div>0</div></td>
+            <td><div>0</div></td><td><div>0</div></td><td><div>0</div></td>
+            <td><div>0</div></td><td><div>0</div></td>
+            <td><div>3,509</div></td>
+          </tr>
+        </tbody>
+      </table>`;
+    const result = parsePsaPopReportHtml(commaHtml);
+    expect(result.grade1).toBe(1009);
+    expect(result.grade2).toBe(2500);
+    expect(result.total).toBe(3509);
+  });
+
   it("returns all-null grades for malformed HTML", () => {
     const result = parsePsaPopReportHtml("not html at all $$%%^^");
 
