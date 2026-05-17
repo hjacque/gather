@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useState } from 'react';
+import Image from 'next/image';
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -90,62 +91,66 @@ export function TableCellViewer({
           <SheetDescription>
             {!isMobile && (
               <>
-                <ChartContainer
-                  config={
-                    {
-                      // yAxisLabel: "Price ($)",
-                      // type: "area",
-                      // legend: "
-                      desktop: {
-                        label: 'Desktop',
-                        color: 'var(--primary)',
-                      },
-                      mobile: {
-                        label: 'Mobile',
-                        color: 'var(--primary)',
-                      },
-                    } satisfies ChartConfig
-                  }
-                >
-                  <AreaChart data={chartData} margin={{ left: 0, right: 10 }}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis
-                      dataKey="date"
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={8}
-                      tickFormatter={(value) => value.slice(5)} // MM-DD
-                    />
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent indicator="dot" />}
-                    />
-                    <Area
-                      dataKey="market"
-                      name="Market Price"
-                      type="monotone"
-                      fill="var(--color-market)"
-                      fillOpacity={0.4}
-                      stroke="var(--color-market)"
-                    />
-                    <Area
-                      dataKey="buylist"
-                      name="Buylist Price"
-                      type="monotone"
-                      fill="var(--color-buylist)"
-                      fillOpacity={0.4}
-                      stroke="var(--color-buylist)"
-                    />
-                  </AreaChart>
-                </ChartContainer>
-
-                <Separator />
-                <div className="grid gap-2">
-                  <div className="text-muted-foreground">
-                    Showing price trends over time. This is mock text to
-                    demonstrate layout behavior.
-                  </div>
+                <div className="flex gap-4 items-start">
+                  {item.imageUrl && (
+                    <div className="shrink-0">
+                      <Image
+                        src={item.imageUrl}
+                        alt={item.name}
+                        width={160}
+                        height={220}
+                        className="rounded-md object-contain"
+                      />
+                    </div>
+                  )}
+                  <ChartContainer
+                    className="flex-1"
+                    config={
+                      {
+                        desktop: {
+                          label: 'Desktop',
+                          color: 'var(--primary)',
+                        },
+                        mobile: {
+                          label: 'Mobile',
+                          color: 'var(--primary)',
+                        },
+                      } satisfies ChartConfig
+                    }
+                  >
+                    <AreaChart data={chartData} margin={{ left: 0, right: 10 }}>
+                      <CartesianGrid vertical={false} />
+                      <XAxis
+                        dataKey="date"
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                        tickFormatter={(value) => value.slice(5)} // MM-DD
+                      />
+                      <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent indicator="dot" />}
+                      />
+                      <Area
+                        dataKey="market"
+                        name="Market Price"
+                        type="monotone"
+                        fill="var(--color-market)"
+                        fillOpacity={0.4}
+                        stroke="var(--color-market)"
+                      />
+                      <Area
+                        dataKey="buylist"
+                        name="Buylist Price"
+                        type="monotone"
+                        fill="var(--color-buylist)"
+                        fillOpacity={0.4}
+                        stroke="var(--color-buylist)"
+                      />
+                    </AreaChart>
+                  </ChartContainer>
                 </div>
+
                 <Separator />
               </>
             )}

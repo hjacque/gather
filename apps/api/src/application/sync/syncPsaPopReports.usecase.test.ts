@@ -48,6 +48,7 @@ function makeProduct(id: string, psaLink: string | null, rarity: Rarity = "promo
     productSetId: "set-1",
     boosterCount: null,
     msrp: null,
+    imageUrl: null,
     cardMarketLink: null,
     cardkingdomBuyListLink: null,
     abugamesBuyListLink: null,

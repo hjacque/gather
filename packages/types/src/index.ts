@@ -91,6 +91,7 @@ export type ProductEntity = {
   msrp: number | null;
   productSetId: string;
   rarity: Rarity | null;
+  imageUrl: string | null;
   cardMarketLink: string | null;
   cardkingdomBuyListLink: string | null;
   abugamesBuyListLink: string | null;

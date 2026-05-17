@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Image from 'next/image';
 import {
   closestCenter,
   DndContext,
@@ -744,7 +745,18 @@ function TableCellViewer({
           </SheetDescription>
         </SheetHeader>
         {!isMobile && (
-          <div className="w-full px-4 lg:px-6">
+          <div className="flex gap-6 items-stretch px-4 lg:px-6">
+            {item.imageUrl && (
+              <a href={item.imageUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 w-56 relative">
+                <Image
+                  src={item.imageUrl}
+                  alt={item.name}
+                  fill
+                  className="rounded-xl object-contain drop-shadow-md"
+                />
+              </a>
+            )}
+            <div className="flex-1 min-w-0">
             <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
               <CardHeader>
                 <CardTitle>Price Action</CardTitle>
@@ -806,7 +818,7 @@ function TableCellViewer({
                       },
                     } satisfies ChartConfig
                   }
-                  className="w-full max-h-88"
+                  className="w-full max-h-64"
                 >
                   <AreaChart
                     accessibilityLayer
@@ -914,6 +926,7 @@ function TableCellViewer({
                 </ChartContainer>
               </CardContent>
             </Card>
+            </div>
           </div>
         )}
         {/* Links Section */}

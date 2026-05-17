@@ -90,6 +90,8 @@ model Product {
   keyword                   String?
   blocked                   String[]
 
+  imageUrl                  String?
+
   cardMarketLink            String?
   cardkingdomBuyListLink    String?
   abugamesBuyListLink       String?
