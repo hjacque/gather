@@ -341,7 +341,7 @@ export function SignInCard() {
                   transition={{ delay: 0.3 }}
                   className="text-white/60 text-xs"
                 >
-                  Sign in to continue to Reserved TCG
+                  Sign in to continue to Gather
                 </motion.p>
               </div>
 

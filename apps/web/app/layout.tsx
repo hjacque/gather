@@ -3,7 +3,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Reserved TCG',
+  title: 'Gather',
   description: '',
 };
 
