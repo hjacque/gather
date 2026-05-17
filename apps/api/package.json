@@ -46,7 +46,7 @@
     "prisma": "^6.11.1",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "puppeteer-real-browser": "^1.4.4",
-    "zod": "^3.22.4",
+    "zod": "^3.25.73",
     "@gather/api-contract": "*"
   }
 }
