@@ -137,9 +137,14 @@ _Avoid_: PSA score, condition score
 The sum of all PSA Grade counts (grades 1–10) for a Product — surfaced as a single column in the table. The full per-grade breakdown is only shown in the side panel.
 _Avoid_: Total pop, total graded
 
+**Note**:
+A free-text annotation attached to a single Product by the user. At most one Note per Product (stored as a nullable field on Product). Plain text, max 1000 characters. Displayed read-only at the bottom of the Product side panel; editable via a pen icon.
+_Avoid_: Comment, annotation, description
+
 ## Relationships
 
 - A **Product** belongs to exactly one **Product Set**
+- A **Product** has at most one **Note** (nullable)
 - A **Product** has zero or more **Raw Prices**, one per **Price Source** per day
 - **Derived Prices** are computed from a Product's **Raw Prices** for a given day
 - **Performance** is computed from a Product's **Market Price** or **Buylist Price** across two dates

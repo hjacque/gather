@@ -110,6 +110,12 @@ export type GetProductOfTheDayResponse = ProductEntity & {
   topPerformance: PerformanceRecord;
 };
 
+// ─── PATCH /products/:id ─────────────────────────────────────────────────────
+
+export type UpdateProductNoteRequest = {
+  note: string | null;
+};
+
 // ─── GET /sync/product/:id ───────────────────────────────────────────────────
 
 export type SyncProductResponse = ProductEntity & DailyPrices & {

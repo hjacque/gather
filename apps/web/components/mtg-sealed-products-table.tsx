@@ -32,6 +32,7 @@ import {
   SheetTrigger,
 } from './ui/sheet';
 import { getProduct } from '@/app/actions/getProduct';
+import { ProductNoteSection } from '@/components/product-note-section';
 import {
   Card,
   CardAction,
@@ -813,6 +814,7 @@ function TableCellViewer({
             </CardContent>
           </Card>
         </div>
+        <ProductNoteSection productId={item.id} initialNote={item.note} />
       </SheetContent>
     </Sheet>
   );

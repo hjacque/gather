@@ -25,4 +25,6 @@ export abstract class ProductRepositoryPort {
   ): Promise<(ProductEntity & {productSet: ProductSetEntity})[]>;
 
   abstract getProduct(productId: string): Promise<ProductEntity & {productSet: ProductSetEntity}>;
+
+  abstract updateProductNote(productId: string, note: string | null): Promise<void>;
 }

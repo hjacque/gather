@@ -6,6 +6,7 @@ import { GetProductsUsecase } from "./product/getProducts.usecase";
 import { GetProductUsecase } from "./product/getProduct.usecase";
 import { PerformanceRepositoryPort } from "../repository/ports/performance.repository.port";
 import { GetProductOfTheDayUsecase } from "./product/getProductOfTheDay.usecase";
+import { UpdateProductNoteUsecase } from "./product/updateProductNote.usecase";
 import { SyncSingleProductUsecase } from "./sync/syncSingleProduct.usecase";
 import { SetPerformancesUsecase } from "./sync/setPerformances.usecase";
 import { SyncPsaPopReportsUsecase } from "./sync/syncPsaPopReports.usecase";
@@ -25,6 +26,7 @@ export type Usecases = {
   syncSingleProductUsecase: SyncSingleProductUsecase;
   setPerformancesUsecase: SetPerformancesUsecase;
   syncPsaPopReportsUsecase: SyncPsaPopReportsUsecase;
+  updateProductNoteUsecase: UpdateProductNoteUsecase;
 };
 
 export const initApplication = ({
@@ -85,6 +87,7 @@ export const initApplication = ({
     productRepository,
     psaPopReportRepository
   );
+  const updateProductNoteUsecase = new UpdateProductNoteUsecase(productRepository);
 
   return {
     syncUsecase,
@@ -94,5 +97,6 @@ export const initApplication = ({
     syncSingleProductUsecase,
     setPerformancesUsecase,
     syncPsaPopReportsUsecase,
+    updateProductNoteUsecase,
   };
 };

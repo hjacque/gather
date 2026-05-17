@@ -55,6 +55,8 @@ function makeProduct(id: string, psaLink: string | null, rarity: Rarity = "promo
     fullSetLink: null,
     tcgpLink: null,
     bricklinkLink: null,
+    note: null,
+    releaseDate: null,
     tags: [],
     keyword: null,
     blocked: [],

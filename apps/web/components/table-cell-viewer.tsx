@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { useState } from 'react';
 import Image from 'next/image';
+import { Pencil, Save } from 'lucide-react';
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -24,6 +25,7 @@ import {
 } from '@/components/ui/chart';
 import { getProduct } from '@/app/actions/getProduct';
 import type { GetProductResponse } from '@/app/actions/getProduct';
+import { updateProductNote } from '@/app/actions/updateProductNote';
 
 export function TableCellViewer({
   item,
@@ -34,6 +36,21 @@ export function TableCellViewer({
   const [chartData, setChartData] = useState<
     { date: string; market: number | null; buylist: number | null }[]
   >([]);
+  const [note, setNote] = useState<string>(item.note ?? '');
+  const [editingNote, setEditingNote] = useState(false);
+  const [noteInput, setNoteInput] = useState<string>('');
+
+  const startEditing = () => {
+    setNoteInput(note);
+    setEditingNote(true);
+  };
+
+  const saveNote = async () => {
+    const trimmed = noteInput.trim();
+    await updateProductNote(item.id, trimmed || null);
+    setNote(trimmed);
+    setEditingNote(false);
+  };
 
   const fetchChartData = async () => {
     try {
@@ -154,6 +171,34 @@ export function TableCellViewer({
                 <Separator />
               </>
             )}
+            <div className="mt-4">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Note</span>
+                {!editingNote ? (
+                  <button onClick={startEditing} className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Pencil size={13} />
+                  </button>
+                ) : (
+                  <button onClick={saveNote} className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Save size={13} />
+                  </button>
+                )}
+              </div>
+              {!editingNote ? (
+                <p className="text-sm text-foreground whitespace-pre-wrap min-h-[2rem]">
+                  {note || <span className="text-muted-foreground italic">No note</span>}
+                </p>
+              ) : (
+                <textarea
+                  autoFocus
+                  value={noteInput}
+                  onChange={(e) => setNoteInput(e.target.value)}
+                  maxLength={1000}
+                  rows={4}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-ring"
+                />
+              )}
+            </div>
           </SheetDescription>
         </SheetHeader>
       </SheetContent>

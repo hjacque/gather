@@ -93,6 +93,8 @@ model Product {
   imageUrl                  String?
   releaseDate               DateTime?
 
+  note                      String?
+
   cardMarketLink            String?
   cardkingdomBuyListLink    String?
   abugamesBuyListLink       String?

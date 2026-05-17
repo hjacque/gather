@@ -4,6 +4,7 @@ import { z } from "zod";
 import { errorHandler } from "./middlewares/http.errors";
 import { SyncUsecaseInputDto } from "application/sync/sync.usecase";
 import { GetProductOfTheDayUsecaseInputDto } from "application/product/getProductOfTheDay.usecase";
+import type { UpdateProductNoteRequest } from "@gather/api-contract";
 import { PRODUCT_TYPES, FRANCHISES } from "@gather/types";
 require("express-async-errors");
 
@@ -17,6 +18,7 @@ export const http = async ({
   getProductOfTheDayUsecase,
   syncSingleProductUsecase,
   syncPsaPopReportsUsecase,
+  updateProductNoteUsecase,
 }: Usecases) => {
   // middlewares
   app.use(express.json());
@@ -100,6 +102,16 @@ export const http = async ({
 
     res.status(200);
     res.json(result);
+  });
+
+  app.patch("/products/:productid", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    const bodySchema = z.object({
+      note: z.string().max(1000).nullable(),
+    });
+    const { note } = bodySchema.parse(req.body) as UpdateProductNoteRequest;
+    await updateProductNoteUsecase.execute(req.params.productid, note);
+    res.status(204).end();
   });
 
   const server = app.listen(port, () => {

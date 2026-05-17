@@ -82,4 +82,11 @@ export class ProductRepositoryPg implements ProductRepositoryPort {
         productSet: this.productSetMapper.toEntity(product.productSet)
       };
   }
+
+  async updateProductNote(productId: string, note: string | null): Promise<void> {
+    await this.prisma.product.update({
+      where: { id: productId },
+      data: { note },
+    });
+  }
 }
