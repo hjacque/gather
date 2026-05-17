@@ -74,7 +74,6 @@ import {
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { use, useState } from 'react';
 import { ArrowUpDown, ExternalLink, ShoppingCart, Store } from 'lucide-react';
-import { Performance } from '@/components/performance';
 import {
   Sheet,
   SheetContent,
@@ -235,69 +234,6 @@ export function PokemonJapanesePromosTable({
           </a>
         </div>
       ),
-    },
-    {
-      accessorKey: 'market',
-      header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Market <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const fmt = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
-        return (
-          <div>
-            {row.original.market != null ? fmt.format(row.original.market) : '-'}
-          </div>
-        );
-      },
-      enableSorting: true,
-    },
-    {
-      id: '1dmarket',
-      accessorFn: (row) => row.performance?.oneDayMarketPricePerformance ?? null,
-      header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          1d % <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => <Performance performance={row.getValue<number>('1dmarket')} />,
-      enableSorting: true,
-    },
-    {
-      id: '7dmarket',
-      accessorFn: (row) => row.performance?.oneWeekMarketPricePerformance ?? null,
-      header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          7d % <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => <Performance performance={row.getValue<number>('7dmarket')} />,
-      enableSorting: true,
-    },
-    {
-      id: '30dmarket',
-      accessorFn: (row) => row.performance?.oneMonthMarketPricePerformance ?? null,
-      header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          30d % <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => <Performance performance={row.getValue<number>('30dmarket')} />,
-      enableSorting: true,
-    },
-    {
-      id: 'cardmarketListingCount',
-      accessorFn: (row) => row.cardmarketListingCount ?? null,
-      header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Items <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <div>{row.original.cardmarketListingCount ? `${row.original.cardmarketListingCount}` : '-'}</div>
-      ),
-      enableSorting: true,
     },
     {
       id: 'psaTotal',
