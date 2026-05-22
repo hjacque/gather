@@ -111,7 +111,7 @@ model Product {
   createdAt                 DateTime      @default(now())
   updatedAt                 DateTime      @updatedAt
 
-  @@unique([name, productSetId, type, releaseDate])
+  @@unique([name, productSetId, type, releaseDate, number])
 }
 
 model ProductSet {
