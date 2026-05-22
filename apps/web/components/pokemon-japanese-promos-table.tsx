@@ -159,7 +159,7 @@ export function PokemonJapanesePromosTable({
       dataPromise={dataPromise}
       columns={columns}
       pageSize={pageSize}
-      defaultSorting={[{ id: 'releaseDate', desc: false }]}
+      defaultSorting={[{ id: 'releaseDate', desc: false }, { id: 'number', desc: false }]}
     />
   );
 }
