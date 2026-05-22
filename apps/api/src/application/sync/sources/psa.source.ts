@@ -86,6 +86,7 @@ export function parsePsaPopReportHtml(html: string): PsaGrades {
 export async function scrapePsaPopReport(
   psaLink: string,
   productName: string,
+  productNumber: string | null,
   page: Page
 ): Promise<PsaGrades> {
   try {
@@ -95,7 +96,8 @@ export async function scrapePsaPopReport(
     await page.waitForSelector("[data-search-input]", { timeout: 15000 });
     await page.waitForSelector("#tablePSA tbody tr", { timeout: 15000 });
 
-    await page.type("[data-search-input]", productName);
+    const searchInput = productNumber ? `${productName} ${productNumber}` : productName;
+    await page.type("[data-search-input]", searchInput);
     await page.click("[data-search-btn]");
 
     // DataTables filters client-side; give it a moment to apply

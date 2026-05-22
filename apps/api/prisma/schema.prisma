@@ -102,6 +102,7 @@ model Product {
   tcgpLink                  String?
   bricklinkLink             String?
   psaLink                   String?
+  number                    String?
 
   prices                    Price[]       @relation("ProductPrices")
   performances              Performance[] @relation("ProductPerformances")

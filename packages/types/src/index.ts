@@ -100,6 +100,7 @@ export type ProductEntity = {
   tcgpLink: string | null;
   bricklinkLink: string | null;
   psaLink: string | null;
+  number: string | null;
   note: string | null;
   tags: string[];
   keyword: string | null;

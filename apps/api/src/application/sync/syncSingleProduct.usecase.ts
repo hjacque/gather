@@ -63,7 +63,7 @@ export class SyncSingleProductUsecase {
 
     if (product.psaLink) {
       try {
-        const grades = await scrapePsaPopReport(product.psaLink, product.name, page);
+        const grades = await scrapePsaPopReport(product.psaLink, product.name, product.number, page);
         await this.psaPopReportRepository.upsert(product.id, grades, new Date());
       } catch (error) {
         console.error(`[Sync] Failed to sync PSA pop report for product ${product.id}:`, error);

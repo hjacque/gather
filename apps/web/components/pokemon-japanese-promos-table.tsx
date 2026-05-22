@@ -79,6 +79,15 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
     enableSorting: true,
   },
   {
+    accessorKey: 'number',
+    header: 'Number',
+    cell: ({ row }) => (
+      <div className="text-muted-foreground text-sm whitespace-nowrap">
+        {row.original.number}
+      </div>
+    ),
+  },
+  {
     id: 'set',
     accessorFn: (row) => row.productSet.name,
     header: ({ column }) => (
@@ -248,6 +257,7 @@ function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
           <SheetTitle>{item.name}</SheetTitle>
           <SheetDescription>
             {item.productSet.name}
+            {item.number && ` #${item.productSet.code}${item.number}`}
             {item.rarity && (
               <Badge className="ml-2" variant="secondary">
                 {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}

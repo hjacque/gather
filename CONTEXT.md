@@ -137,6 +137,10 @@ _Avoid_: PSA score, condition score
 The sum of all PSA Grade counts (grades 1–10) for a Product — surfaced as a single column in the table. The full per-grade breakdown is only shown in the side panel.
 _Avoid_: Total pop, total graded
 
+**Product Number**:
+An optional string identifier for a Product within its Product Set — e.g. `"SWSH001"` or `"001"` for Japanese promos. Used to disambiguate PSA pop report searches and displayed in the japanese-promos table and side panel.
+_Avoid_: Card number, set number, collector number
+
 **Note**:
 A free-text annotation attached to a single Product by the user. At most one Note per Product (stored as a nullable field on Product). Plain text, max 1000 characters. Displayed read-only at the bottom of the Product side panel; editable via a pen icon.
 _Avoid_: Comment, annotation, description

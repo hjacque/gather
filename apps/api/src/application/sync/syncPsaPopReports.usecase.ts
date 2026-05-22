@@ -49,7 +49,7 @@ export class SyncPsaPopReportsUsecase {
           console.log(
             `[PSA Sync] Scraping pop report for product ${product.id} (${product.name})`
           );
-          const grades = await scrapePsaPopReport(product.psaLink!, product.name, page);
+          const grades = await scrapePsaPopReport(product.psaLink!, product.name, product.number, page);
           await this.psaPopReportRepository.upsert(product.id, grades, syncedAt);
           console.log(
             `[PSA Sync] Successfully upserted pop report for product ${product.id}`
