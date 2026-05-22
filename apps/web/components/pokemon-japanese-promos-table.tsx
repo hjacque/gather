@@ -160,6 +160,32 @@ export function PokemonJapanesePromosTable({
       columns={columns}
       pageSize={pageSize}
       defaultSorting={[{ id: 'releaseDate', desc: false }, { id: 'number', desc: false }]}
+      filters={(data, table) => {
+        const sets = Array.from(new Set(data.map((d) => d.productSet.name))).sort();
+        const current = (table.getColumn('set')?.getFilterValue() as string) ?? '';
+        return (
+          <div className="flex items-center gap-2">
+            <Select
+              value={current || '__all__'}
+              onValueChange={(v) =>
+                table.getColumn('set')?.setFilterValue(v === '__all__' ? '' : v)
+              }
+            >
+              <SelectTrigger size="sm" className="w-48">
+                <SelectValue placeholder="All sets" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">All sets</SelectItem>
+                {sets.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        );
+      }}
     />
   );
 }
