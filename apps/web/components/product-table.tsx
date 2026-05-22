@@ -98,11 +98,15 @@ function DraggableRow({ row }: { row: Row<GetProductsResponseItem> }) {
         transition: transition,
       }}
     >
-      {row.getVisibleCells().map((cell) => (
-        <TableCell key={cell.id}>
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </TableCell>
-      ))}
+      {row.getVisibleCells().map((cell) => {
+        const fill = (cell.column.columnDef.meta as { fill?: boolean } | undefined)?.fill;
+        const size = cell.column.getSize();
+        return (
+          <TableCell key={cell.id} style={fill ? undefined : { width: size, maxWidth: size }}>
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </TableCell>
+        );
+      })}
     </TableRow>
   );
 }
@@ -240,16 +244,24 @@ export function ProductTable({
                 <TableHeader className="bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md shadow-xs sticky top-0 z-10">
                   {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => (
-                        <TableHead key={header.id} colSpan={header.colSpan}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext(),
-                              )}
-                        </TableHead>
-                      ))}
+                      {headerGroup.headers.map((header) => {
+                        const fill = (header.column.columnDef.meta as { fill?: boolean } | undefined)?.fill;
+                        const size = header.getSize();
+                        return (
+                          <TableHead
+                            key={header.id}
+                            colSpan={header.colSpan}
+                            style={fill ? undefined : { width: size, maxWidth: size }}
+                          >
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                          </TableHead>
+                        );
+                      })}
                     </TableRow>
                   ))}
                 </TableHeader>

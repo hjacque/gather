@@ -50,6 +50,7 @@ import { ProductTable, RowActionsCell } from './product-table';
 const columns: ColumnDef<GetProductsResponseItem>[] = [
   {
     accessorKey: 'name',
+    meta: { fill: true },
     header: ({ column }) => (
       <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
         Name <ArrowUpDown />
@@ -61,15 +62,18 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
   },
   {
     accessorKey: 'releaseDate',
+    size: 110,
     header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-        Release <ArrowUpDown />
-      </Button>
+      <div className="flex justify-center">
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          Release <ArrowUpDown />
+        </Button>
+      </div>
     ),
     cell: ({ row }) => {
       const date = row.original.releaseDate;
       return (
-        <div className="text-muted-foreground text-sm whitespace-nowrap">
+        <div className="text-muted-foreground text-sm whitespace-nowrap text-center">
           {date
             ? new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
             : '-'}
@@ -80,15 +84,17 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
   },
   {
     accessorKey: 'number',
-    header: 'Number',
+    size: 80,
+    header: () => <div className="text-center">Number</div>,
     cell: ({ row }) => (
-      <div className="text-muted-foreground text-sm whitespace-nowrap">
-        {row.original.number}
+      <div className="text-muted-foreground text-sm text-center">
+        {row.original.number ?? ''}
       </div>
     ),
   },
   {
     id: 'set',
+    size: 160,
     accessorFn: (row) => row.productSet.name,
     header: ({ column }) => (
       <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
@@ -96,46 +102,46 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <div className="w-28">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Badge
-              variant="outline"
-              className="text-muted-foreground px-1.5 max-w-[10rem] truncate overflow-hidden whitespace-nowrap justify-start text-left"
-            >
-              {row.original.productSet.name}
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{row.original.productSet.name}</p>
-          </TooltipContent>
-        </Tooltip>
-      </div>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Badge
+            variant="outline"
+            className="text-muted-foreground px-1.5 max-w-full truncate overflow-hidden whitespace-nowrap justify-start text-left"
+          >
+            {row.original.productSet.name}
+          </Badge>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{row.original.productSet.name}</p>
+        </TooltipContent>
+      </Tooltip>
     ),
   },
   {
     accessorKey: 'buy',
+    size: 60,
     header: '',
     cell: ({ row }) => (
-      <div>
-        <a href={`${row.original.cardMarketLink}`} target="_blank" rel="noreferrer">
-          <Button variant="buy" size="buySize">
-            Buy
-          </Button>
-        </a>
-      </div>
+      <a href={`${row.original.cardMarketLink}`} target="_blank" rel="noreferrer">
+        <Button variant="buy" size="buySize">
+          Buy
+        </Button>
+      </a>
     ),
   },
   {
     id: 'psaTotal',
+    size: 120,
     accessorFn: (row) => row.psaTotal ?? null,
     header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-        PSA Pop <ArrowUpDown />
-      </Button>
+      <div className="flex justify-center">
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          PSA Pop <ArrowUpDown />
+        </Button>
+      </div>
     ),
     cell: ({ row }) => (
-      <div>
+      <div className="text-center tabular-nums">
         {row.original.psaTotal != null ? row.original.psaTotal.toLocaleString() : '—'}
       </div>
     ),
@@ -143,6 +149,7 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
   },
   {
     id: 'actions',
+    size: 52,
     cell: ({ row }) => <RowActionsCell row={row} />,
   },
 ];
