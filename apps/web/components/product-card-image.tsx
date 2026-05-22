@@ -90,7 +90,7 @@ export function ProductCardImage({ src, alt, containerClassName }: ProductCardIm
             >
               {/* Tilt + glare */}
               <motion.div
-                className="relative"
+                className="relative cursor-none"
                 style={{
                   rotateX: rotateXSpring,
                   rotateY: rotateYSpring,
