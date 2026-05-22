@@ -50,7 +50,8 @@ export function ProductCardImage({ src, alt, containerClassName }: ProductCardIm
         className={containerClassName ?? 'shrink-0 aspect-[63/88] relative'}
       >
         <div
-          className="absolute inset-0 overflow-hidden rounded-[6px] cursor-pointer"
+          className="absolute inset-0 overflow-hidden cursor-pointer"
+          style={{ borderRadius: '5.5% / 3.977%' }}
           onClick={() => setSpotlightOpen(true)}
         >
           <Image src={src} alt={alt} fill className="object-contain" />
@@ -103,11 +104,11 @@ export function ProductCardImage({ src, alt, containerClassName }: ProductCardIm
                   alt={alt}
                   width={420}
                   height={588}
-                  className="rounded-[14px] object-contain drop-shadow-2xl"
+                  className="rounded-[23px] object-contain drop-shadow-2xl"
                   style={{ maxHeight: '88vh', width: 'auto' }}
                 />
                 <div
-                  className="pointer-events-none absolute inset-0 rounded-[14px] transition-opacity duration-300"
+                  className="pointer-events-none absolute inset-0 rounded-[23px] transition-opacity duration-300"
                   style={{
                     background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255,255,255,0.28) 0%, transparent 65%)`,
                     opacity: glare.opacity,
