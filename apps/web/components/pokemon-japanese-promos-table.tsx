@@ -321,7 +321,7 @@ function useProductPanel(item: GetProductsResponseItem) {
           <SheetTitle>{item.name}</SheetTitle>
           <SheetDescription>
             {item.productSet.name}
-            {item.number && ` #${item.productSet.code}${item.number}`}
+            {item.number && ` #${item.number}/${item.productSet.code}`}
             {item.rarity && (
               <Badge className="ml-2" variant="secondary">
                 {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
