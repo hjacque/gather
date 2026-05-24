@@ -46,43 +46,6 @@ const GRADE_COLUMNS: [number, keyof PsaGrades][] = [
   [16, "total"],
 ];
 
-function parseGradeText(text: string): number | null {
-  const trimmed = text.trim();
-  if (trimmed === "–" || trimmed === "-" || trimmed === "") return null;
-  const num = parseInt(trimmed.replace(/,/g, ""), 10);
-  return isNaN(num) ? null : num;
-}
-
-export function parsePsaPopReportHtml(html: string): PsaGrades {
-  const grades = { ...NULL_GRADES };
-
-  const tbodyMatch = html.match(
-    /<table[^>]*id=["']tablePSA["'][^>]*>[\s\S]*?<tbody[^>]*>([\s\S]*?)<\/tbody>/i
-  );
-  if (!tbodyMatch) return grades;
-
-  const firstRowMatch = tbodyMatch[1].match(/<tr[^>]*>([\s\S]*?)<\/tr>/i);
-  if (!firstRowMatch) return grades;
-
-  const tdRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi;
-  const cells: string[] = [];
-  let m: RegExpExecArray | null;
-  while ((m = tdRegex.exec(firstRowMatch[1])) !== null) {
-    cells.push(m[1]);
-  }
-
-  for (const [colIdx, key] of GRADE_COLUMNS) {
-    const cell = cells[colIdx];
-    if (cell == null) continue;
-    const firstDivMatch = cell.match(/<div[^>]*>(.*?)<\/div>/i);
-    if (!firstDivMatch) continue;
-    const text = firstDivMatch[1].replace(/<[^>]+>/g, "");
-    grades[key] = parseGradeText(text);
-  }
-
-  return grades;
-}
-
 export async function scrapePsaPopReport(
   psaLink: string,
   productName: string,
