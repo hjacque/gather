@@ -22,6 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Sheet,
   SheetContent,
@@ -91,6 +93,10 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
     id: 'set',
     size: 110,
     accessorFn: (row) => row.productSet.name,
+    filterFn: (row, _columnId, filterValue: string[]) => {
+      if (!filterValue || filterValue.length === 0) return true;
+      return filterValue.includes(row.original.productSet.name);
+    },
     header: ({ column }) => (
       <div className="flex justify-center">
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
@@ -202,27 +208,57 @@ export function PokemonJapanesePromosTable({
           const db = setDateMap.get(b) ?? Infinity;
           return da !== db ? da - db : a.localeCompare(b);
         });
-        const current = (table.getColumn('set')?.getFilterValue() as string) ?? '';
+        const selected = (table.getColumn('set')?.getFilterValue() as string[]) ?? [];
+        const toggle = (setName: string) => {
+          const next = selected.includes(setName)
+            ? selected.filter((s) => s !== setName)
+            : [...selected, setName];
+          table.getColumn('set')?.setFilterValue(next.length ? next : undefined);
+        };
+        const label =
+          selected.length === 0
+            ? 'All sets'
+            : selected.length === 1
+              ? selected[0]
+              : `${selected.length} sets`;
         return (
           <div className="flex items-center gap-2">
-            <Select
-              value={current || '__all__'}
-              onValueChange={(v) =>
-                table.getColumn('set')?.setFilterValue(v === '__all__' ? '' : v)
-              }
-            >
-              <SelectTrigger size="sm" className="w-48">
-                <SelectValue placeholder="All sets" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__all__">All sets</SelectItem>
-                {sets.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="w-48 justify-between font-normal">
+                  <span className="truncate">{label}</span>
+                  <ArrowUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-2" align="start">
+                <div className="flex flex-col gap-1 max-h-72 overflow-y-auto">
+                  {sets.map((s) => (
+                    <label
+                      key={s}
+                      className="flex items-center gap-2 rounded px-2 py-1.5 text-sm cursor-pointer hover:bg-accent"
+                    >
+                      <Checkbox
+                        checked={selected.includes(s)}
+                        onCheckedChange={() => toggle(s)}
+                      />
+                      {s}
+                    </label>
+                  ))}
+                </div>
+                {selected.length > 0 && (
+                  <div className="mt-2 border-t pt-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-xs"
+                      onClick={() => table.getColumn('set')?.setFilterValue(undefined)}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
           </div>
         );
       }}
