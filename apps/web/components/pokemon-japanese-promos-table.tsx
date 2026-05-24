@@ -83,39 +83,52 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
     enableSorting: true,
   },
   {
-    accessorKey: 'number',
+    id: 'set',
+    size: 90,
+    accessorFn: (row) => row.productSet.name,
+    header: ({ column }) => (
+      <div className="flex justify-center">
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          Set <ArrowUpDown />
+        </Button>
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="flex justify-center">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge
+              variant="outline"
+              className="text-muted-foreground px-1.5 max-w-full truncate overflow-hidden whitespace-nowrap"
+            >
+              {row.original.productSet.code}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{row.original.productSet.name}</p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    ),
+  },
+  {
+    id: 'number',
     size: 80,
-    header: () => <div className="text-center">Number</div>,
+    accessorFn: (row) => (row.number != null ? parseInt(row.number, 10) : null),
+    sortUndefined: 'last',
+    header: ({ column }) => (
+      <div className="flex justify-center">
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          Number <ArrowUpDown />
+        </Button>
+      </div>
+    ),
     cell: ({ row }) => (
       <div className="text-muted-foreground text-sm text-center">
         {row.original.number ?? ''}
       </div>
     ),
-  },
-  {
-    id: 'set',
-    size: 160,
-    accessorFn: (row) => row.productSet.name,
-    header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-        Set <ArrowUpDown />
-      </Button>
-    ),
-    cell: ({ row }) => (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Badge
-            variant="outline"
-            className="text-muted-foreground px-1.5 max-w-full truncate overflow-hidden whitespace-nowrap justify-start text-left"
-          >
-            {row.original.productSet.name}
-          </Badge>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{row.original.productSet.name}</p>
-        </TooltipContent>
-      </Tooltip>
-    ),
+    enableSorting: true,
   },
   {
     accessorKey: 'buy',
