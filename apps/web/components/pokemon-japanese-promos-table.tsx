@@ -227,7 +227,6 @@ export function PokemonJapanesePromosTable({
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="w-48 justify-between font-normal">
                   <span className="truncate">{label}</span>
-                  <ArrowUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-2" align="start">
