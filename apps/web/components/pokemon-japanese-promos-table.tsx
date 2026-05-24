@@ -28,7 +28,6 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from './ui/sheet';
 import { getProduct } from '@/app/actions/getProduct';
 import { ProductNoteSection } from '@/components/product-note-section';
@@ -49,8 +48,14 @@ import { ProductTable, RowActionsCell } from './product-table';
 
 const columns: ColumnDef<GetProductsResponseItem>[] = [
   {
+    id: 'image',
+    size: 40,
+    header: '',
+    cell: ({ row }) => <ImageCell item={row.original} />,
+  },
+  {
     accessorKey: 'name',
-    meta: { fill: true },
+    size: 300,
     header: ({ column }) => (
       <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
         Name <ArrowUpDown />
@@ -62,7 +67,7 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
   },
   {
     accessorKey: 'releaseDate',
-    size: 110,
+    size: 120,
     header: ({ column }) => (
       <div className="flex justify-center">
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
@@ -225,8 +230,9 @@ export function PokemonJapanesePromosTable({
   );
 }
 
-function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
+function useProductPanel(item: GetProductsResponseItem) {
   const isMobile = useIsMobile();
+  const [open, setOpen] = useState(false);
   const [product, setProduct] = useState<GetProductResponse | null>(null);
   const [timeRange, setTimeRange] = React.useState('360d');
 
@@ -237,6 +243,11 @@ function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
     } catch (err) {
       console.error('Failed to load product detail', err);
     }
+  };
+
+  const handleOpenChange = (next: boolean) => {
+    if (next) fetchProduct();
+    setOpen(next);
   };
 
   const chartData = React.useMemo(() => {
@@ -282,10 +293,7 @@ function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
     return date >= start;
   });
 
-  const currencyFormatter = new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-  });
+  const currencyFormatter = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 
   const psaReport = product?.psaPopReport ?? null;
   const grades = psaReport
@@ -303,13 +311,8 @@ function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
       ]
     : null;
 
-  return (
-    <Sheet onOpenChange={(open) => open && fetchProduct()}>
-      <SheetTrigger asChild>
-        <Button variant="link" className="text-foreground w-fit px-0 text-left">
-          {item.name}
-        </Button>
-      </SheetTrigger>
+  const panel = (
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent
         side={isMobile ? 'bottom' : 'right'}
         className={`p-10 ${!isMobile ? 'w-1/2' : ''} sm:w-[1400px] sm:max-w-[1400px]`}
@@ -361,15 +364,9 @@ function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
                       <SelectValue placeholder="Last 3 months" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
-                      <SelectItem value="360d" className="rounded-lg">
-                        Last year
-                      </SelectItem>
-                      <SelectItem value="90d" className="rounded-lg">
-                        Last 3 months
-                      </SelectItem>
-                      <SelectItem value="30d" className="rounded-lg">
-                        Last 30 days
-                      </SelectItem>
+                      <SelectItem value="360d" className="rounded-lg">Last year</SelectItem>
+                      <SelectItem value="90d" className="rounded-lg">Last 3 months</SelectItem>
+                      <SelectItem value="30d" className="rounded-lg">Last 30 days</SelectItem>
                     </SelectContent>
                   </Select>
                 </CardAction>
@@ -380,10 +377,7 @@ function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
                     {
                       market: { label: 'Market', color: 'var(--chart-1)' },
                       buylist: { label: 'Buylist', color: 'var(--chart-2)' },
-                      cardmarketListingCount: {
-                        label: 'Available Items',
-                        color: 'var(--chart-3)',
-                      },
+                      cardmarketListingCount: { label: 'Available Items', color: 'var(--chart-3)' },
                     } satisfies ChartConfig
                   }
                   className="w-full max-h-64"
@@ -442,39 +436,9 @@ function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
                         />
                       }
                     />
-                    <Area
-                      yAxisId="left"
-                      dataKey="market"
-                      name="Market Price"
-                      type="monotone"
-                      stroke="var(--chart-1)"
-                      fill="var(--chart-1-fill)"
-                      fillOpacity={0}
-                      strokeWidth={2.5}
-                      dot={false}
-                    />
-                    <Area
-                      yAxisId="left"
-                      dataKey="buylist"
-                      name="Buylist Price"
-                      type="monotone"
-                      stroke="var(--chart-2)"
-                      fill="var(--chart-2-fill)"
-                      fillOpacity={0}
-                      strokeWidth={2.5}
-                      dot={false}
-                    />
-                    <Area
-                      yAxisId="right"
-                      dataKey="cardmarketListingCount"
-                      name="Available Items"
-                      type="monotone"
-                      stroke="var(--chart-3)"
-                      fill="var(--chart-3-fill)"
-                      fillOpacity={0}
-                      strokeWidth={2.5}
-                      dot={false}
-                    />
+                    <Area yAxisId="left" dataKey="market" name="Market Price" type="monotone" stroke="var(--chart-1)" fill="var(--chart-1-fill)" fillOpacity={0} strokeWidth={2.5} dot={false} />
+                    <Area yAxisId="left" dataKey="buylist" name="Buylist Price" type="monotone" stroke="var(--chart-2)" fill="var(--chart-2-fill)" fillOpacity={0} strokeWidth={2.5} dot={false} />
+                    <Area yAxisId="right" dataKey="cardmarketListingCount" name="Available Items" type="monotone" stroke="var(--chart-3)" fill="var(--chart-3-fill)" fillOpacity={0} strokeWidth={2.5} dot={false} />
                   </AreaChart>
                 </ChartContainer>
               </CardContent>
@@ -483,7 +447,6 @@ function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
           </div>
         )}
 
-        {/* PSA Pop Report */}
         {grades && (
           <div className="w-full px-4 lg:px-6 mt-6">
             <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
@@ -492,11 +455,7 @@ function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
                 <CardDescription>
                   Grade distribution ·{' '}
                   {psaReport?.syncedAt
-                    ? `Updated ${new Date(psaReport.syncedAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}`
+                    ? `Updated ${new Date(psaReport.syncedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`
                     : ''}
                 </CardDescription>
                 {item.psaLink && (
@@ -513,23 +472,14 @@ function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
               <CardContent>
                 <div className="grid grid-cols-5 sm:grid-cols-11 gap-2">
                   {grades.map(({ grade, count }) => (
-                    <div
-                      key={grade}
-                      className="flex flex-col items-center gap-1 p-2 rounded-lg bg-muted"
-                    >
-                      <span className="text-xs text-muted-foreground font-medium">
-                        PSA {grade}
-                      </span>
-                      <span className="text-sm font-semibold">
-                        {count != null ? count.toLocaleString() : '—'}
-                      </span>
+                    <div key={grade} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-muted">
+                      <span className="text-xs text-muted-foreground font-medium">PSA {grade}</span>
+                      <span className="text-sm font-semibold">{count != null ? count.toLocaleString() : '—'}</span>
                     </div>
                   ))}
                   <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-primary/10 col-span-1">
                     <span className="text-xs text-muted-foreground font-medium">Total</span>
-                    <span className="text-sm font-semibold">
-                      {psaReport?.total != null ? psaReport.total.toLocaleString() : '—'}
-                    </span>
+                    <span className="text-sm font-semibold">{psaReport?.total != null ? psaReport.total.toLocaleString() : '—'}</span>
                   </div>
                 </div>
               </CardContent>
@@ -537,7 +487,6 @@ function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
           </div>
         )}
 
-        {/* Product Links */}
         <div className="w-full px-4 lg:px-6 mt-6">
           <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
             <CardHeader>
@@ -547,45 +496,25 @@ function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
             <CardContent>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {item.cardMarketLink && (
-                  <a
-                    href={item.cardMarketLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors"
-                  >
+                  <a href={item.cardMarketLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
                     <ShoppingCart className="w-5 h-5 text-primary" />
                     <span className="text-sm font-medium">CardMarket</span>
                   </a>
                 )}
                 {item.tcgpLink && (
-                  <a
-                    href={item.tcgpLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors"
-                  >
+                  <a href={item.tcgpLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
                     <ShoppingCart className="w-5 h-5 text-primary" />
                     <span className="text-sm font-medium">TCGPlayer</span>
                   </a>
                 )}
                 {item.cardkingdomBuyListLink && (
-                  <a
-                    href={item.cardkingdomBuyListLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors"
-                  >
+                  <a href={item.cardkingdomBuyListLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
                     <Store className="w-5 h-5 text-primary" />
                     <span className="text-sm font-medium">Card Kingdom</span>
                   </a>
                 )}
                 {item.abugamesBuyListLink && (
-                  <a
-                    href={item.abugamesBuyListLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors"
-                  >
+                  <a href={item.abugamesBuyListLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
                     <Store className="w-5 h-5 text-primary" />
                     <span className="text-sm font-medium">ABU Games</span>
                   </a>
@@ -597,5 +526,41 @@ function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
         <ProductNoteSection productId={item.id} initialNote={item.note} />
       </SheetContent>
     </Sheet>
+  );
+
+  return { open, setOpen: handleOpenChange, panel };
+}
+
+function ImageCell({ item }: { item: GetProductsResponseItem }) {
+  const { setOpen, panel } = useProductPanel(item);
+
+  if (!item.imageUrl) return null;
+  return (
+    <>
+      <Tooltip disableHoverableContent>
+        <TooltipTrigger asChild>
+          <div className="flex justify-center cursor-pointer" onClick={() => setOpen(true)}>
+            <img src={item.imageUrl} alt="" className="h-10 w-auto object-contain rounded" />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="right" className="p-1 bg-transparent border-none shadow-none pointer-events-none">
+          <img src={item.imageUrl} alt={item.name} className="h-64 w-auto object-contain rounded-lg shadow-xl" />
+        </TooltipContent>
+      </Tooltip>
+      {panel}
+    </>
+  );
+}
+
+function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
+  const { setOpen, panel } = useProductPanel(item);
+
+  return (
+    <>
+      <Button variant="link" className="text-foreground w-fit px-0 text-left" onClick={() => setOpen(true)}>
+        {item.name}
+      </Button>
+      {panel}
+    </>
   );
 }
