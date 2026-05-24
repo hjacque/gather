@@ -315,7 +315,7 @@ function useProductPanel(item: GetProductsResponseItem) {
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent
         side={isMobile ? 'bottom' : 'right'}
-        className={`p-10 ${!isMobile ? 'w-1/2' : ''} sm:w-[1400px] sm:max-w-[1400px]`}
+        className={`p-10 gap-6 ${!isMobile ? 'w-1/2' : ''} sm:w-[1400px] sm:max-w-[1400px]`}
       >
         <SheetHeader>
           <SheetTitle>{item.name}</SheetTitle>
@@ -448,7 +448,7 @@ function useProductPanel(item: GetProductsResponseItem) {
         )}
 
         {grades && (
-          <div className="w-full px-4 lg:px-6 mt-6">
+          <div className="w-full px-4 lg:px-6">
             <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
               <CardHeader>
                 <CardTitle>PSA Pop Report</CardTitle>
@@ -487,7 +487,7 @@ function useProductPanel(item: GetProductsResponseItem) {
           </div>
         )}
 
-        <div className="w-full px-4 lg:px-6 mt-6">
+        <div className="w-full px-4 lg:px-6">
           <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
             <CardHeader>
               <CardTitle>Product Links</CardTitle>
