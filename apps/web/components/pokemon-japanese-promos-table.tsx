@@ -67,7 +67,7 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
   },
   {
     accessorKey: 'releaseDate',
-    size: 120,
+    size: 110,
     header: ({ column }) => (
       <div className="flex justify-center">
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
@@ -89,7 +89,7 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
   },
   {
     id: 'set',
-    size: 90,
+    size: 110,
     accessorFn: (row) => row.productSet.name,
     header: ({ column }) => (
       <div className="flex justify-center">
@@ -118,7 +118,7 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
   },
   {
     id: 'number',
-    size: 80,
+    size: 110,
     accessorFn: (row) => (row.number != null ? parseInt(row.number, 10) : null),
     sortUndefined: 'last',
     header: ({ column }) => (
@@ -137,7 +137,7 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
   },
   {
     accessorKey: 'buy',
-    size: 60,
+    size: 110,
     header: '',
     cell: ({ row }) => (
       <div className="flex justify-center">
@@ -151,7 +151,7 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
   },
   {
     id: 'psaTotal',
-    size: 120,
+    size: 110,
     accessorFn: (row) => row.psaTotal ?? null,
     header: ({ column }) => (
       <div className="flex justify-center">
