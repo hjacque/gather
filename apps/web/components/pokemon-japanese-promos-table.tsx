@@ -135,11 +135,13 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
     size: 60,
     header: '',
     cell: ({ row }) => (
-      <a href={`${row.original.cardMarketLink}`} target="_blank" rel="noreferrer">
-        <Button variant="buy" size="buySize">
-          Buy
-        </Button>
-      </a>
+      <div className="flex justify-center">
+        <a href={`${row.original.cardMarketLink}`} target="_blank" rel="noreferrer">
+          <Button variant="buy" size="buySize">
+            Buy
+          </Button>
+        </a>
+      </div>
     ),
   },
   {
