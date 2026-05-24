@@ -181,7 +181,20 @@ export function PokemonJapanesePromosTable({
       pageSize={pageSize}
       defaultSorting={[{ id: 'releaseDate', desc: false }, { id: 'number', desc: false }]}
       filters={(data, table) => {
-        const sets = Array.from(new Set(data.map((d) => d.productSet.name))).sort();
+        const setDateMap = new Map<string, number>();
+        for (const d of data) {
+          if (!d.releaseDate) continue;
+          const ts = new Date(d.releaseDate).getTime();
+          const existing = setDateMap.get(d.productSet.name);
+          if (existing === undefined || ts < existing) {
+            setDateMap.set(d.productSet.name, ts);
+          }
+        }
+        const sets = Array.from(new Set(data.map((d) => d.productSet.name))).sort((a, b) => {
+          const da = setDateMap.get(a) ?? Infinity;
+          const db = setDateMap.get(b) ?? Infinity;
+          return da !== db ? da - db : a.localeCompare(b);
+        });
         const current = (table.getColumn('set')?.getFilterValue() as string) ?? '';
         return (
           <div className="flex items-center gap-2">
