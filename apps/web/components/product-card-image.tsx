@@ -10,7 +10,6 @@ import {
   useTransform,
   useMotionTemplate,
 } from 'framer-motion';
-import { X } from 'lucide-react';
 
 interface ProductCardImageProps {
   src: string;
@@ -75,17 +74,6 @@ export function ProductCardImage({ src, alt, containerClassName }: ProductCardIm
             exit={{ opacity: 0 }}
             onClick={() => setSpotlightOpen(false)}
           >
-            <button
-              className="absolute top-4 right-4 rounded-full bg-white/10 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/25"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSpotlightOpen(false);
-              }}
-              aria-label="Close"
-            >
-              <X className="h-5 w-5" />
-            </button>
-
             {/* Entrance animation */}
             <motion.div
               initial={{ scale: 0.85, opacity: 0 }}
