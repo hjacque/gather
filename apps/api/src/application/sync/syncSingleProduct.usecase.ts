@@ -86,6 +86,10 @@ export class SyncSingleProductUsecase {
       fullSet: toPrice("fullSet"),
       tcgp: toPrice("tcgp"),
       bricklinkAverage: toPrice("bricklinkAverage"),
+      cardmarketPsa9: toPrice("cardmarketPsa9"),
+      cardmarketPsa10: toPrice("cardmarketPsa10"),
+      cardmarketPsa9Yesterday: null,
+      cardmarketPsa10Yesterday: null,
       performance,
       psaTotal: psaReport?.total ?? null,
     };

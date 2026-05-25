@@ -1,5 +1,6 @@
 import { connect } from "puppeteer-real-browser";
 import { Franchise, ProductEntity, Set } from "../../entities/product.entity";
+import { Rarity } from "@gather/types";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { DEFAULT_USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
@@ -15,6 +16,7 @@ export type SyncUsecaseInputDto = {
     franchise?: Franchise;
     type?: ProductType | ProductType[];
     tags?: string | string[];
+    rarity?: Rarity;
   };
   mode: {
     headless: boolean;
@@ -40,7 +42,7 @@ export class SyncUsecase {
 
     const { browser, page } = await connect({
       headless: false,
-      disableXvfb: !mode.headless,
+      disableXvfb: true,//!mode.headless,
       args: [],
       customConfig: {},
       turnstile: true,

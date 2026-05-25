@@ -26,17 +26,15 @@ export class GetProductsUsecase {
 
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
-    const prices = await this.priceRepository.getProductsPricesByDate(
-      productIds,
-      today
-    );
+    const yesterday = new Date(today);
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
 
-    const performances = await this.performanceRepository.getPerformances(
-      productIds,
-      today
-    );
-
-    const psaReports = await this.psaPopReportRepository.findByProductIds(productIds);
+    const [prices, yesterdayPrices, performances, psaReports] = await Promise.all([
+      this.priceRepository.getProductsPricesByDate(productIds, today),
+      this.priceRepository.getProductsPricesByDate(productIds, yesterday),
+      this.performanceRepository.getPerformances(productIds, today),
+      this.psaPopReportRepository.findByProductIds(productIds),
+    ]);
 
     return products.map((product) => {
       const {
@@ -48,7 +46,10 @@ export class GetProductsUsecase {
         fullSet,
         tcgp,
         bricklinkAverage,
+        cardmarketPsa9,
+        cardmarketPsa10,
       } = prices.get(product.id)!;
+      const yp = yesterdayPrices.get(product.id)!;
       const performance = performances.get(product.id)!;
       const psaReport = psaReports.get(product.id) ?? null;
       const psaTotal = psaReport?.total ?? null;
@@ -64,6 +65,10 @@ export class GetProductsUsecase {
         fullSet,
         tcgp,
         bricklinkAverage,
+        cardmarketPsa9,
+        cardmarketPsa10,
+        cardmarketPsa9Yesterday: yp.cardmarketPsa9,
+        cardmarketPsa10Yesterday: yp.cardmarketPsa10,
         psaTotal,
       };
     });

@@ -17,6 +17,7 @@ export abstract class PriceRepositoryPort {
     fullSetPrices: PriceEntity[];
     tcgpPrices: PriceEntity[];
     bricklinkAveragePrices: PriceEntity[];
+    psaGradePrices: PriceEntity[];
   }>;
 
   abstract getOne(
@@ -40,6 +41,8 @@ export abstract class PriceRepositoryPort {
         fullSet: number | null;
         tcgp: number | null;
         bricklinkAverage: number | null;
+        cardmarketPsa9: number | null;
+        cardmarketPsa10: number | null;
       }
     >
   >;

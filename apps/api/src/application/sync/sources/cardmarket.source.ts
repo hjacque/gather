@@ -6,7 +6,9 @@ import { ProductType } from "@prisma/client";
 export class CardMarketSource implements PriceSourcePort {
   appliesTo(product: ProductEntity): boolean {
     return (
-      !!product.cardMarketLink && product.type !== ProductType.minifigure
+      !!product.cardMarketLink &&
+      !product.psaLink &&
+      product.type !== ProductType.minifigure
     );
   }
 

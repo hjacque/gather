@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { ArrowUpDown, ExternalLink, ShoppingCart, Store } from 'lucide-react';
 import { useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -9,19 +8,6 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -43,7 +29,7 @@ import {
   CardHeader,
   CardTitle,
 } from './ui/card';
-import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
+import { PsaGradePriceChart } from '@/components/psa-grade-price-chart';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import type { GetProductsResponseItem } from '@/app/actions/getProducts';
 import { ProductTable, RowActionsCell } from './product-table';
@@ -154,6 +140,58 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
         </a>
       </div>
     ),
+  },
+  {
+    id: 'cardmarketPsa9',
+    size: 110,
+    accessorFn: (row) => row.cardmarketPsa9 ?? null,
+    sortUndefined: 'last',
+    header: ({ column }) => (
+      <div className="flex justify-center">
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          PSA 9 <ArrowUpDown />
+        </Button>
+      </div>
+    ),
+    cell: ({ row }) => {
+      const today = row.original.cardmarketPsa9;
+      const yesterday = row.original.cardmarketPsa9Yesterday;
+      const color = today != null && yesterday != null
+        ? today > yesterday ? 'text-green-500' : today < yesterday ? 'text-red-500' : undefined
+        : undefined;
+      return (
+        <div className={`text-center tabular-nums text-sm ${color ?? ''}`}>
+          {today != null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(today) : ''}
+        </div>
+      );
+    },
+    enableSorting: true,
+  },
+  {
+    id: 'cardmarketPsa10',
+    size: 110,
+    accessorFn: (row) => row.cardmarketPsa10 ?? null,
+    sortUndefined: 'last',
+    header: ({ column }) => (
+      <div className="flex justify-center">
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          PSA 10 <ArrowUpDown />
+        </Button>
+      </div>
+    ),
+    cell: ({ row }) => {
+      const today = row.original.cardmarketPsa10;
+      const yesterday = row.original.cardmarketPsa10Yesterday;
+      const color = today != null && yesterday != null
+        ? today > yesterday ? 'text-green-500' : today < yesterday ? 'text-red-500' : undefined
+        : undefined;
+      return (
+        <div className={`text-center tabular-nums text-sm ${color ?? ''}`}>
+          {today != null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(today) : ''}
+        </div>
+      );
+    },
+    enableSorting: true,
   },
   {
     id: 'psaTotal',
@@ -339,7 +377,6 @@ function useProductPanel(item: GetProductsResponseItem) {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [product, setProduct] = useState<GetProductResponse | null>(null);
-  const [timeRange, setTimeRange] = React.useState('360d');
 
   const fetchProduct = async () => {
     try {
@@ -354,51 +391,6 @@ function useProductPanel(item: GetProductsResponseItem) {
     if (next) fetchProduct();
     setOpen(next);
   };
-
-  const chartData = React.useMemo(() => {
-    if (!product) return [];
-    const dateMap: Record<
-      string,
-      {
-        date: string;
-        market: number | null;
-        buylist: number | null;
-        cardmarketListingCount: number | null;
-      }
-    > = {};
-
-    product.marketPrices?.forEach(({ date, value }) => {
-      const key = date.toString();
-      if (!dateMap[key])
-        dateMap[key] = { date: key.slice(0, 10), market: null, buylist: null, cardmarketListingCount: null };
-      dateMap[key].market = value;
-    });
-    product.buylistPrices?.forEach(({ date, value }) => {
-      const key = date.toString();
-      if (!dateMap[key])
-        dateMap[key] = { date: key.slice(0, 10), market: null, buylist: null, cardmarketListingCount: null };
-      dateMap[key].buylist = value;
-    });
-    product.cardmarketListingCount?.forEach(({ date, value }) => {
-      const key = date.toString();
-      if (!dateMap[key])
-        dateMap[key] = { date: key.slice(0, 10), market: null, buylist: null, cardmarketListingCount: null };
-      dateMap[key].cardmarketListingCount = value;
-    });
-
-    return Object.values(dateMap);
-  }, [product]);
-
-  const filteredData = chartData.filter((entry) => {
-    const date = new Date(entry.date);
-    const ref = new Date();
-    const days = timeRange === '90d' ? 90 : timeRange === '30d' ? 30 : 360;
-    const start = new Date(ref);
-    start.setDate(start.getDate() - days);
-    return date >= start;
-  });
-
-  const currencyFormatter = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 
   const psaReport = product?.psaPopReport ?? null;
   const grades = psaReport
@@ -446,113 +438,7 @@ function useProductPanel(item: GetProductsResponseItem) {
               <ProductCardImage src={item.imageUrl} alt={item.name} />
             )}
             <div className="flex-1 min-w-0">
-            <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
-              <CardHeader>
-                <CardTitle>Price Action</CardTitle>
-                <CardDescription>
-                  <span className="hidden @[540px]/card:block">Market & Buylist prices</span>
-                  <span className="@[540px]/card:hidden">Last 3 months</span>
-                </CardDescription>
-                <CardAction>
-                  <ToggleGroup
-                    type="single"
-                    value={timeRange}
-                    onValueChange={setTimeRange}
-                    variant="outline"
-                    className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
-                  >
-                    <ToggleGroupItem value="360d">Last year</ToggleGroupItem>
-                    <ToggleGroupItem value="90d">Last 3 months</ToggleGroupItem>
-                    <ToggleGroupItem value="30d">Last 30 days</ToggleGroupItem>
-                  </ToggleGroup>
-                  <Select value={timeRange} onValueChange={setTimeRange}>
-                    <SelectTrigger
-                      className="flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
-                      size="sm"
-                      aria-label="Select a value"
-                    >
-                      <SelectValue placeholder="Last 3 months" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="360d" className="rounded-lg">Last year</SelectItem>
-                      <SelectItem value="90d" className="rounded-lg">Last 3 months</SelectItem>
-                      <SelectItem value="30d" className="rounded-lg">Last 30 days</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </CardAction>
-              </CardHeader>
-              <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-                <ChartContainer
-                  config={
-                    {
-                      market: { label: 'Market', color: 'var(--chart-1)' },
-                      buylist: { label: 'Buylist', color: 'var(--chart-2)' },
-                      cardmarketListingCount: { label: 'Available Items', color: 'var(--chart-3)' },
-                    } satisfies ChartConfig
-                  }
-                  className="w-full max-h-64"
-                >
-                  <AreaChart
-                    accessibilityLayer
-                    data={filteredData}
-                    margin={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  >
-                    <CartesianGrid vertical={false} stroke="var(--grid-line)" />
-                    <YAxis
-                      yAxisId="left"
-                      orientation="left"
-                      dataKey="market"
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={12}
-                      tick={{ fontSize: 12, fill: '#999' }}
-                      tickFormatter={(v) => currencyFormatter.format(v)}
-                    />
-                    <YAxis
-                      yAxisId="right"
-                      orientation="right"
-                      dataKey="cardmarketListingCount"
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={12}
-                      tick={{ fontSize: 12, fill: '#999' }}
-                      tickFormatter={(v) => Intl.NumberFormat('en-US').format(v)}
-                    />
-                    <XAxis
-                      dataKey="date"
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={12}
-                      tick={{ fontSize: 12, fill: '#999' }}
-                      tickFormatter={(v) =>
-                        new Date(v).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })
-                      }
-                    />
-                    <ChartTooltip
-                      cursor={{ stroke: 'var(--tooltip-cursor)', strokeWidth: 1 }}
-                      content={
-                        <ChartTooltipContent
-                          indicator="line"
-                          style={{ borderRadius: 8, boxShadow: '0 4px 10px rgba(0,0,0,0.08)' }}
-                          valueFormatter={(value, key) =>
-                            key === 'market' || key === 'buylist'
-                              ? currencyFormatter.format(value)
-                              : value.toString()
-                          }
-                        />
-                      }
-                    />
-                    <Area yAxisId="left" dataKey="market" name="Market Price" type="monotone" stroke="var(--chart-1)" fill="var(--chart-1-fill)" fillOpacity={0} strokeWidth={2.5} dot={false} />
-                    <Area yAxisId="left" dataKey="buylist" name="Buylist Price" type="monotone" stroke="var(--chart-2)" fill="var(--chart-2-fill)" fillOpacity={0} strokeWidth={2.5} dot={false} />
-                    <Area yAxisId="right" dataKey="cardmarketListingCount" name="Available Items" type="monotone" stroke="var(--chart-3)" fill="var(--chart-3-fill)" fillOpacity={0} strokeWidth={2.5} dot={false} />
-                  </AreaChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+              <PsaGradePriceChart psaGradePrices={product?.psaGradePrices ?? []} />
             </div>
           </div>
         )}
@@ -667,9 +553,16 @@ function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
 
   return (
     <>
-      <Button variant="link" className="text-foreground w-fit px-0 text-left" onClick={() => setOpen(true)}>
-        {item.name}
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button variant="link" className="text-foreground w-full max-w-full px-0 text-left truncate block" onClick={() => setOpen(true)}>
+            {item.name}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{item.name}</p>
+        </TooltipContent>
+      </Tooltip>
       {panel}
     </>
   );

@@ -49,6 +49,8 @@ export type DailyPrices = {
   fullSet: number | null;
   tcgp: number | null;
   bricklinkAverage: number | null;
+  cardmarketPsa9: number | null;
+  cardmarketPsa10: number | null;
 };
 
 // ─── PSA Pop Report ───────────────────────────────────────────────────────────
@@ -83,6 +85,8 @@ export type GetProductsResponseItem = ProductEntity & DailyPrices & {
   productSet: ProductSetEntity;
   performance: PerformanceSummary;
   psaTotal: number | null;
+  cardmarketPsa9Yesterday: number | null;
+  cardmarketPsa10Yesterday: number | null;
 };
 
 export type GetProductsResponse = GetProductsResponseItem[];
@@ -98,6 +102,7 @@ export type GetProductResponse = ProductEntity & {
   fullSetPrices: PriceRecord[];
   tcgpPrices: PriceRecord[];
   bricklinkAveragePrices: PriceRecord[];
+  psaGradePrices: PriceRecord[];
   psaPopReport: PsaPopReportSummary | null;
 };
 
@@ -124,4 +129,6 @@ export type SyncProductResponse = ProductEntity & DailyPrices & {
   productSet: ProductSetEntity;
   performance: PerformanceSummary;
   psaTotal: number | null;
+  cardmarketPsa9Yesterday: number | null;
+  cardmarketPsa10Yesterday: number | null;
 };

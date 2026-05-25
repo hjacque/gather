@@ -46,6 +46,16 @@ export const PRICE_TYPES = [
   'tcgp',
   'bricklink',
   'bricklinkAverage',
+  'cardmarketPsa1',
+  'cardmarketPsa2',
+  'cardmarketPsa3',
+  'cardmarketPsa4',
+  'cardmarketPsa5',
+  'cardmarketPsa6',
+  'cardmarketPsa7',
+  'cardmarketPsa8',
+  'cardmarketPsa9',
+  'cardmarketPsa10',
 ] as const;
 export type PriceType = typeof PRICE_TYPES[number];
 

@@ -118,6 +118,29 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
       },
     });
 
+    const psaGradePrices = await this.prisma.price.findMany({
+      where: {
+        productId,
+        type: {
+          in: [
+            "cardmarketPsa1",
+            "cardmarketPsa2",
+            "cardmarketPsa3",
+            "cardmarketPsa4",
+            "cardmarketPsa5",
+            "cardmarketPsa6",
+            "cardmarketPsa7",
+            "cardmarketPsa8",
+            "cardmarketPsa9",
+            "cardmarketPsa10",
+          ],
+        },
+      },
+      orderBy: {
+        date: "asc",
+      },
+    });
+
     return {
       marketPrices: marketPrices.map((p) => this.priceMapper.toEntity(p)),
       buylistPrices: buylistPrices.map((p) => this.priceMapper.toEntity(p)),
@@ -130,6 +153,7 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
       bricklinkAveragePrices: bricklinkAveragePrices.map((p) =>
         this.priceMapper.toEntity(p)
       ),
+      psaGradePrices: psaGradePrices.map((p) => this.priceMapper.toEntity(p)),
     };
   }
 
@@ -148,6 +172,8 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
             "fullSet",
             "tcgp",
             "bricklinkAverage",
+            "cardmarketPsa9",
+            "cardmarketPsa10",
           ],
         },
       },
@@ -161,7 +187,9 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
       | "cardmarketListingCount"
       | "fullSet"
       | "tcgp"
-      | "bricklinkAverage";
+      | "bricklinkAverage"
+      | "cardmarketPsa9"
+      | "cardmarketPsa10";
     const result: Map<string, Record<ResKey, number | null>> = new Map();
 
     for (const productId of productIds) {
@@ -174,6 +202,8 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
         fullSet: null,
         tcgp: null,
         bricklinkAverage: null,
+        cardmarketPsa9: null,
+        cardmarketPsa10: null,
       });
     }
 

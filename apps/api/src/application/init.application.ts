@@ -11,6 +11,7 @@ import { SyncSingleProductUsecase } from "./sync/syncSingleProduct.usecase";
 import { SetPerformancesUsecase } from "./sync/setPerformances.usecase";
 import { SyncPsaPopReportsUsecase } from "./sync/syncPsaPopReports.usecase";
 import { CardMarketSource } from "./sync/sources/cardmarket.source";
+import { CardMarketGradedSource } from "./sync/sources/cardmarketGraded.source";
 import { CardKingdomSource } from "./sync/sources/cardkingdom.source";
 import { AbugamesSource } from "./sync/sources/abugames.source";
 import { FullSetSource } from "./sync/sources/fullSet.source";
@@ -42,6 +43,7 @@ export const initApplication = ({
 }): Usecases => {
   const priceSources = [
     new CardMarketSource(),
+    new CardMarketGradedSource(),
     new BricklinkSource(),
     new CardKingdomSource(),
     new AbugamesSource(),

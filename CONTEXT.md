@@ -94,11 +94,16 @@ _Avoid_: Delta, change, trend, gain/loss
 The process of fetching Raw Prices from all applicable Price Sources for one or more Products and persisting the results.
 _Avoid_: Scrape, update, refresh, import
 
+**PSA Grade Price**:
+The lowest CardMarket listing price for a Product at a specific PSA Grade, scraped by parsing the description field of every listing on the Product's CardMarket page (all conditions, no filter). Stored as a Raw Price with type `cardmarketPsa1`…`cardmarketPsa10`. Only tracked for Products that have a `psaLink`.
+_Avoid_: Graded price, PSA market price, grade listing price
+
 ## Price Sources
 
 | Source | Type | Franchises | Notes |
 |---|---|---|---|
 | CardMarket | Sell listings | MTG, Pokémon, One Piece, Riftbound | Lowest listing → Market Price |
+| CardMarket Graded | Sell listings | Pokémon | Lowest listing per PSA Grade → PSA Grade Price; only for products with `psaLink` |
 | CardKingdom | Buylist | MTG | Contributes to Buylist Price |
 | ABUGames | Buylist | MTG | Contributes to Buylist Price |
 | TCGPlayer | Sell listings | MTG | Raw Price only, stored as `tcgp` |
