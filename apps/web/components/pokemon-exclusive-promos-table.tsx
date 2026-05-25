@@ -174,6 +174,15 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
     size: 110,
     accessorFn: (row) => row.cardmarketPsa10 ?? undefined,
     sortUndefined: 'last',
+    filterFn: (row, _columnId, filterValue: [number | null, number | null]) => {
+      const [min, max] = filterValue;
+      if (min == null && max == null) return true;
+      const val = row.original.cardmarketPsa10;
+      if (val == null) return false;
+      if (min != null && val < min) return false;
+      if (max != null && val > max) return false;
+      return true;
+    },
     header: ({ column }) => (
       <div className="flex justify-center">
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
@@ -414,6 +423,21 @@ export function PokemonExclusivePromosTable({
           }
         };
 
+        const psa10Prices = data.map((d) => d.cardmarketPsa10).filter((v): v is number => v != null);
+        const psa10DataMin = psa10Prices.length ? Math.min(...psa10Prices) : 0;
+        const psa10DataMax = psa10Prices.length ? Math.max(...psa10Prices) : 0;
+
+        const psa10PriceFilter = (table.getColumn('cardmarketPsa10')?.getFilterValue() as [number | null, number | null]) ?? [null, null];
+        const psa10Committed: [number, number] = [psa10PriceFilter[0] ?? psa10DataMin, psa10PriceFilter[1] ?? psa10DataMax];
+        const onPsa10Commit = (values: [number, number]) => {
+          const [lo, hi] = values;
+          if (lo === psa10DataMin && hi === psa10DataMax) {
+            table.getColumn('cardmarketPsa10')?.setFilterValue(undefined);
+          } else {
+            table.getColumn('cardmarketPsa10')?.setFilterValue([lo, hi]);
+          }
+        };
+
         return (
           <div className="flex items-center gap-2">
             <Popover>
@@ -493,6 +517,15 @@ export function PokemonExclusivePromosTable({
                 dataMax={psaDataMax}
                 committed={psaCommitted}
                 onCommit={onPsaCommit}
+              />
+            )}
+            {psa10DataMax > psa10DataMin && (
+              <PsaPopSlider
+                label="PSA 10 €"
+                dataMin={psa10DataMin}
+                dataMax={psa10DataMax}
+                committed={psa10Committed}
+                onCommit={onPsa10Commit}
               />
             )}
           </div>
