@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { ArrowUpDown, ExternalLink, RefreshCw, ShoppingCart, Store } from 'lucide-react';
+import { ArrowUpDown, ExternalLink, RefreshCw, ShoppingCart, Store, X } from 'lucide-react';
 import { useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 
@@ -455,6 +455,21 @@ export function PokemonExclusivePromosTable({
           }
         };
 
+        const hasActiveFilters =
+          selected.length > 0 ||
+          selectedRegions.length > 0 ||
+          psaPopFilter[0] != null ||
+          psaPopFilter[1] != null ||
+          psa10PriceFilter[0] != null ||
+          psa10PriceFilter[1] != null;
+
+        const clearAllFilters = () => {
+          table.getColumn('set')?.setFilterValue(undefined);
+          table.getColumn('regions')?.setFilterValue(undefined);
+          table.getColumn('psaTotal')?.setFilterValue(undefined);
+          table.getColumn('cardmarketPsa10')?.setFilterValue(undefined);
+        };
+
         return (
           <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -546,6 +561,12 @@ export function PokemonExclusivePromosTable({
                 committed={psa10Committed}
                 onCommit={onPsa10Commit}
               />
+            )}
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={clearAllFilters}>
+                <X className="h-3.5 w-3.5" />
+                Clear all
+              </Button>
             )}
           </div>
           <Button
