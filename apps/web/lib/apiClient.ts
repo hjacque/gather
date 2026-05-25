@@ -66,3 +66,7 @@ export async function syncProductPsa(productId: string): Promise<SyncProductResp
 export async function updateProductNote(productId: string, note: string | null): Promise<void> {
   return apiPatch(`/products/${productId}`, { note } satisfies UpdateProductNoteRequest);
 }
+
+export async function syncAllPromos(): Promise<void> {
+  await apiFetch('/sync?rarity=promo');
+}

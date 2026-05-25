@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { ArrowUpDown, ExternalLink, ShoppingCart, Store } from 'lucide-react';
+import { ArrowUpDown, ExternalLink, RefreshCw, ShoppingCart, Store } from 'lucide-react';
 import { useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 
@@ -18,6 +18,7 @@ import {
   SheetTitle,
 } from './ui/sheet';
 import { getProduct } from '@/app/actions/getProduct';
+import { syncAllPromos } from '@/app/actions/syncProduct';
 import { ProductNoteSection } from '@/components/product-note-section';
 import { ProductCardImage } from '@/components/product-card-image';
 import type { GetProductResponse } from '@/app/actions/getProduct';
@@ -353,6 +354,20 @@ export function PokemonExclusivePromosTable({
   dataPromise: Promise<GetProductsResponseItem[]>;
   pageSize?: number;
 }) {
+  const [isSyncing, setIsSyncing] = React.useState(false);
+
+  const handleSyncAll = async () => {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    try {
+      await syncAllPromos();
+    } catch (err) {
+      console.error('Sync failed', err);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <ProductTable
       dataPromise={dataPromise}
@@ -441,6 +456,7 @@ export function PokemonExclusivePromosTable({
         };
 
         return (
+          <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Popover>
               <PopoverTrigger asChild>
@@ -531,6 +547,17 @@ export function PokemonExclusivePromosTable({
                 onCommit={onPsa10Commit}
               />
             )}
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={handleSyncAll}
+            disabled={isSyncing}
+          >
+            <RefreshCw className={`h-4 w-4${isSyncing ? ' animate-spin' : ''}`} />
+            <span className="sr-only">Sync all promos</span>
+          </Button>
           </div>
         );
       }}
