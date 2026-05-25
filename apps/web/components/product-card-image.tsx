@@ -116,8 +116,8 @@ export function ProductCardImage({ src, alt, containerClassName }: ProductCardIm
                 <div
                   className="pointer-events-none absolute inset-0 rounded-[23px] transition-opacity duration-150"
                   style={{
-                    background: `radial-gradient(circle at ${pointer.x}% ${pointer.y}%, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.18) 12%, transparent 38%)`,
-                    opacity: pointer.active ? 0.65 : 0,
+                    background: `radial-gradient(circle at ${pointer.x}% ${pointer.y}%, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.10) 12%, transparent 38%)`,
+                    opacity: pointer.active ? 0.45 : 0,
                   }}
                 />
 
