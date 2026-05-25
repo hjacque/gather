@@ -2,29 +2,19 @@ import { connect } from "puppeteer-real-browser";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
-import { SetPerformancesUsecase } from "./setPerformances.usecase";
 import { PerformanceRepositoryPort } from "repository/ports/performance.repository.port";
-import { PriceSourcePort } from "./sources/priceSource.port";
 import { scrapePsaPopReport } from "./sources/psa.source";
-import { getEurToUsdRate } from "./helper";
-import { syncProduct } from "./syncProduct";
 import type { SyncProductResponse } from "@gather/api-contract";
-import type { PriceType } from "@gather/types";
 
-export class SyncSingleProductUsecase {
+export class SyncSingleProductPsaUsecase {
   constructor(
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
     private readonly performanceRepository: PerformanceRepositoryPort,
-    private readonly setPerformancesUsecase: SetPerformancesUsecase,
-    private readonly priceSources: PriceSourcePort[],
     private readonly psaPopReportRepository: PsaPopReportRepositoryPort
   ) {}
 
   async execute(productId: string): Promise<SyncProductResponse> {
-    const usdToEur = await getEurToUsdRate();
-    console.log("Using USD to EUR rate:", usdToEur);
-
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 
@@ -45,22 +35,6 @@ export class SyncSingleProductUsecase {
 
     const product = await this.productRepository.getProduct(productId);
 
-    const prices = await syncProduct(
-      product,
-      today,
-      page,
-      usdToEur,
-      this.priceSources,
-      this.priceRepository,
-      this.setPerformancesUsecase
-    );
-
-    const performances = await this.performanceRepository.getPerformances(
-      [product.id],
-      today
-    );
-    const performance = performances.get(product.id)!;
-
     if (product.psaLink) {
       try {
         const grades = await scrapePsaPopReport(product.psaLink, product.name, product.number, page);
@@ -73,21 +47,17 @@ export class SyncSingleProductUsecase {
     await page.close();
     await browser.close();
 
+    const pricesByProduct = await this.priceRepository.getProductsPricesByDate([product.id], today);
+    const currentPrices = pricesByProduct.get(product.id)!;
+
+    const performances = await this.performanceRepository.getPerformances([product.id], today);
+    const performance = performances.get(product.id)!;
+
     const psaReport = await this.psaPopReportRepository.findByProductId(product.id);
 
-    const toPrice = (key: PriceType) => prices.get(key) ?? null;
     return {
       ...product,
-      market: toPrice("market"),
-      buylist: toPrice("buylist"),
-      ratio: toPrice("ratio"),
-      perBooster: toPrice("perBooster"),
-      cardmarketListingCount: toPrice("cardmarketListingCount"),
-      fullSet: toPrice("fullSet"),
-      tcgp: toPrice("tcgp"),
-      bricklinkAverage: toPrice("bricklinkAverage"),
-      cardmarketPsa9: toPrice("cardmarketPsa9"),
-      cardmarketPsa10: toPrice("cardmarketPsa10"),
+      ...currentPrices,
       cardmarketPsa9Yesterday: null,
       cardmarketPsa10Yesterday: null,
       performance,

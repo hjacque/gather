@@ -37,7 +37,8 @@ Repositories are injected into use cases via port interfaces — concrete Prisma
 | GET | `/products/:id` | Single product with full price history |
 | GET | `/product-of-the-day` | Top-performing product for a given day |
 | GET | `/sync` | Trigger a full Sync (filter by franchise/type/set/tags) |
-| GET | `/sync/product/:id` | Trigger a Sync for a single product |
+| GET | `/sync/product/:id/cardmarket` | Trigger a CardMarket Sync for a single Product |
+| GET | `/sync/product/:id/psa` | Trigger a PSA Pop Report Sync for a single Product |
 | GET | `/sync/set/:set` | Trigger a Sync for an entire Product Set |
 
 ## Tech stack
@@ -91,7 +92,7 @@ The percentage change in Market Price or Buylist Price over a fixed period (dail
 _Avoid_: Delta, change, trend, gain/loss
 
 **Sync**:
-The process of fetching Raw Prices from all applicable Price Sources for one or more Products and persisting the results.
+The process of fetching data from external sources for one or more Products and persisting the results. Comes in two targeted forms at the single-Product level: a **CardMarket Sync** (fetches Raw Prices from the applicable CardMarket Price Source only) and a **PSA Sync** (refreshes the PSA Pop Report only).
 _Avoid_: Scrape, update, refresh, import
 
 **PSA Grade Price**:

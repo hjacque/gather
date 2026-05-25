@@ -55,8 +55,12 @@ export async function getProductOfTheDay(
   return apiFetch(`/product-of-the-day${toParams(query)}`);
 }
 
-export async function syncProduct(productId: string): Promise<SyncProductResponse> {
-  return apiFetch(`/sync/product/${productId}`);
+export async function syncProductCardMarket(productId: string): Promise<SyncProductResponse> {
+  return apiFetch(`/sync/product/${productId}/cardmarket`);
+}
+
+export async function syncProductPsa(productId: string): Promise<SyncProductResponse> {
+  return apiFetch(`/sync/product/${productId}/psa`);
 }
 
 export async function updateProductNote(productId: string, note: string | null): Promise<void> {

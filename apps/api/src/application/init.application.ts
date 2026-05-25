@@ -7,7 +7,8 @@ import { GetProductUsecase } from "./product/getProduct.usecase";
 import { PerformanceRepositoryPort } from "../repository/ports/performance.repository.port";
 import { GetProductOfTheDayUsecase } from "./product/getProductOfTheDay.usecase";
 import { UpdateProductNoteUsecase } from "./product/updateProductNote.usecase";
-import { SyncSingleProductUsecase } from "./sync/syncSingleProduct.usecase";
+import { SyncSingleProductCardMarketUsecase } from "./sync/syncSingleProductCardMarket.usecase";
+import { SyncSingleProductPsaUsecase } from "./sync/syncSingleProductPsa.usecase";
 import { SetPerformancesUsecase } from "./sync/setPerformances.usecase";
 import { SyncPsaPopReportsUsecase } from "./sync/syncPsaPopReports.usecase";
 import { CardMarketSource } from "./sync/sources/cardmarket.source";
@@ -24,7 +25,8 @@ export type Usecases = {
   getProductsUsecase: GetProductsUsecase;
   getProductUsecase: GetProductUsecase;
   getProductOfTheDayUsecase: GetProductOfTheDayUsecase;
-  syncSingleProductUsecase: SyncSingleProductUsecase;
+  syncSingleProductCardMarketUsecase: SyncSingleProductCardMarketUsecase;
+  syncSingleProductPsaUsecase: SyncSingleProductPsaUsecase;
   setPerformancesUsecase: SetPerformancesUsecase;
   syncPsaPopReportsUsecase: SyncPsaPopReportsUsecase;
   updateProductNoteUsecase: UpdateProductNoteUsecase;
@@ -77,12 +79,24 @@ export const initApplication = ({
     productRepository,
     performanceRepository
   );
-  const syncSingleProductUsecase = new SyncSingleProductUsecase(
+  const cardmarketPriceSources = [
+    new CardMarketSource(),
+    new CardMarketGradedSource(),
+  ];
+
+  const syncSingleProductCardMarketUsecase = new SyncSingleProductCardMarketUsecase(
     productRepository,
     priceRepository,
     performanceRepository,
     setPerformancesUsecase,
-    priceSources,
+    cardmarketPriceSources,
+    psaPopReportRepository
+  );
+
+  const syncSingleProductPsaUsecase = new SyncSingleProductPsaUsecase(
+    productRepository,
+    priceRepository,
+    performanceRepository,
     psaPopReportRepository
   );
   const syncPsaPopReportsUsecase = new SyncPsaPopReportsUsecase(
@@ -96,7 +110,8 @@ export const initApplication = ({
     getProductsUsecase,
     getProductUsecase,
     getProductOfTheDayUsecase,
-    syncSingleProductUsecase,
+    syncSingleProductCardMarketUsecase,
+    syncSingleProductPsaUsecase,
     setPerformancesUsecase,
     syncPsaPopReportsUsecase,
     updateProductNoteUsecase,

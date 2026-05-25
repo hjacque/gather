@@ -123,7 +123,7 @@ export type UpdateProductNoteRequest = {
   note: string | null;
 };
 
-// ─── GET /sync/product/:id ───────────────────────────────────────────────────
+// ─── GET /sync/product/:id/cardmarket | GET /sync/product/:id/psa ────────────
 
 export type SyncProductResponse = ProductEntity & DailyPrices & {
   productSet: ProductSetEntity;

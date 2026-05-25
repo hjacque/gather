@@ -70,13 +70,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { syncProduct } from '@/app/actions/syncProduct';
+import { syncProductCardMarket, syncProductPsa } from '@/app/actions/syncProduct';
 import type { GetProductsResponseItem } from '@/app/actions/getProducts';
 
+type SyncAction = 'cardmarket' | 'psa';
+
 const ProductSyncContext = React.createContext<{
-  handleSyncProduct: (id: string) => Promise<void>;
-  loadingRowId: string | null;
-}>({ handleSyncProduct: async () => {}, loadingRowId: null });
+  handleSyncProduct: (id: string, action: SyncAction) => Promise<void>;
+  loadingRow: { id: string; action: SyncAction } | null;
+}>({ handleSyncProduct: async () => {}, loadingRow: null });
 
 export function useProductSync() {
   return React.useContext(ProductSyncContext);
@@ -112,8 +114,9 @@ function DraggableRow({ row }: { row: Row<GetProductsResponseItem> }) {
 }
 
 export function RowActionsCell({ row }: { row: Row<GetProductsResponseItem> }) {
-  const { handleSyncProduct, loadingRowId } = useProductSync();
-  const isLoading = loadingRowId === row.original.id;
+  const { handleSyncProduct, loadingRow } = useProductSync();
+  const isLoadingCardMarket = loadingRow?.id === row.original.id && loadingRow.action === 'cardmarket';
+  const isLoadingPsa = loadingRow?.id === row.original.id && loadingRow.action === 'psa';
 
   return (
     <DropdownMenu>
@@ -122,22 +125,25 @@ export function RowActionsCell({ row }: { row: Row<GetProductsResponseItem> }) {
           variant="ghost"
           className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
           size="icon"
-          disabled={isLoading}
         >
-          {isLoading ? (
-            <IconLoader2 className="animate-spin" />
-          ) : (
-            <IconDotsVertical />
-          )}
+          <IconDotsVertical />
           <span className="sr-only">Open menu</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-full">
         <DropdownMenuItem
-          disabled={isLoading}
-          onSelect={() => handleSyncProduct(row.original.id)}
+          disabled={isLoadingCardMarket}
+          onSelect={() => handleSyncProduct(row.original.id, 'cardmarket')}
         >
-          Sync
+          {isLoadingCardMarket && <IconLoader2 className="animate-spin" />}
+          Sync CardMarket
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          disabled={isLoadingPsa}
+          onSelect={() => handleSyncProduct(row.original.id, 'psa')}
+        >
+          {isLoadingPsa && <IconLoader2 className="animate-spin" />}
+          Sync PSA
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -175,17 +181,19 @@ export function ProductTable({
     useSensor(TouchSensor, {}),
     useSensor(KeyboardSensor, {}),
   );
-  const [loadingRowId, setLoadingRowId] = useState<string | null>(null);
+  const [loadingRow, setLoadingRow] = useState<{ id: string; action: SyncAction } | null>(null);
 
-  const handleSyncProduct = async (id: string) => {
+  const handleSyncProduct = async (id: string, action: SyncAction) => {
     try {
-      setLoadingRowId(id);
-      const updatedProduct = await syncProduct(id);
+      setLoadingRow({ id, action });
+      const updatedProduct = action === 'cardmarket'
+        ? await syncProductCardMarket(id)
+        : await syncProductPsa(id);
       setData((prev) => prev.map((p) => (p.id === id ? updatedProduct : p)));
     } catch (error) {
       console.error(error);
     } finally {
-      setLoadingRowId(null);
+      setLoadingRow(null);
     }
   };
 
@@ -225,7 +233,7 @@ export function ProductTable({
   }
 
   return (
-    <ProductSyncContext.Provider value={{ handleSyncProduct, loadingRowId }}>
+    <ProductSyncContext.Provider value={{ handleSyncProduct, loadingRow }}>
       <Tabs defaultValue="outline" className="w-full flex-col justify-start gap-6">
         <TabsContent
           value="outline"

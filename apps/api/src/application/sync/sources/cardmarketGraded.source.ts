@@ -19,7 +19,7 @@ const PSA_GRADE_TYPES = [
 
 export class CardMarketGradedSource implements PriceSourcePort {
   appliesTo(product: ProductEntity): boolean {
-    return !!product.cardMarketLink && !!product.psaLink;
+    return !!product.cardMarketLink;
   }
 
   async fetch(

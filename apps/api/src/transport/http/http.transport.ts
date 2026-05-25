@@ -16,7 +16,8 @@ export const http = async ({
   getProductsUsecase,
   getProductUsecase,
   getProductOfTheDayUsecase,
-  syncSingleProductUsecase,
+  syncSingleProductCardMarketUsecase,
+  syncSingleProductPsaUsecase,
   syncPsaPopReportsUsecase,
   updateProductNoteUsecase,
 }: Usecases) => {
@@ -36,9 +37,17 @@ export const http = async ({
     res.json(result);
   });
 
-  app.get("/sync/product/:productid", async (req, res) => {
+  app.get("/sync/product/:productid/cardmarket", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
-    const result = await syncSingleProductUsecase.execute(req.params.productid);
+    const result = await syncSingleProductCardMarketUsecase.execute(req.params.productid);
+
+    res.status(200);
+    res.json(result);
+  });
+
+  app.get("/sync/product/:productid/psa", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    const result = await syncSingleProductPsaUsecase.execute(req.params.productid);
 
     res.status(200);
     res.json(result);
