@@ -423,6 +423,11 @@ export function PokemonExclusivePromosTable({
     if (!panelOpen) return;
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === 'Escape' && spotlightOpen) {
+        e.stopPropagation();
+        setSpotlightOpen(false);
+        return;
+      }
       if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault();
         navigateBy(-1);
@@ -431,9 +436,9 @@ export function PokemonExclusivePromosTable({
         navigateBy(1);
       }
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [panelOpen, navigateBy]);
+    window.addEventListener('keydown', handler, true);
+    return () => window.removeEventListener('keydown', handler, true);
+  }, [panelOpen, spotlightOpen, navigateBy]);
 
   const handleSyncAll = async () => {
     if (isSyncing) return;
