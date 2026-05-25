@@ -195,7 +195,9 @@ export function PokemonJapanesePromosTable({
       defaultSorting={[{ id: 'releaseDate', desc: false }, { id: 'number', desc: false }]}
       filters={(data, table) => {
         const setDateMap = new Map<string, number>();
+        const setCountMap = new Map<string, number>();
         for (const d of data) {
+          setCountMap.set(d.productSet.name, (setCountMap.get(d.productSet.name) ?? 0) + 1);
           if (!d.releaseDate) continue;
           const ts = new Date(d.releaseDate).getTime();
           const existing = setDateMap.get(d.productSet.name);
@@ -240,7 +242,7 @@ export function PokemonJapanesePromosTable({
                         checked={selected.includes(s)}
                         onCheckedChange={() => toggle(s)}
                       />
-                      {s}
+                      {`${s} (${setCountMap.get(s)})`}
                     </label>
                   ))}
                 </div>
