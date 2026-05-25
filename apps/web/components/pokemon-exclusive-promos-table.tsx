@@ -31,6 +31,8 @@ import {
 } from './ui/card';
 import { PsaGradePriceChart } from '@/components/psa-grade-price-chart';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { Slider } from '@/components/ui/slider';
+import { Input } from '@/components/ui/input';
 import type { GetProductsResponseItem } from '@/app/actions/getProducts';
 import { ProductTable, RowActionsCell } from './product-table';
 
@@ -197,6 +199,15 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
     id: 'psaTotal',
     size: 110,
     accessorFn: (row) => row.psaTotal ?? null,
+    filterFn: (row, _columnId, filterValue: [number | null, number | null]) => {
+      const [min, max] = filterValue;
+      if (min == null && max == null) return true;
+      const val = row.original.psaTotal;
+      if (val == null) return false;
+      if (min != null && val < min) return false;
+      if (max != null && val > max) return false;
+      return true;
+    },
     header: ({ column }) => (
       <div className="flex justify-center">
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
@@ -229,6 +240,97 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
     cell: ({ row }) => <RowActionsCell row={row} />,
   },
 ];
+
+function PsaPopSlider({
+  dataMin,
+  dataMax,
+  committed,
+  onCommit,
+}: {
+  dataMin: number;
+  dataMax: number;
+  committed: [number, number];
+  onCommit: (values: [number, number]) => void;
+}) {
+  const [local, setLocal] = React.useState<[number, number]>(committed);
+  const [minText, setMinText] = React.useState(String(committed[0]));
+  const [maxText, setMaxText] = React.useState(String(committed[1]));
+  const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    setLocal(committed);
+    setMinText(String(committed[0]));
+    setMaxText(String(committed[1]));
+  }, [committed[0], committed[1]]);
+
+  const schedule = (next: [number, number]) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => onCommit(next), 300);
+  };
+
+  const handleSlider = (values: number[]) => {
+    const next: [number, number] = [values[0], values[1]];
+    setLocal(next);
+    setMinText(String(next[0]));
+    setMaxText(String(next[1]));
+    schedule(next);
+  };
+
+  const handleMinInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMinText(e.target.value);
+    const parsed = parseInt(e.target.value, 10);
+    if (!isNaN(parsed)) {
+      const clamped = Math.max(dataMin, Math.min(parsed, local[1]));
+      const next: [number, number] = [clamped, local[1]];
+      setLocal(next);
+      schedule(next);
+    }
+  };
+
+  const handleMaxInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMaxText(e.target.value);
+    const parsed = parseInt(e.target.value, 10);
+    if (!isNaN(parsed)) {
+      const clamped = Math.min(dataMax, Math.max(parsed, local[0]));
+      const next: [number, number] = [local[0], clamped];
+      setLocal(next);
+      schedule(next);
+    }
+  };
+
+  const fieldWidth = `calc(${Math.max(String(dataMax).length, 2)}ch + 0.5rem)`;
+
+  return (
+    <div className="flex items-center gap-2 border rounded-md px-1 h-8">
+      <Input
+        type="text"
+        inputMode="numeric"
+        value={minText}
+        onChange={handleMinInput}
+        onBlur={() => setMinText(String(local[0]))}
+        style={{ width: fieldWidth }}
+        className="h-6 shrink-0 border-0 shadow-none px-1 py-0 text-xs tabular-nums text-right focus-visible:ring-0"
+      />
+      <Slider
+        min={dataMin}
+        max={dataMax}
+        step={1}
+        value={local}
+        onValueChange={handleSlider}
+        className="w-40"
+      />
+      <Input
+        type="text"
+        inputMode="numeric"
+        value={maxText}
+        onChange={handleMaxInput}
+        onBlur={() => setMaxText(String(local[1]))}
+        style={{ width: fieldWidth }}
+        className="h-6 shrink-0 border-0 shadow-none px-1 py-0 text-xs tabular-nums focus-visible:ring-0"
+      />
+    </div>
+  );
+}
 
 export function PokemonExclusivePromosTable({
   dataPromise,
@@ -293,6 +395,21 @@ export function PokemonExclusivePromosTable({
             : selectedRegions.length === 1
               ? regionDisplayName[selectedRegions[0]]
               : `${selectedRegions.length} regions`;
+
+        const psaValues = data.map((d) => d.psaTotal).filter((v): v is number => v != null);
+        const psaDataMin = psaValues.length ? Math.min(...psaValues) : 0;
+        const psaDataMax = psaValues.length ? Math.max(...psaValues) : 0;
+
+        const psaPopFilter = (table.getColumn('psaTotal')?.getFilterValue() as [number | null, number | null]) ?? [null, null];
+        const psaCommitted: [number, number] = [psaPopFilter[0] ?? psaDataMin, psaPopFilter[1] ?? psaDataMax];
+        const onPsaCommit = (values: [number, number]) => {
+          const [lo, hi] = values;
+          if (lo === psaDataMin && hi === psaDataMax) {
+            table.getColumn('psaTotal')?.setFilterValue(undefined);
+          } else {
+            table.getColumn('psaTotal')?.setFilterValue([lo, hi]);
+          }
+        };
 
         return (
           <div className="flex items-center gap-2">
@@ -366,6 +483,14 @@ export function PokemonExclusivePromosTable({
                 )}
               </PopoverContent>
             </Popover>
+            {psaDataMax > psaDataMin && (
+              <PsaPopSlider
+                dataMin={psaDataMin}
+                dataMax={psaDataMax}
+                committed={psaCommitted}
+                onCommit={onPsaCommit}
+              />
+            )}
           </div>
         );
       }}
