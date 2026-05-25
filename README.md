@@ -1,8 +1,6 @@
 # Gather
 
-A price aggregation and performance tracking platform for collectible trading cards and LEGO products. Gather fetches Raw Prices from multiple external marketplaces (Price Sources), computes Derived Prices (Market Price, Buylist Price, Ratio, Per Booster), and surfaces Performance metrics via a dashboard.
-
-**Supported franchises:** MTG · Pokémon · One Piece · Riftbound · LEGO
+A price aggregation and performance tracking tool for Pokémon exclusive promo cards (Japanese, Korean, and Taiwan/HK releases). Gather fetches Raw Prices from external marketplaces (Price Sources), computes Derived Prices (Market Price, Buylist Price, Ratio), and surfaces Performance metrics alongside PSA population data.
 
 ---
 
@@ -12,6 +10,7 @@ A price aggregation and performance tracking platform for collectible trading ca
 - **Derives** Market Price (lowest sell listing), Buylist Price (highest buy offer), Ratio (seller margin %), and Per Booster price for sealed products
 - **Tracks Performance** — daily, weekly, monthly, and yearly percentage changes per product
 - **Surfaces a Product of the Day** — the top-performing product for a given date
+- **Tracks PSA population** — graded card counts per product via PSA pop reports
 
 ---
 
@@ -20,7 +19,7 @@ A price aggregation and performance tracking platform for collectible trading ca
 ```
 apps/
   api/   — Node.js + Express server (price sync, data queries)
-  web/   — Next.js 15 dashboard (server actions → API)
+  web/   — Next.js 15 app (server actions → API)
 packages/
   types/        — canonical domain types (single source of truth)
   api-contract/ — HTTP request/response shapes shared between api and web
@@ -99,10 +98,12 @@ npm run build
 |---|---|---|
 | `GET` | `/products` | List all products with today's Derived Prices and Performance |
 | `GET` | `/products/:id` | Single product with full price history |
+| `PATCH` | `/products/:id` | Update a product's note |
 | `GET` | `/product-of-the-day` | Top-performing product for a given day |
 | `GET` | `/sync` | Trigger a full Sync (filter by franchise / type / set / tags) |
 | `GET` | `/sync/product/:id` | Trigger a Sync for a single product |
 | `GET` | `/sync/set/:set` | Trigger a Sync for an entire Product Set |
+| `GET` | `/sync/psa` | Trigger a PSA pop report Sync |
 
 ---
 
@@ -131,6 +132,7 @@ Repositories are injected into use cases via port interfaces — concrete Prisma
 | TCGPlayer | Sell listings | MTG |
 | BrickLink | Sell listings | LEGO |
 | FullSet | Sell listings | MTG |
+| PSA | Pop report | Pokémon |
 
 All Raw Prices are stored in EUR after conversion where needed.
 
@@ -167,6 +169,9 @@ All derivation happens in `priceAggregator.ts` after Raw Prices are collected:
 | **Product** | A single tradeable item — card, sealed box, booster bundle, ETB, or LEGO minifigure |
 | **Product Set** | A named release grouping Products (e.g. "Scarlet & Violet Base Set") |
 | **Franchise** | The brand a Product belongs to (MTG, Pokémon, One Piece, Riftbound, LEGO) |
+| **Region** | The release market of a Product — `japan`, `korea`, or `taiwan_hong_kong` |
+| **Block** | A Pokémon era grouping Product Sets (e.g. `scarlet_and_violet`, `sword_and_shield`) |
+| **Rarity** | Card rarity (`common`, `uncommon`, `rare`, `special_illustration_rare`, `promo`, etc.) |
 | **Price Source** | An external marketplace providing Raw Prices |
 | **Raw Price** | A price fetched directly from a Price Source, in EUR |
 | **Derived Price** | A price computed from Raw Prices (Market Price, Buylist Price, Ratio, Per Booster) |
@@ -175,3 +180,4 @@ All derivation happens in `priceAggregator.ts` after Raw Prices are collected:
 | **Ratio** | The percentage spread between Market Price and Buylist Price — seller margin |
 | **Performance** | Percentage change in Market or Buylist Price over a fixed period |
 | **Sync** | The process of fetching Raw Prices and persisting Derived Prices |
+| **PSA Pop** | PSA population report data — graded card counts per grade for a product |
