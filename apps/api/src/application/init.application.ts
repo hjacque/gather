@@ -45,7 +45,6 @@ export const initApplication = ({
 }): Usecases => {
   const priceSources = [
     new CardMarketSource(),
-    new CardMarketGradedSource(),
     new BricklinkSource(),
     new CardKingdomSource(),
     new AbugamesSource(),
