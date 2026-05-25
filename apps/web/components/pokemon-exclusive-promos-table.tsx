@@ -373,7 +373,7 @@ export function PokemonExclusivePromosTable({
       dataPromise={dataPromise}
       columns={columns}
       pageSize={pageSize}
-      defaultSorting={[{ id: 'releaseDate', desc: false }, { id: 'number', desc: false }]}
+      defaultSorting={[{ id: 'releaseDate', desc: true }, { id: 'number', desc: false }]}
       filters={(data, table) => {
         const setDateMap = new Map<string, number>();
         const setCountMap = new Map<string, number>();
