@@ -242,11 +242,13 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
 ];
 
 function PsaPopSlider({
+  label,
   dataMin,
   dataMax,
   committed,
   onCommit,
 }: {
+  label?: string;
   dataMin: number;
   dataMax: number;
   committed: [number, number];
@@ -302,6 +304,7 @@ function PsaPopSlider({
 
   return (
     <div className="flex items-center gap-2 border rounded-md px-1 h-8">
+      {label && <span className="text-xs text-muted-foreground shrink-0 pl-1">{label}</span>}
       <Input
         type="text"
         inputMode="numeric"
@@ -485,6 +488,7 @@ export function PokemonExclusivePromosTable({
             </Popover>
             {psaDataMax > psaDataMin && (
               <PsaPopSlider
+                label="Pop"
                 dataMin={psaDataMin}
                 dataMax={psaDataMax}
                 committed={psaCommitted}
