@@ -42,7 +42,7 @@ export class SyncUsecase {
 
     const { browser, page } = await connect({
       headless: false,
-      disableXvfb: true,//!mode.headless,
+      disableXvfb: !mode.headless,
       args: [],
       customConfig: {},
       turnstile: true,
