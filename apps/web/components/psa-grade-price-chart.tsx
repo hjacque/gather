@@ -79,12 +79,25 @@ export function PsaGradePriceChart({ psaGradePrices }: Props) {
     };
   }, [psaGradePrices]);
 
+  const psaKey = (g: number) => `psa${String(g).padStart(2, '0')}`;
+
   const filteredData = React.useMemo(() => {
     const days = timeRange === '30d' ? 30 : timeRange === '90d' ? 90 : 360;
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - days);
     return chartData.filter((entry) => new Date(entry.date) >= cutoff);
   }, [chartData, timeRange]);
+
+  const gradesWithFilteredData = React.useMemo(() => {
+    const active = new Set<number>();
+    for (const entry of filteredData) {
+      for (const grade of gradesWithData) {
+        const v = entry[psaKey(grade)];
+        if (v != null) active.add(grade);
+      }
+    }
+    return active;
+  }, [filteredData, gradesWithData]);
 
   const toggleGrade = (grade: number) => {
     setHiddenGrades((prev) => {
@@ -94,8 +107,6 @@ export function PsaGradePriceChart({ psaGradePrices }: Props) {
       return next;
     });
   };
-
-  const psaKey = (g: number) => `psa${String(g).padStart(2, '0')}`;
 
   const chartConfig = Object.fromEntries(
     gradesWithData.map((g) => [
@@ -189,12 +200,14 @@ export function PsaGradePriceChart({ psaGradePrices }: Props) {
               content={() => (
                 <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 pt-2">
                   {gradesWithData.map((grade) => {
-                    const hidden = hiddenGrades.has(grade);
+                    const hasData = gradesWithFilteredData.has(grade);
+                    const hidden = hiddenGrades.has(grade) || !hasData;
                     return (
                       <button
                         key={grade}
-                        onClick={() => toggleGrade(grade)}
-                        className="flex items-center gap-1.5 text-xs"
+                        onClick={() => hasData && toggleGrade(grade)}
+                        disabled={!hasData}
+                        className="flex items-center gap-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-40"
                         style={{ color: hidden ? '#666' : undefined }}
                       >
                         <svg width="16" height="4">
