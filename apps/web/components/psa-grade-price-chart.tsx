@@ -142,7 +142,7 @@ export function PsaGradePriceChart({ psaGradePrices }: Props) {
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         {gradesWithData.length === 0 ? (
-          <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
+          <div className="flex items-center justify-center h-64 text-sm text-muted-foreground">
             No grade price data — sync this product to populate
           </div>
         ) : (
