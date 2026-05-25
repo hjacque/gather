@@ -60,6 +60,9 @@ export type PerformancePeriod = typeof PERFORMANCE_PERIODS[number];
 export const PERFORMANCE_TYPES = ['market', 'buylist'] as const;
 export type PerformanceType = typeof PERFORMANCE_TYPES[number];
 
+export const REGIONS = ['japan', 'korea', 'taiwan_hong_kong'] as const;
+export type Region = typeof REGIONS[number];
+
 export const RARITIES = [
   'common',
   'uncommon',
@@ -105,6 +108,7 @@ export type ProductEntity = {
   tags: string[];
   keyword: string | null;
   blocked: string[];
+  regions: Region[];
   createdAt: Date;
   updatedAt: Date;
 };

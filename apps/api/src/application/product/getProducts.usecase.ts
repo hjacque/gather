@@ -3,6 +3,7 @@ import { PerformanceRepositoryPort } from "../../repository/ports/performance.re
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import { Franchise, ProductType } from "entities/product.entity";
+import { Region } from "@gather/types";
 import type { GetProductsResponse } from "@gather/api-contract";
 
 export class GetProductsUsecase {
@@ -18,6 +19,7 @@ export class GetProductsUsecase {
     type?: ProductType | ProductType[];
     tags?: string | string[];
     set?: string;
+    region?: Region | Region[];
   }): Promise<GetProductsResponse> {
     const products = await this.productRepository.getProducts(filter);
     const productIds = products.map((product) => product.id);

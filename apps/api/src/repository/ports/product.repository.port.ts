@@ -5,7 +5,7 @@ import {
   ProductType,
   Set,
 } from "../../entities/product.entity";
-import { Rarity } from "@gather/types";
+import { Region, Rarity } from "@gather/types";
 
 export type GetProductsFilter = {
   set?: string;
@@ -13,6 +13,7 @@ export type GetProductsFilter = {
   franchise?: Franchise;
   tags?: string | string[];
   rarity?: Rarity;
+  region?: Region | Region[];
 };
 
 export abstract class ProductRepositoryPort {

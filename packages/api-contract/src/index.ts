@@ -4,6 +4,7 @@ import type {
   Franchise,
   ProductType,
   Rarity,
+  Region,
   PriceType,
   PerformancePeriod,
   PerformanceType,
@@ -75,6 +76,7 @@ export type GetProductsQuery = {
   tags?: string | string[];
   set?: string;
   rarity?: Rarity;
+  region?: Region | Region[];
 };
 
 export type GetProductsResponseItem = ProductEntity & DailyPrices & {

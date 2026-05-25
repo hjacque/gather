@@ -24,6 +24,7 @@ export class ProductMapper {
     keyword,
     note,
     blocked,
+    regions,
     createdAt,
     updatedAt,
   }: ProductModel): ProductEntity {
@@ -49,6 +50,7 @@ export class ProductMapper {
       tags,
       keyword,
       blocked,
+      regions,
       createdAt,
       updatedAt,
     };

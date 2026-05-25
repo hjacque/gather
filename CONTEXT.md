@@ -138,7 +138,7 @@ The sum of all PSA Grade counts (grades 1–10) for a Product — surfaced as a 
 _Avoid_: Total pop, total graded
 
 **Product Number**:
-An optional string identifier for a Product within its Product Set — e.g. `"SWSH001"` or `"001"` for Japanese promos. Used to disambiguate PSA pop report searches and displayed in the japanese-promos table and side panel.
+An optional string identifier for a Product within its Product Set — e.g. `"SWSH001"` or `"001"` for exclusive promos. Used to disambiguate PSA pop report searches and displayed in the exclusive-promos table and side panel.
 _Avoid_: Card number, set number, collector number
 
 **Note**:

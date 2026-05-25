@@ -47,6 +47,7 @@ export class ProductRepositoryPg implements ProductRepositoryPort {
           type: filters.type ? (typeof filters.type === "string" ? filters.type : { in: [...filters.type] }) : undefined,
           tags: filters.tags ? (typeof filters.tags === "string" ? { has: filters.tags } : { hasSome: filters.tags }) : undefined,
           rarity: filters.rarity,
+          regions: filters.region ? (typeof filters.region === "string" ? { has: filters.region } : { hasSome: filters.region }) : undefined,
         },
         orderBy: [
           { productSet: { releaseDate: 'desc' } },

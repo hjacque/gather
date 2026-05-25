@@ -50,6 +50,12 @@ enum Rarity {
   holo_rare
 }
 
+enum Region {
+  japan
+  korea
+  taiwan_hong_kong
+}
+
 enum PriceType {
   cardmarket
   cardkingdom
@@ -103,6 +109,7 @@ model Product {
   bricklinkLink             String?
   psaLink                   String?
   number                    String?
+  regions                   Region[]
 
   prices                    Price[]       @relation("ProductPrices")
   performances              Performance[] @relation("ProductPerformances")

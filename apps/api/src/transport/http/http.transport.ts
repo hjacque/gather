@@ -5,7 +5,7 @@ import { errorHandler } from "./middlewares/http.errors";
 import { SyncUsecaseInputDto } from "application/sync/sync.usecase";
 import { GetProductOfTheDayUsecaseInputDto } from "application/product/getProductOfTheDay.usecase";
 import type { UpdateProductNoteRequest } from "@gather/api-contract";
-import { PRODUCT_TYPES, FRANCHISES } from "@gather/types";
+import { PRODUCT_TYPES, FRANCHISES, REGIONS } from "@gather/types";
 require("express-async-errors");
 
 const app = express();
@@ -87,6 +87,9 @@ export const http = async ({
       franchise: z.enum(FRANCHISES).optional(),
       tags: z.union([z.string(), z.array(z.string())]).optional(),
       rarity: z.string().optional(),
+      region: z
+        .union([z.array(z.enum(REGIONS)), z.enum(REGIONS)])
+        .optional(),
     });
     const dto = dtoSchema.parse(req.query);
 

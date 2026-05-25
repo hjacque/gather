@@ -21,8 +21,8 @@ const data = {
       isActive: true,
       items: [
         {
-          title: 'Japanese Promos',
-          url: '/pokemon/japanese-promos',
+          title: 'Exclusive Promos',
+          url: '/pokemon/exclusive-promos',
         },
       ],
     },

@@ -174,13 +174,25 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
     enableSorting: true,
   },
   {
+    id: 'regions',
+    accessorFn: (row) => row.regions,
+    filterFn: (row, _columnId, filterValue: string[]) => {
+      if (!filterValue || filterValue.length === 0) return true;
+      return filterValue.some((r) => row.original.regions?.includes(r));
+    },
+    enableHiding: true,
+    size: 0,
+    header: () => null,
+    cell: () => null,
+  },
+  {
     id: 'actions',
     size: 52,
     cell: ({ row }) => <RowActionsCell row={row} />,
   },
 ];
 
-export function PokemonJapanesePromosTable({
+export function PokemonExclusivePromosTable({
   dataPromise,
   pageSize = 10,
 }: {
@@ -223,6 +235,27 @@ export function PokemonJapanesePromosTable({
             : selected.length === 1
               ? selected[0]
               : `${selected.length} sets`;
+
+        const allRegions = ['japan', 'korea', 'taiwan_hong_kong'] as const;
+        const regionDisplayName: Record<string, string> = {
+          japan: 'Japan',
+          korea: 'Korea',
+          taiwan_hong_kong: 'Taiwan & Hong Kong',
+        };
+        const selectedRegions = (table.getColumn('regions')?.getFilterValue() as string[]) ?? [];
+        const toggleRegion = (region: string) => {
+          const next = selectedRegions.includes(region)
+            ? selectedRegions.filter((r) => r !== region)
+            : [...selectedRegions, region];
+          table.getColumn('regions')?.setFilterValue(next.length ? next : undefined);
+        };
+        const regionLabel =
+          selectedRegions.length === 0
+            ? 'All regions'
+            : selectedRegions.length === 1
+              ? regionDisplayName[selectedRegions[0]]
+              : `${selectedRegions.length} regions`;
+
         return (
           <div className="flex items-center gap-2">
             <Popover>
@@ -253,6 +286,41 @@ export function PokemonJapanesePromosTable({
                       size="sm"
                       className="w-full text-xs"
                       onClick={() => table.getColumn('set')?.setFilterValue(undefined)}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="w-48 justify-between font-normal">
+                  <span className="truncate">{regionLabel}</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-2" align="start">
+                <div className="flex flex-col gap-1">
+                  {allRegions.map((region) => (
+                    <label
+                      key={region}
+                      className="flex items-center gap-2 rounded px-2 py-1.5 text-sm cursor-pointer hover:bg-accent"
+                    >
+                      <Checkbox
+                        checked={selectedRegions.includes(region)}
+                        onCheckedChange={() => toggleRegion(region)}
+                      />
+                      {regionDisplayName[region]}
+                    </label>
+                  ))}
+                </div>
+                {selectedRegions.length > 0 && (
+                  <div className="mt-2 border-t pt-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-xs"
+                      onClick={() => table.getColumn('regions')?.setFilterValue(undefined)}
                     >
                       Clear
                     </Button>
@@ -364,6 +432,11 @@ function useProductPanel(item: GetProductsResponseItem) {
                 {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
               </Badge>
             )}
+            {item.regions?.map((region) => (
+              <Badge key={region} className="ml-1" variant="outline">
+                {({ japan: 'Japan', korea: 'Korea', taiwan_hong_kong: 'Taiwan & Hong Kong' } as Record<string, string>)[region] ?? region}
+              </Badge>
+            ))}
           </SheetDescription>
         </SheetHeader>
 
