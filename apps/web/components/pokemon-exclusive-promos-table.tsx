@@ -252,12 +252,14 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
 
 function PsaPopSlider({
   label,
+  color = 'default',
   dataMin,
   dataMax,
   committed,
   onCommit,
 }: {
   label?: string;
+  color?: 'default' | 'blue';
   dataMin: number;
   dataMax: number;
   committed: [number, number];
@@ -329,7 +331,7 @@ function PsaPopSlider({
         step={1}
         value={local}
         onValueChange={handleSlider}
-        className="w-40"
+        className={`w-40${color === 'blue' ? ' [&_[data-slot=slider-range]]:bg-sidebar-accent [&_[data-slot=slider-thumb]]:border-sidebar-accent/50' : ''}`}
       />
       <Input
         type="text"
@@ -513,6 +515,7 @@ export function PokemonExclusivePromosTable({
             {psaDataMax > psaDataMin && (
               <PsaPopSlider
                 label="Pop"
+                color="blue"
                 dataMin={psaDataMin}
                 dataMax={psaDataMax}
                 committed={psaCommitted}
