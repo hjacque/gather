@@ -144,7 +144,7 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
   {
     id: 'cardmarketPsa9',
     size: 110,
-    accessorFn: (row) => row.cardmarketPsa9 ?? null,
+    accessorFn: (row) => row.cardmarketPsa9 ?? undefined,
     sortUndefined: 'last',
     header: ({ column }) => (
       <div className="flex justify-center">
@@ -170,7 +170,7 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
   {
     id: 'cardmarketPsa10',
     size: 110,
-    accessorFn: (row) => row.cardmarketPsa10 ?? null,
+    accessorFn: (row) => row.cardmarketPsa10 ?? undefined,
     sortUndefined: 'last',
     header: ({ column }) => (
       <div className="flex justify-center">
