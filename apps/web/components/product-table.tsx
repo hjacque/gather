@@ -150,12 +150,19 @@ export function RowActionsCell({ row }: { row: Row<GetProductsResponseItem> }) {
   );
 }
 
+export type ProductTableHandle = {
+  getAllRows: () => GetProductsResponseItem[];
+  goToPage: (idx: number) => void;
+  pageSize: number;
+};
+
 export function ProductTable({
   dataPromise: initialData,
   columns,
   pageSize = 10,
   defaultSorting = [],
   filters,
+  tableRef,
 }: {
   dataPromise: Promise<GetProductsResponseItem[]>;
   columns: ColumnDef<GetProductsResponseItem>[];
@@ -165,6 +172,7 @@ export function ProductTable({
     data: GetProductsResponseItem[],
     table: TableInstance<GetProductsResponseItem>,
   ) => React.ReactNode;
+  tableRef?: React.RefObject<ProductTableHandle | null>;
 }) {
   const [data, setData] = React.useState(use(initialData));
   const [rowSelection, setRowSelection] = React.useState({});
@@ -220,6 +228,14 @@ export function ProductTable({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
+
+  React.useImperativeHandle(tableRef, () => ({
+    getAllRows: () => table.getSortedRowModel().rows.map((r) => r.original),
+    goToPage: (idx: number) => table.setPageIndex(idx),
+    get pageSize() {
+      return table.getState().pagination.pageSize;
+    },
+  }));
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;

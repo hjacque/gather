@@ -15,13 +15,18 @@ interface ProductCardImageProps {
   src: string;
   alt: string;
   containerClassName?: string;
+  spotlightOpen?: boolean;
+  onSpotlightOpenChange?: (open: boolean) => void;
 }
 
 const SPRING = { stiffness: 300, damping: 28 };
 const MAX_TILT = 15;
 
-export function ProductCardImage({ src, alt, containerClassName }: ProductCardImageProps) {
-  const [spotlightOpen, setSpotlightOpen] = useState(false);
+export function ProductCardImage({ src, alt, containerClassName, spotlightOpen: controlledOpen, onSpotlightOpenChange }: ProductCardImageProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const spotlightOpen = isControlled ? controlledOpen : internalOpen;
+  const setSpotlightOpen = isControlled ? (onSpotlightOpenChange ?? (() => {})) : setInternalOpen;
   const [pointer, setPointer] = useState({ x: 50, y: 50, active: false });
 
   const rotateX = useMotionValue(0);

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { ArrowUpDown, ExternalLink, RefreshCw, ShoppingCart, Store, X } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -35,7 +35,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import type { GetProductsResponseItem } from '@/app/actions/getProducts';
-import { ProductTable, RowActionsCell } from './product-table';
+import { ProductTable, RowActionsCell, type ProductTableHandle } from './product-table';
+
+const ProductPanelContext = React.createContext<{
+  openPanel: (item: GetProductsResponseItem) => void;
+} | null>(null);
 
 const columns: ColumnDef<GetProductsResponseItem>[] = [
   {
@@ -354,7 +358,82 @@ export function PokemonExclusivePromosTable({
   dataPromise: Promise<GetProductsResponseItem[]>;
   pageSize?: number;
 }) {
+  const isMobile = useIsMobile();
   const [isSyncing, setIsSyncing] = React.useState(false);
+  const tableRef = useRef<ProductTableHandle | null>(null);
+
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [displayedItem, setDisplayedItem] = useState<GetProductsResponseItem | null>(null);
+  const [displayedProduct, setDisplayedProduct] = useState<GetProductResponse | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [spotlightOpen, setSpotlightOpen] = useState(false);
+  // Tracks nav position independently of what's displayed, and detects stale fetches
+  const activeItemRef = useRef<GetProductsResponseItem | null>(null);
+  const loadingIdRef = useRef<string | null>(null);
+
+  const openPanel = useCallback(async (item: GetProductsResponseItem, isNavigation = false) => {
+    activeItemRef.current = item;
+    const loadId = item.id;
+    loadingIdRef.current = loadId;
+
+    if (!isNavigation) {
+      // First open: show item header/image immediately, fetch details in background
+      setDisplayedItem(item);
+      setDisplayedProduct(null);
+      setPanelOpen(true);
+      setIsTransitioning(true);
+    } else {
+      // Navigation: keep old content fully visible, fetch next in background
+      setIsTransitioning(true);
+    }
+
+    try {
+      const data = await getProduct(item.id);
+      if (loadingIdRef.current === loadId) {
+        setDisplayedItem(item);
+        setDisplayedProduct(data);
+        setIsTransitioning(false);
+      }
+    } catch (err) {
+      if (loadingIdRef.current === loadId) {
+        console.error('Failed to load product detail', err);
+        if (isNavigation) {
+          setDisplayedItem(item);
+          setDisplayedProduct(null);
+        }
+        setIsTransitioning(false);
+      }
+    }
+  }, []);
+
+  const navigateBy = useCallback((delta: number) => {
+    if (!activeItemRef.current || !tableRef.current) return;
+    const allRows = tableRef.current.getAllRows();
+    const idx = allRows.findIndex((r) => r.id === activeItemRef.current!.id);
+    if (idx === -1) return;
+    const nextIdx = idx + delta;
+    if (nextIdx < 0 || nextIdx >= allRows.length) return;
+    const next = allRows[nextIdx];
+    const nextPage = Math.floor(nextIdx / tableRef.current.pageSize);
+    tableRef.current.goToPage(nextPage);
+    openPanel(next, true);
+  }, [openPanel]);
+
+  useEffect(() => {
+    if (!panelOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        navigateBy(-1);
+      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        navigateBy(1);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [panelOpen, navigateBy]);
 
   const handleSyncAll = async () => {
     if (isSyncing) return;
@@ -368,12 +447,159 @@ export function PokemonExclusivePromosTable({
     }
   };
 
+  const psaReport = displayedProduct?.psaPopReport ?? null;
+  const grades = psaReport
+    ? [
+        { grade: 1, count: psaReport.grade1 },
+        { grade: 2, count: psaReport.grade2 },
+        { grade: 3, count: psaReport.grade3 },
+        { grade: 4, count: psaReport.grade4 },
+        { grade: 5, count: psaReport.grade5 },
+        { grade: 6, count: psaReport.grade6 },
+        { grade: 7, count: psaReport.grade7 },
+        { grade: 8, count: psaReport.grade8 },
+        { grade: 9, count: psaReport.grade9 },
+        { grade: 10, count: psaReport.grade10 },
+      ]
+    : null;
+
+  const handlePanelOpenChange = (next: boolean) => {
+    setPanelOpen(next);
+    if (!next) {
+      setSpotlightOpen(false);
+      loadingIdRef.current = null;
+      setIsTransitioning(false);
+    }
+  };
+
   return (
-    <ProductTable
-      dataPromise={dataPromise}
-      columns={columns}
-      pageSize={pageSize}
-      defaultSorting={[{ id: 'releaseDate', desc: true }, { id: 'number', desc: false }]}
+    <ProductPanelContext.Provider value={{ openPanel }}>
+      {displayedItem && (
+        <Sheet open={panelOpen} onOpenChange={handlePanelOpenChange}>
+          <SheetContent
+            side={isMobile ? 'bottom' : 'right'}
+            className={`p-10 gap-6 ${!isMobile ? 'w-1/2' : ''} sm:w-[1400px] sm:max-w-[1400px]`}
+          >
+            <SheetHeader>
+              <SheetTitle>{displayedItem.name}</SheetTitle>
+              <SheetDescription>
+                {displayedItem.productSet.name}
+                {displayedItem.number && ` #${displayedItem.number}/${displayedItem.productSet.code}`}
+                {displayedItem.rarity && (
+                  <Badge className="ml-2" variant="secondary">
+                    {displayedItem.rarity.charAt(0).toUpperCase() + displayedItem.rarity.slice(1)}
+                  </Badge>
+                )}
+                {displayedItem.regions?.map((region) => (
+                  <Badge key={region} className="ml-1" variant="outline">
+                    {({ japan: 'Japan', korea: 'Korea', taiwan_hong_kong: 'Taiwan & Hong Kong' } as Record<string, string>)[region] ?? region}
+                  </Badge>
+                ))}
+              </SheetDescription>
+            </SheetHeader>
+
+            {!isMobile && (
+              <div className="flex gap-6 items-stretch px-4 lg:px-6">
+                {displayedItem.imageUrl && (
+                  <ProductCardImage
+                    src={displayedItem.imageUrl}
+                    alt={displayedItem.name}
+                    spotlightOpen={spotlightOpen}
+                    onSpotlightOpenChange={setSpotlightOpen}
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                  <PsaGradePriceChart psaGradePrices={displayedProduct?.psaGradePrices ?? []} />
+                </div>
+              </div>
+            )}
+
+            {grades && (
+              <div className="w-full px-4 lg:px-6">
+                <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
+                  <CardHeader>
+                    <CardTitle>PSA Pop Report</CardTitle>
+                    <CardDescription>
+                      Grade distribution ·{' '}
+                      {psaReport?.syncedAt
+                        ? `Updated ${new Date(psaReport.syncedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`
+                        : ''}
+                    </CardDescription>
+                    {displayedItem.psaLink && (
+                      <CardAction>
+                        <a href={displayedItem.psaLink} target="_blank" rel="noopener noreferrer">
+                          <Button variant="outline" size="sm" className="gap-1.5">
+                            <ExternalLink className="w-3.5 h-3.5" />
+                            PSA
+                          </Button>
+                        </a>
+                      </CardAction>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-5 sm:grid-cols-11 gap-2">
+                      {grades.map(({ grade, count }) => (
+                        <div key={grade} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-muted">
+                          <span className="text-xs text-muted-foreground font-medium">PSA {grade}</span>
+                          <span className="text-sm font-semibold">{count != null ? count.toLocaleString() : '—'}</span>
+                        </div>
+                      ))}
+                      <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-primary/10 col-span-1">
+                        <span className="text-xs text-muted-foreground font-medium">Total</span>
+                        <span className="text-sm font-semibold">{psaReport?.total != null ? psaReport.total.toLocaleString() : '—'}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            <div className="w-full px-4 lg:px-6">
+              <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
+                <CardHeader>
+                  <CardTitle>Product Links</CardTitle>
+                  <CardDescription>Marketplaces & resources</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {displayedItem.cardMarketLink && (
+                      <a href={displayedItem.cardMarketLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
+                        <ShoppingCart className="w-5 h-5 text-primary" />
+                        <span className="text-sm font-medium">CardMarket</span>
+                      </a>
+                    )}
+                    {displayedItem.tcgpLink && (
+                      <a href={displayedItem.tcgpLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
+                        <ShoppingCart className="w-5 h-5 text-primary" />
+                        <span className="text-sm font-medium">TCGPlayer</span>
+                      </a>
+                    )}
+                    {displayedItem.cardkingdomBuyListLink && (
+                      <a href={displayedItem.cardkingdomBuyListLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
+                        <Store className="w-5 h-5 text-primary" />
+                        <span className="text-sm font-medium">Card Kingdom</span>
+                      </a>
+                    )}
+                    {displayedItem.abugamesBuyListLink && (
+                      <a href={displayedItem.abugamesBuyListLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
+                        <Store className="w-5 h-5 text-primary" />
+                        <span className="text-sm font-medium">ABU Games</span>
+                      </a>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            <ProductNoteSection productId={displayedItem.id} initialNote={displayedItem.note} />
+          </SheetContent>
+        </Sheet>
+      )}
+      <ProductTable
+        dataPromise={dataPromise}
+        columns={columns}
+        pageSize={pageSize}
+        tableRef={tableRef}
+        defaultSorting={[{ id: 'releaseDate', desc: true }, { id: 'number', desc: false }]}
       filters={(data, table) => {
         const setDateMap = new Map<string, number>();
         const setCountMap = new Map<string, number>();
@@ -583,200 +809,41 @@ export function PokemonExclusivePromosTable({
         );
       }}
     />
+    </ProductPanelContext.Provider>
   );
-}
-
-function useProductPanel(item: GetProductsResponseItem) {
-  const isMobile = useIsMobile();
-  const [open, setOpen] = useState(false);
-  const [product, setProduct] = useState<GetProductResponse | null>(null);
-
-  const fetchProduct = async () => {
-    try {
-      const data = await getProduct(item.id);
-      setProduct(data);
-    } catch (err) {
-      console.error('Failed to load product detail', err);
-    }
-  };
-
-  const handleOpenChange = (next: boolean) => {
-    if (next) fetchProduct();
-    setOpen(next);
-  };
-
-  const psaReport = product?.psaPopReport ?? null;
-  const grades = psaReport
-    ? [
-        { grade: 1, count: psaReport.grade1 },
-        { grade: 2, count: psaReport.grade2 },
-        { grade: 3, count: psaReport.grade3 },
-        { grade: 4, count: psaReport.grade4 },
-        { grade: 5, count: psaReport.grade5 },
-        { grade: 6, count: psaReport.grade6 },
-        { grade: 7, count: psaReport.grade7 },
-        { grade: 8, count: psaReport.grade8 },
-        { grade: 9, count: psaReport.grade9 },
-        { grade: 10, count: psaReport.grade10 },
-      ]
-    : null;
-
-  const panel = (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent
-        side={isMobile ? 'bottom' : 'right'}
-        className={`p-10 gap-6 ${!isMobile ? 'w-1/2' : ''} sm:w-[1400px] sm:max-w-[1400px]`}
-      >
-        <SheetHeader>
-          <SheetTitle>{item.name}</SheetTitle>
-          <SheetDescription>
-            {item.productSet.name}
-            {item.number && ` #${item.number}/${item.productSet.code}`}
-            {item.rarity && (
-              <Badge className="ml-2" variant="secondary">
-                {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
-              </Badge>
-            )}
-            {item.regions?.map((region) => (
-              <Badge key={region} className="ml-1" variant="outline">
-                {({ japan: 'Japan', korea: 'Korea', taiwan_hong_kong: 'Taiwan & Hong Kong' } as Record<string, string>)[region] ?? region}
-              </Badge>
-            ))}
-          </SheetDescription>
-        </SheetHeader>
-
-        {!isMobile && (
-          <div className="flex gap-6 items-stretch px-4 lg:px-6">
-            {item.imageUrl && (
-              <ProductCardImage src={item.imageUrl} alt={item.name} />
-            )}
-            <div className="flex-1 min-w-0">
-              <PsaGradePriceChart psaGradePrices={product?.psaGradePrices ?? []} />
-            </div>
-          </div>
-        )}
-
-        {grades && (
-          <div className="w-full px-4 lg:px-6">
-            <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
-              <CardHeader>
-                <CardTitle>PSA Pop Report</CardTitle>
-                <CardDescription>
-                  Grade distribution ·{' '}
-                  {psaReport?.syncedAt
-                    ? `Updated ${new Date(psaReport.syncedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`
-                    : ''}
-                </CardDescription>
-                {item.psaLink && (
-                  <CardAction>
-                    <a href={item.psaLink} target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" size="sm" className="gap-1.5">
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        PSA
-                      </Button>
-                    </a>
-                  </CardAction>
-                )}
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-5 sm:grid-cols-11 gap-2">
-                  {grades.map(({ grade, count }) => (
-                    <div key={grade} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-muted">
-                      <span className="text-xs text-muted-foreground font-medium">PSA {grade}</span>
-                      <span className="text-sm font-semibold">{count != null ? count.toLocaleString() : '—'}</span>
-                    </div>
-                  ))}
-                  <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-primary/10 col-span-1">
-                    <span className="text-xs text-muted-foreground font-medium">Total</span>
-                    <span className="text-sm font-semibold">{psaReport?.total != null ? psaReport.total.toLocaleString() : '—'}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        <div className="w-full px-4 lg:px-6">
-          <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
-            <CardHeader>
-              <CardTitle>Product Links</CardTitle>
-              <CardDescription>Marketplaces & resources</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {item.cardMarketLink && (
-                  <a href={item.cardMarketLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
-                    <ShoppingCart className="w-5 h-5 text-primary" />
-                    <span className="text-sm font-medium">CardMarket</span>
-                  </a>
-                )}
-                {item.tcgpLink && (
-                  <a href={item.tcgpLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
-                    <ShoppingCart className="w-5 h-5 text-primary" />
-                    <span className="text-sm font-medium">TCGPlayer</span>
-                  </a>
-                )}
-                {item.cardkingdomBuyListLink && (
-                  <a href={item.cardkingdomBuyListLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
-                    <Store className="w-5 h-5 text-primary" />
-                    <span className="text-sm font-medium">Card Kingdom</span>
-                  </a>
-                )}
-                {item.abugamesBuyListLink && (
-                  <a href={item.abugamesBuyListLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
-                    <Store className="w-5 h-5 text-primary" />
-                    <span className="text-sm font-medium">ABU Games</span>
-                  </a>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        <ProductNoteSection productId={item.id} initialNote={item.note} />
-      </SheetContent>
-    </Sheet>
-  );
-
-  return { open, setOpen: handleOpenChange, panel };
 }
 
 function ImageCell({ item }: { item: GetProductsResponseItem }) {
-  const { setOpen, panel } = useProductPanel(item);
+  const ctx = useContext(ProductPanelContext);
 
   if (!item.imageUrl) return null;
   return (
-    <>
-      <Tooltip disableHoverableContent>
-        <TooltipTrigger asChild>
-          <div className="flex justify-center cursor-pointer" onClick={() => setOpen(true)}>
-            <img src={item.imageUrl} alt="" className="h-10 w-auto object-contain rounded" />
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="right" className="p-1 bg-transparent border-none shadow-none pointer-events-none">
-          <img src={item.imageUrl} alt={item.name} className="h-64 w-auto object-contain rounded-lg shadow-xl" />
-        </TooltipContent>
-      </Tooltip>
-      {panel}
-    </>
+    <Tooltip disableHoverableContent>
+      <TooltipTrigger asChild>
+        <div className="flex justify-center cursor-pointer" onClick={() => ctx?.openPanel(item)}>
+          <img src={item.imageUrl} alt="" className="h-10 w-auto object-contain rounded" />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="right" className="p-1 bg-transparent border-none shadow-none pointer-events-none">
+        <img src={item.imageUrl} alt={item.name} className="h-64 w-auto object-contain rounded-lg shadow-xl" />
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
 function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
-  const { setOpen, panel } = useProductPanel(item);
+  const ctx = useContext(ProductPanelContext);
 
   return (
-    <>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="link" className="text-foreground w-full max-w-full px-0 text-left truncate block" onClick={() => setOpen(true)}>
-            {item.name}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{item.name}</p>
-        </TooltipContent>
-      </Tooltip>
-      {panel}
-    </>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button variant="link" className="text-foreground w-full max-w-full px-0 text-left truncate block" onClick={() => ctx?.openPanel(item)}>
+          {item.name}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{item.name}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }
