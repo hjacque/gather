@@ -530,16 +530,6 @@ export function PokemonExclusivePromosTable({
                         ? `Updated ${new Date(psaReport.syncedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`
                         : ''}
                     </CardDescription>
-                    {displayedItem.psaLink && (
-                      <CardAction>
-                        <a href={displayedItem.psaLink} target="_blank" rel="noopener noreferrer">
-                          <Button variant="outline" size="sm" className="gap-1.5">
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            PSA
-                          </Button>
-                        </a>
-                      </CardAction>
-                    )}
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-5 sm:grid-cols-11 gap-2">
@@ -589,6 +579,12 @@ export function PokemonExclusivePromosTable({
                       <a href={displayedItem.abugamesBuyListLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
                         <Store className="w-5 h-5 text-primary" />
                         <span className="text-sm font-medium">ABU Games</span>
+                      </a>
+                    )}
+                    {displayedItem.psaLink && (
+                      <a href={displayedItem.psaLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
+                        <ExternalLink className="w-5 h-5 text-primary" />
+                        <span className="text-sm font-medium">PSA</span>
                       </a>
                     )}
                   </div>
