@@ -367,7 +367,7 @@ function PsaPopSlider({
 
 export function PokemonExclusivePromosTable({
   dataPromise,
-  pageSize = 10,
+  pageSize = 250,
 }: {
   dataPromise: Promise<GetProductsResponseItem[]>;
   pageSize?: number;

@@ -159,7 +159,7 @@ export type ProductTableHandle = {
 export function ProductTable({
   dataPromise: initialData,
   columns,
-  pageSize = 10,
+  pageSize = 250,
   defaultSorting = [],
   filters,
   tableRef,
@@ -335,7 +335,7 @@ export function ProductTable({
                     />
                   </SelectTrigger>
                   <SelectContent side="top">
-                    {[10, 20, 30, 40, 50, 100].map((pageSize) => (
+                    {[20, 30, 40, 50, 100, 250].map((pageSize) => (
                       <SelectItem key={pageSize} value={`${pageSize}`}>
                         {pageSize}
                       </SelectItem>
