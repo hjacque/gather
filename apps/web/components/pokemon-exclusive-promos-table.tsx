@@ -172,10 +172,10 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
           {today != null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(today) : ''}
           {pct != null && pct !== 0 && (
             <sup className={`ml-1 text-xs ${pct > 0 ? 'text-green-500' : 'text-red-500'}`}>
-              ({pct > 0 ? '+' : ''}{pct.toFixed(1)}%)
+              {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
             </sup>
           )}
-          {isNew && <sup className="ml-1 text-xs text-green-500">(new)</sup>}
+          {isNew && <sup className="ml-1 text-xs text-green-500">new</sup>}
         </div>
       );
     },
@@ -214,10 +214,10 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
           {today != null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(today) : ''}
           {pct != null && pct !== 0 && (
             <sup className={`ml-1 text-xs ${pct > 0 ? 'text-green-500' : 'text-red-500'}`}>
-              ({pct > 0 ? '+' : ''}{pct.toFixed(1)}%)
+              {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
             </sup>
           )}
-          {isNew && <sup className="ml-1 text-xs text-green-500">(new)</sup>}
+          {isNew && <sup className="ml-1 text-xs text-green-500">new</sup>}
         </div>
       );
     },
