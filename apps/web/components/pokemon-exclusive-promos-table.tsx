@@ -163,12 +163,19 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
     cell: ({ row }) => {
       const today = row.original.cardmarketPsa9;
       const yesterday = row.original.cardmarketPsa9Yesterday;
-      const color = today != null && yesterday != null
-        ? today > yesterday ? 'text-green-500' : today < yesterday ? 'text-red-500' : undefined
-        : undefined;
+      const pct = today != null && yesterday != null && yesterday !== 0
+        ? ((today - yesterday) / yesterday) * 100
+        : null;
+      const isNew = today != null && yesterday == null;
       return (
-        <div className={`text-center tabular-nums text-sm ${color ?? ''}`}>
+        <div className="text-center tabular-nums text-sm">
           {today != null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(today) : ''}
+          {pct != null && pct !== 0 && (
+            <sup className={`ml-1 text-xs ${pct > 0 ? 'text-green-500' : 'text-red-500'}`}>
+              ({pct > 0 ? '+' : ''}{pct.toFixed(1)}%)
+            </sup>
+          )}
+          {isNew && <sup className="ml-1 text-xs text-green-500">(new)</sup>}
         </div>
       );
     },
@@ -198,12 +205,19 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
     cell: ({ row }) => {
       const today = row.original.cardmarketPsa10;
       const yesterday = row.original.cardmarketPsa10Yesterday;
-      const color = today != null && yesterday != null
-        ? today > yesterday ? 'text-green-500' : today < yesterday ? 'text-red-500' : undefined
-        : undefined;
+      const pct = today != null && yesterday != null && yesterday !== 0
+        ? ((today - yesterday) / yesterday) * 100
+        : null;
+      const isNew = today != null && yesterday == null;
       return (
-        <div className={`text-center tabular-nums text-sm ${color ?? ''}`}>
+        <div className="text-center tabular-nums text-sm">
           {today != null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(today) : ''}
+          {pct != null && pct !== 0 && (
+            <sup className={`ml-1 text-xs ${pct > 0 ? 'text-green-500' : 'text-red-500'}`}>
+              ({pct > 0 ? '+' : ''}{pct.toFixed(1)}%)
+            </sup>
+          )}
+          {isNew && <sup className="ml-1 text-xs text-green-500">(new)</sup>}
         </div>
       );
     },
