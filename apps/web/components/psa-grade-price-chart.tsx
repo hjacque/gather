@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Button } from '@/components/ui/button';
-import { Loader2, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 
 const GRADE_COLORS: Record<number, string> = {
   1:  'hsl(220, 40%, 50%)',
@@ -138,9 +138,7 @@ export function PsaGradePriceChart({ psaGradePrices, onSyncCardMarket, isSyncing
                   disabled={isSyncingCardMarket}
                   className="gap-1.5"
                 >
-                  {isSyncingCardMarket
-                    ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    : <RefreshCw className="w-3.5 h-3.5" />}
+                  <RefreshCw className={`w-3.5 h-3.5${isSyncingCardMarket ? ' animate-spin' : ''}`} />
                   Sync
                 </Button>
               )}

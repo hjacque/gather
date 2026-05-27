@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { ArrowUpDown, ExternalLink, Loader2, RefreshCw, ShoppingCart, Store, X } from 'lucide-react';
+import { ArrowUpDown, ExternalLink, RefreshCw, ShoppingCart, Store, X } from 'lucide-react';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 
@@ -566,9 +566,7 @@ export function PokemonExclusivePromosTable({
                         disabled={panelSyncLoading === 'psa'}
                         className="gap-1.5"
                       >
-                        {panelSyncLoading === 'psa'
-                          ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          : <RefreshCw className="w-3.5 h-3.5" />}
+                        <RefreshCw className={`w-3.5 h-3.5${panelSyncLoading === 'psa' ? ' animate-spin' : ''}`} />
                         Sync
                       </Button>
                     </CardAction>
