@@ -2,7 +2,7 @@ import type { Page } from "rebrowser-puppeteer-core";
 import { ProductEntity } from "../../../entities/product.entity";
 import { PriceSourcePort, RawPrices } from "./priceSource.port";
 
-const BANNED_DESCRIPTION_KEYWORDS = ["contendent", "Probably", "Sealed", "maybe"];
+const BANNED_DESCRIPTION_KEYWORDS = ["contendent", "Probably", "Sealed", "maybe", "possible", "like"];
 
 const PSA_GRADE_TYPES = [
   "cardmarketPsa1",
@@ -66,7 +66,7 @@ export class CardMarketGradedSource implements PriceSourcePort {
 
       // Parse all rows and find the minimum price per PSA grade
       const gradeMinPrices = await page.$$eval(".article-row", (rows) => {
-        const banned = ["contendent", "Probably", "Sealed", "maybe"];
+        const banned = ["contendent", "Probably", "Sealed", "maybe", "possible", "like"];
         const result: Record<number, number> = {};
 
         for (const row of rows) {
