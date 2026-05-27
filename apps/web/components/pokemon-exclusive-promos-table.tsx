@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { ArrowUpDown, ExternalLink, RefreshCw, ShoppingCart, Store, X } from 'lucide-react';
+import { ArrowUpDown, ExternalLink, Loader2, RefreshCw, ShoppingCart, Store, X } from 'lucide-react';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 
@@ -18,7 +18,7 @@ import {
   SheetTitle,
 } from './ui/sheet';
 import { getProduct } from '@/app/actions/getProduct';
-import { syncAllPromos } from '@/app/actions/syncProduct';
+import { syncAllPromos, syncProductCardMarket, syncProductPsa } from '@/app/actions/syncProduct';
 import { ProductNoteSection } from '@/components/product-note-section';
 import { ProductCardImage } from '@/components/product-card-image';
 import type { GetProductResponse } from '@/app/actions/getProduct';
@@ -452,6 +452,30 @@ export function PokemonExclusivePromosTable({
     }
   };
 
+  const [panelSyncLoading, setPanelSyncLoading] = React.useState<'cardmarket' | 'psa' | null>(null);
+
+  const handlePanelSync = async (action: 'cardmarket' | 'psa') => {
+    if (!displayedItem || panelSyncLoading) return;
+    const id = displayedItem.id;
+    setPanelSyncLoading(action);
+    try {
+      const updatedItem = action === 'cardmarket'
+        ? await syncProductCardMarket(id)
+        : await syncProductPsa(id);
+      if (activeItemRef.current?.id === id) {
+        setDisplayedItem(updatedItem);
+        const data = await getProduct(id);
+        if (activeItemRef.current?.id === id) {
+          setDisplayedProduct(data);
+        }
+      }
+    } catch (err) {
+      console.error('Panel sync failed', err);
+    } finally {
+      setPanelSyncLoading(null);
+    }
+  };
+
   const psaReport = displayedProduct?.psaPopReport ?? null;
   const grades = psaReport
     ? [
@@ -514,12 +538,16 @@ export function PokemonExclusivePromosTable({
                   />
                 )}
                 <div className="flex-1 min-w-0">
-                  <PsaGradePriceChart psaGradePrices={displayedProduct?.psaGradePrices ?? []} />
+                  <PsaGradePriceChart
+                    psaGradePrices={displayedProduct?.psaGradePrices ?? []}
+                    onSyncCardMarket={() => handlePanelSync('cardmarket')}
+                    isSyncingCardMarket={panelSyncLoading === 'cardmarket'}
+                  />
                 </div>
               </div>
             )}
 
-            {grades && (
+            {displayedProduct && (
               <div className="w-full px-4 lg:px-6">
                 <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
                   <CardHeader>
@@ -530,20 +558,40 @@ export function PokemonExclusivePromosTable({
                         ? `Updated ${new Date(psaReport.syncedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`
                         : ''}
                     </CardDescription>
+                    <CardAction>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePanelSync('psa')}
+                        disabled={panelSyncLoading === 'psa'}
+                        className="gap-1.5"
+                      >
+                        {panelSyncLoading === 'psa'
+                          ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          : <RefreshCw className="w-3.5 h-3.5" />}
+                        Sync
+                      </Button>
+                    </CardAction>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-5 sm:grid-cols-11 gap-2">
-                      {grades.map(({ grade, count }) => (
-                        <div key={grade} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-muted">
-                          <span className="text-xs text-muted-foreground font-medium">PSA {grade}</span>
-                          <span className="text-sm font-semibold">{count != null ? count.toLocaleString() : '—'}</span>
+                    {grades ? (
+                      <div className="grid grid-cols-5 sm:grid-cols-11 gap-2">
+                        {grades.map(({ grade, count }) => (
+                          <div key={grade} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-muted">
+                            <span className="text-xs text-muted-foreground font-medium">PSA {grade}</span>
+                            <span className="text-sm font-semibold">{count != null ? count.toLocaleString() : '—'}</span>
+                          </div>
+                        ))}
+                        <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-primary/10 col-span-1">
+                          <span className="text-xs text-muted-foreground font-medium">Total</span>
+                          <span className="text-sm font-semibold">{psaReport?.total != null ? psaReport.total.toLocaleString() : '—'}</span>
                         </div>
-                      ))}
-                      <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-primary/10 col-span-1">
-                        <span className="text-xs text-muted-foreground font-medium">Total</span>
-                        <span className="text-sm font-semibold">{psaReport?.total != null ? psaReport.total.toLocaleString() : '—'}</span>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-16 text-sm text-muted-foreground">
+                        No pop report data — sync this product to populate
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>

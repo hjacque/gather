@@ -24,6 +24,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Button } from '@/components/ui/button';
+import { Loader2, RefreshCw } from 'lucide-react';
 
 const GRADE_COLORS: Record<number, string> = {
   1:  'hsl(220, 40%, 50%)',
@@ -40,9 +42,11 @@ const GRADE_COLORS: Record<number, string> = {
 
 type Props = {
   psaGradePrices: PriceRecord[];
+  onSyncCardMarket?: () => void;
+  isSyncingCardMarket?: boolean;
 };
 
-export function PsaGradePriceChart({ psaGradePrices }: Props) {
+export function PsaGradePriceChart({ psaGradePrices, onSyncCardMarket, isSyncingCardMarket }: Props) {
   const [timeRange, setTimeRange] = React.useState('90d');
   const [hiddenGrades, setHiddenGrades] = React.useState<Set<number>>(new Set());
 
@@ -123,33 +127,55 @@ export function PsaGradePriceChart({ psaGradePrices }: Props) {
           <span className="hidden @[540px]/card:block">Lowest CardMarket listing per PSA grade</span>
           <span className="@[540px]/card:hidden">Per-grade prices</span>
         </CardDescription>
-        {gradesWithData.length > 0 && <CardAction>
-          <ToggleGroup
-            type="single"
-            value={timeRange}
-            onValueChange={setTimeRange}
-            variant="outline"
-            className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
-          >
-            <ToggleGroupItem value="360d">Last year</ToggleGroupItem>
-            <ToggleGroupItem value="90d">Last 3 months</ToggleGroupItem>
-            <ToggleGroupItem value="30d">Last 30 days</ToggleGroupItem>
-          </ToggleGroup>
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger
-              className="flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
-              size="sm"
-              aria-label="Select a value"
-            >
-              <SelectValue placeholder="Last 3 months" />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl">
-              <SelectItem value="360d" className="rounded-lg">Last year</SelectItem>
-              <SelectItem value="90d" className="rounded-lg">Last 3 months</SelectItem>
-              <SelectItem value="30d" className="rounded-lg">Last 30 days</SelectItem>
-            </SelectContent>
-          </Select>
-        </CardAction>}
+        {(onSyncCardMarket || gradesWithData.length > 0) && (
+          <CardAction>
+            <div className="flex items-center gap-2">
+              {onSyncCardMarket && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onSyncCardMarket}
+                  disabled={isSyncingCardMarket}
+                  className="gap-1.5"
+                >
+                  {isSyncingCardMarket
+                    ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    : <RefreshCw className="w-3.5 h-3.5" />}
+                  Sync
+                </Button>
+              )}
+              {gradesWithData.length > 0 && (
+                <>
+                  <ToggleGroup
+                    type="single"
+                    value={timeRange}
+                    onValueChange={setTimeRange}
+                    variant="outline"
+                    className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
+                  >
+                    <ToggleGroupItem value="360d">Last year</ToggleGroupItem>
+                    <ToggleGroupItem value="90d">Last 3 months</ToggleGroupItem>
+                    <ToggleGroupItem value="30d">Last 30 days</ToggleGroupItem>
+                  </ToggleGroup>
+                  <Select value={timeRange} onValueChange={setTimeRange}>
+                    <SelectTrigger
+                      className="flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
+                      size="sm"
+                      aria-label="Select a value"
+                    >
+                      <SelectValue placeholder="Last 3 months" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="360d" className="rounded-lg">Last year</SelectItem>
+                      <SelectItem value="90d" className="rounded-lg">Last 3 months</SelectItem>
+                      <SelectItem value="30d" className="rounded-lg">Last 30 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </>
+              )}
+            </div>
+          </CardAction>
+        )}
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         {gradesWithData.length === 0 ? (
