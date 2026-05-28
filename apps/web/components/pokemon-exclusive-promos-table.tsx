@@ -182,6 +182,7 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
         ? ((today - yesterday) / yesterday) * 100
         : null;
       const isNew = today != null && yesterday == null;
+      const isGone = today == null && yesterday != null;
       return (
         <div className="text-center tabular-nums text-sm">
           {today != null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(today) : ''}
@@ -191,6 +192,7 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
             </sup>
           )}
           {isNew && <sup className="ml-1 text-xs text-green-500">new</sup>}
+          {isGone && <sup className="ml-1 text-xs text-green-500">gone</sup>}
         </div>
       );
     },
@@ -224,6 +226,7 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
         ? ((today - yesterday) / yesterday) * 100
         : null;
       const isNew = today != null && yesterday == null;
+      const isGone = today == null && yesterday != null;
       return (
         <div className="text-center tabular-nums text-sm">
           {today != null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(today) : ''}
@@ -233,6 +236,7 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
             </sup>
           )}
           {isNew && <sup className="ml-1 text-xs text-green-500">new</sup>}
+          {isGone && <sup className="ml-1 text-xs text-green-500">gone</sup>}
         </div>
       );
     },
