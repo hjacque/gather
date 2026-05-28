@@ -191,7 +191,7 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
               {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
             </sup>
           )}
-          {isNew && <sup className="ml-1 text-xs text-green-500">new</sup>}
+          {isNew && <sup className="ml-1 text-xs text-red-500">new</sup>}
           {isGone && <sup className="ml-1 text-xs text-green-500">gone</sup>}
         </div>
       );
@@ -235,7 +235,7 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
               {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
             </sup>
           )}
-          {isNew && <sup className="ml-1 text-xs text-green-500">new</sup>}
+          {isNew && <sup className="ml-1 text-xs text-red-500">new</sup>}
           {isGone && <sup className="ml-1 text-xs text-green-500">gone</sup>}
         </div>
       );
