@@ -1,7 +1,6 @@
 import { PerformanceModel } from "./models/performance.model.pg";
 import { PerformanceRepositoryPort } from "../ports/performance.repository.port";
 import { PerformanceMapper } from "./mappers/performance.mapper.pg";
-import { Franchise, ProductType } from "entities/product.entity";
 import { PerformancePeriod, PerformanceType } from "@gather/types";
 import { PrismaClient } from "@prisma/client";
 
@@ -57,69 +56,6 @@ export class PerformanceRepositoryPg implements PerformanceRepositoryPort {
             periodType,
         }
     });
-  }
-
-  async getTopPerformance(
-    date: Date,
-    franchise: Franchise,
-    productType: ProductType,
-  ) {
-    const topPerformance = (
-      await this.prisma.performance
-        .findFirstOrThrow({
-            where: {
-                date,
-                type: { in: ["market", "buylist"] },
-                value: { gt: 0 },
-            },
-            orderBy: {
-                value: "desc"
-            },
-            take: 1
-        }));
-
-    // const res = this.productCollection.aggregate([
-    //   {
-    //     $match: {
-    //       type: productType,
-    //       franchise,
-    //     },
-    //   },
-    //   {
-    //     $lookup: {
-    //       from: "performances",
-    //       localField: "_id",
-    //       foreignField: "productId",
-    //       as: "performances",
-    //     },
-    //   },
-    //   { $unwind: "$performances" },
-    //   {
-    //     $match: {
-    //       "performances.value": { $gt: 0 },
-    //       date,
-    //       type: { $in : [ PerformanceType.market, PerformanceType.buylist ]},
-    //     },
-    //   },
-    //   {
-    //     $sort: { "performances.value": -1 },
-    //   },
-    //   { $limit: 1 },
-    //   {
-    //     $project: {
-    //       _id: 0,
-    //       bestPerformanceValue: "$performances",
-    //     },
-    //   },
-    // ]);
-
-    // console.debug(res, await res.toArray(), (await res.toArray())[0]);
-
-    // if (!topPerformance) {
-    //   throw new RessourceNotFoundError();
-    // }
-
-    return this.performanceMapper.toEntity(topPerformance);
   }
 
   async getPerformances(productIds: string[], date: Date) {

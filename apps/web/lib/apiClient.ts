@@ -2,8 +2,6 @@ import type {
   GetProductsQuery,
   GetProductsResponse,
   GetProductResponse,
-  GetProductOfTheDayQuery,
-  GetProductOfTheDayResponse,
   SyncProductResponse,
   UpdateProductNoteRequest,
 } from '@gather/api-contract';
@@ -47,12 +45,6 @@ export async function getProducts(
 
 export async function getProduct(productId: string): Promise<GetProductResponse> {
   return apiFetch(`/products/${productId}`);
-}
-
-export async function getProductOfTheDay(
-  query: GetProductOfTheDayQuery,
-): Promise<GetProductOfTheDayResponse | undefined> {
-  return apiFetch(`/product-of-the-day${toParams(query)}`);
 }
 
 export async function syncProductCardMarket(productId: string): Promise<SyncProductResponse> {

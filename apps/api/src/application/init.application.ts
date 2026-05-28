@@ -5,7 +5,6 @@ import { SyncUsecase } from "./sync/sync.usecase";
 import { GetProductsUsecase } from "./product/getProducts.usecase";
 import { GetProductUsecase } from "./product/getProduct.usecase";
 import { PerformanceRepositoryPort } from "../repository/ports/performance.repository.port";
-import { GetProductOfTheDayUsecase } from "./product/getProductOfTheDay.usecase";
 import { UpdateProductNoteUsecase } from "./product/updateProductNote.usecase";
 import { SyncSingleProductCardMarketUsecase } from "./sync/syncSingleProductCardMarket.usecase";
 import { SyncSingleProductPsaUsecase } from "./sync/syncSingleProductPsa.usecase";
@@ -24,7 +23,6 @@ export type Usecases = {
   syncUsecase: SyncUsecase;
   getProductsUsecase: GetProductsUsecase;
   getProductUsecase: GetProductUsecase;
-  getProductOfTheDayUsecase: GetProductOfTheDayUsecase;
   syncSingleProductCardMarketUsecase: SyncSingleProductCardMarketUsecase;
   syncSingleProductPsaUsecase: SyncSingleProductPsaUsecase;
   setPerformancesUsecase: SetPerformancesUsecase;
@@ -75,10 +73,6 @@ export const initApplication = ({
     priceRepository,
     psaPopReportRepository
   );
-  const getProductOfTheDayUsecase = new GetProductOfTheDayUsecase(
-    productRepository,
-    performanceRepository
-  );
   const cardmarketPriceSources = [
     new CardMarketSource(),
     new CardMarketGradedSource(),
@@ -109,7 +103,6 @@ export const initApplication = ({
     syncUsecase,
     getProductsUsecase,
     getProductUsecase,
-    getProductOfTheDayUsecase,
     syncSingleProductCardMarketUsecase,
     syncSingleProductPsaUsecase,
     setPerformancesUsecase,

@@ -6,8 +6,6 @@ import type {
   Rarity,
   Region,
   PriceType,
-  PerformancePeriod,
-  PerformanceType,
 } from '@gather/types';
 
 export type { Franchise, ProductType, ProductSetEntity };
@@ -20,15 +18,6 @@ export type PriceRecord = {
   date: Date;
   value: number | null;
   type: PriceType;
-};
-
-export type PerformanceRecord = {
-  id: string;
-  productId: string;
-  date: Date;
-  value: number | null;
-  periodType: PerformancePeriod;
-  type: PerformanceType;
 };
 
 export type PerformanceSummary = {
@@ -104,17 +93,6 @@ export type GetProductResponse = ProductEntity & {
   bricklinkAveragePrices: PriceRecord[];
   psaGradePrices: PriceRecord[];
   psaPopReport: PsaPopReportSummary | null;
-};
-
-// ─── GET /product-of-the-day ─────────────────────────────────────────────────
-
-export type GetProductOfTheDayQuery = {
-  franchise?: Franchise;
-  type?: ProductType;
-};
-
-export type GetProductOfTheDayResponse = ProductEntity & {
-  topPerformance: PerformanceRecord;
 };
 
 // ─── PATCH /products/:id ─────────────────────────────────────────────────────

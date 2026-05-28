@@ -3,7 +3,6 @@ import { Usecases } from "../../application/init.application";
 import { z } from "zod";
 import { errorHandler } from "./middlewares/http.errors";
 import { SyncUsecaseInputDto } from "application/sync/sync.usecase";
-import { GetProductOfTheDayUsecaseInputDto } from "application/product/getProductOfTheDay.usecase";
 import type { UpdateProductNoteRequest } from "@gather/api-contract";
 import { PRODUCT_TYPES, FRANCHISES, REGIONS } from "@gather/types";
 require("express-async-errors");
@@ -15,7 +14,6 @@ export const http = async ({
   syncUsecase,
   getProductsUsecase,
   getProductUsecase,
-  getProductOfTheDayUsecase,
   syncSingleProductCardMarketUsecase,
   syncSingleProductPsaUsecase,
   syncPsaPopReportsUsecase,
@@ -69,20 +67,6 @@ export const http = async ({
 
     res.status(200);
     res.json({ success: true });
-  });
-
-  app.get("/product-of-the-day", async (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
-
-    const { set, type, franchise } = req.query;
-    const result = await getProductOfTheDayUsecase.execute({
-      set,
-      type,
-      franchise,
-    } as GetProductOfTheDayUsecaseInputDto);
-
-    res.status(200);
-    res.json(result);
   });
 
   app.get("/products", async (req, res) => {

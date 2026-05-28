@@ -1,4 +1,3 @@
-import { Franchise, ProductType } from "entities/product.entity";
 import {
   PerformanceEntity,
 } from "../../entities/performance.entity";
@@ -12,12 +11,6 @@ export abstract class PerformanceRepositoryPort {
     periodType: PerformancePeriod,
     type: PerformanceType,
   ): Promise<void>;
-
-  abstract getTopPerformance(
-    date: Date,
-    franchise: Franchise,
-    type: ProductType,
-  ): Promise<PerformanceEntity | null>;
 
   abstract getPerformances(
     productIds: string[],
