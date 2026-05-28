@@ -61,19 +61,24 @@ export class SyncSingleProductCardMarketUsecase {
     await page.close();
     await browser.close();
 
-    const pricesByProduct = await this.priceRepository.getProductsPricesByDate([product.id], today);
+    const yesterday = new Date(today);
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+
+    const [pricesByProduct, yesterdayPricesByProduct, performances, psaReport] = await Promise.all([
+      this.priceRepository.getProductsPricesByDate([product.id], today),
+      this.priceRepository.getProductsPricesByDate([product.id], yesterday),
+      this.performanceRepository.getPerformances([product.id], today),
+      this.psaPopReportRepository.findByProductId(product.id),
+    ]);
     const currentPrices = pricesByProduct.get(product.id)!;
-
-    const performances = await this.performanceRepository.getPerformances([product.id], today);
+    const yesterdayPrices = yesterdayPricesByProduct.get(product.id);
     const performance = performances.get(product.id)!;
-
-    const psaReport = await this.psaPopReportRepository.findByProductId(product.id);
 
     return {
       ...product,
       ...currentPrices,
-      cardmarketPsa9Yesterday: null,
-      cardmarketPsa10Yesterday: null,
+      cardmarketPsa9Yesterday: yesterdayPrices?.cardmarketPsa9 ?? null,
+      cardmarketPsa10Yesterday: yesterdayPrices?.cardmarketPsa10 ?? null,
       performance,
       psaTotal: psaReport?.total ?? null,
     };
