@@ -670,7 +670,7 @@ export function PokemonExclusivePromosTable({
                 </CardContent>
               </Card>
             </div>
-            <ProductNoteSection productId={displayedItem.id} initialNote={displayedItem.note} />
+            <ProductNoteSection key={displayedItem.id} productId={displayedItem.id} initialNote={displayedProduct?.note ?? displayedItem.note} />
           </SheetContent>
         </Sheet>
       )}
