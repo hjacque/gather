@@ -85,6 +85,9 @@ export const RARITIES = [
 ] as const;
 export type Rarity = typeof RARITIES[number];
 
+export const FOIL_PATTERNS = ['rareHolo', 'reverse', 'regularHolo'] as const;
+export type FoilPattern = typeof FOIL_PATTERNS[number];
+
 export type ProductSetEntity = {
   id: string;
   name: string;
@@ -104,6 +107,7 @@ export type ProductEntity = {
   msrp: number | null;
   productSetId: string;
   rarity: Rarity | null;
+  foilPattern: FoilPattern | null;
   imageUrl: string | null;
   releaseDate: Date | null;
   cardMarketLink: string | null;

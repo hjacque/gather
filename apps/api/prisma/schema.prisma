@@ -50,6 +50,12 @@ enum Rarity {
   holo_rare
 }
 
+enum FoilPattern {
+  rareHolo
+  reverse
+  regularHolo
+}
+
 enum Region {
   japan
   korea
@@ -102,6 +108,7 @@ model Product {
   productSet                ProductSet           @relation(fields: [productSetId], references: [id])
   productSetId              String
   rarity                    Rarity?
+  foilPattern               FoilPattern?
   tags                      String[]
   keyword                   String?
   blocked                   String[]

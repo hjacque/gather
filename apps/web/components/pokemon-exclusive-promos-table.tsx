@@ -568,6 +568,7 @@ export function PokemonExclusivePromosTable({
                     alt={displayedItem.name}
                     spotlightOpen={spotlightOpen}
                     onSpotlightOpenChange={setSpotlightOpen}
+                    foilPattern={displayedItem.foilPattern}
                   />
                 )}
                 <div className="flex-1 min-w-0">

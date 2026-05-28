@@ -61,6 +61,8 @@ function makeProduct(id: string, psaLink: string | null, rarity: Rarity = "promo
     tags: [],
     keyword: null,
     blocked: [],
+    foilPattern: null,
+    regions: [],
     createdAt: new Date(),
     updatedAt: new Date(),
     productSet: {
