@@ -72,11 +72,26 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
     ),
     cell: ({ row }) => {
       const date = row.original.releaseDate;
+      const shortDate = date
+        ? new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
+        : '-';
+      const fullDate = date
+        ? new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+        : null;
       return (
-        <div className="text-muted-foreground text-sm whitespace-nowrap text-center">
-          {date
-            ? new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
-            : '-'}
+        <div className="flex justify-center">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="text-muted-foreground text-sm whitespace-nowrap text-center">
+                {shortDate}
+              </div>
+            </TooltipTrigger>
+            {fullDate && (
+              <TooltipContent>
+                <p>{fullDate}</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
         </div>
       );
     },
