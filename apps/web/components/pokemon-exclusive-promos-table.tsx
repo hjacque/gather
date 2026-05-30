@@ -660,6 +660,7 @@ export function PokemonExclusivePromosTable({
       const updatedItem = action === 'cardmarket'
         ? await syncProductCardMarket(id)
         : await syncProductPsa(id);
+      tableRef.current?.updateRow(id, updatedItem);
       if (activeItemRef.current?.id === id) {
         setDisplayedItem(updatedItem);
         const data = await getProduct(id);
