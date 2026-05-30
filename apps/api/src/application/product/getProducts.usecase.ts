@@ -56,6 +56,7 @@ export class GetProductsUsecase {
       const performance = performances.get(product.id)!;
       const psaReport = psaReports.get(product.id) ?? null;
       const psaTotal = psaReport?.total ?? null;
+      const psaGrade10Pop = psaReport?.grade10 ?? null;
       const collectionEntry = collectionEntries.get(product.id) ?? null;
 
       return {
@@ -74,6 +75,7 @@ export class GetProductsUsecase {
         cardmarketPsa9Yesterday: yp.cardmarketPsa9,
         cardmarketPsa10Yesterday: yp.cardmarketPsa10,
         psaTotal,
+        psaGrade10Pop,
         collectionEntry,
       };
     });

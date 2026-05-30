@@ -92,6 +92,7 @@ export type GetProductsResponseItem = ProductEntity & DailyPrices & {
   productSet: ProductSetEntity;
   performance: PerformanceSummary;
   psaTotal: number | null;
+  psaGrade10Pop: number | null;
   cardmarketPsa9Yesterday: number | null;
   cardmarketPsa10Yesterday: number | null;
   collectionEntry: CollectionEntry | null;
@@ -127,6 +128,7 @@ export type SyncProductResponse = ProductEntity & DailyPrices & {
   productSet: ProductSetEntity;
   performance: PerformanceSummary;
   psaTotal: number | null;
+  psaGrade10Pop: number | null;
   cardmarketPsa9Yesterday: number | null;
   cardmarketPsa10Yesterday: number | null;
   collectionEntry: CollectionEntry | null;

@@ -62,6 +62,7 @@ export class SyncSingleProductPsaUsecase {
       cardmarketPsa10Yesterday: null,
       performance,
       psaTotal: psaReport?.total ?? null,
+      psaGrade10Pop: psaReport?.grade10 ?? null,
       collectionEntry: null,
     };
   }

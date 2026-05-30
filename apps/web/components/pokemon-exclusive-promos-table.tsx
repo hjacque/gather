@@ -305,6 +305,43 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
     enableSorting: true,
   },
   {
+    id: 'gemRate',
+    size: 90,
+    accessorFn: (row) => {
+      const total = row.psaTotal;
+      const grade10 = row.psaGrade10Pop;
+      if (total == null || grade10 == null || total === 0) return null;
+      return Math.round((grade10 / total) * 100);
+    },
+    filterFn: (row, _columnId, filterValue: [number | null, number | null]) => {
+      const [min, max] = filterValue;
+      if (min == null && max == null) return true;
+      const total = row.original.psaTotal;
+      const grade10 = row.original.psaGrade10Pop;
+      if (total == null || grade10 == null || total === 0) return false;
+      const rate = Math.round((grade10 / total) * 100);
+      if (min != null && rate < min) return false;
+      if (max != null && rate > max) return false;
+      return true;
+    },
+    sortUndefined: 'last',
+    header: ({ column }) => (
+      <div className="flex justify-center">
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          Gem Rate <ArrowUpDown />
+        </Button>
+      </div>
+    ),
+    cell: ({ row }) => {
+      const total = row.original.psaTotal;
+      const grade10 = row.original.psaGrade10Pop;
+      if (total == null || grade10 == null || total === 0) return <div className="text-center text-muted-foreground">—</div>;
+      const rate = Math.round((grade10 / total) * 100);
+      return <div className="text-center tabular-nums">{rate}%</div>;
+    },
+    enableSorting: true,
+  },
+  {
     id: 'regions',
     accessorFn: (row) => row.regions,
     filterFn: (row, _columnId, filterValue: string[]) => {
@@ -332,7 +369,7 @@ function PsaPopSlider({
   onCommit,
 }: {
   label?: string;
-  color?: 'default' | 'blue';
+  color?: 'default' | 'blue' | 'orange' | 'purple';
   dataMin: number;
   dataMax: number;
   committed: [number, number];
@@ -404,7 +441,12 @@ function PsaPopSlider({
         step={1}
         value={local}
         onValueChange={handleSlider}
-        className={`w-40${color === 'blue' ? ' [&_[data-slot=slider-range]]:bg-sidebar-accent [&_[data-slot=slider-thumb]]:border-sidebar-accent/50' : ''}`}
+        className={`w-40${
+          color === 'blue'   ? ' [&_[data-slot=slider-range]]:bg-sidebar-accent [&_[data-slot=slider-thumb]]:border-sidebar-accent/50' :
+          color === 'orange' ? ' [&_[data-slot=slider-range]]:bg-primary [&_[data-slot=slider-thumb]]:border-primary/50' :
+          color === 'purple' ? ' [&_[data-slot=slider-range]]:bg-chart-3 [&_[data-slot=slider-thumb]]:border-chart-3/50' :
+          ''
+        }`}
       />
       <Input
         type="text"
@@ -833,6 +875,24 @@ export function PokemonExclusivePromosTable({
           }
         };
 
+        const gemRates = data.map((d) => {
+          const t = d.psaTotal; const g = d.psaGrade10Pop;
+          return t && g && t > 0 ? Math.round((g / t) * 100) : null;
+        }).filter((v): v is number => v != null);
+        const gemRateDataMin = gemRates.length ? Math.min(...gemRates) : 0;
+        const gemRateDataMax = gemRates.length ? Math.max(...gemRates) : 100;
+
+        const gemRateFilter = (table.getColumn('gemRate')?.getFilterValue() as [number | null, number | null]) ?? [null, null];
+        const gemRateCommitted: [number, number] = [gemRateFilter[0] ?? gemRateDataMin, gemRateFilter[1] ?? gemRateDataMax];
+        const onGemRateCommit = (values: [number, number]) => {
+          const [lo, hi] = values;
+          if (lo === gemRateDataMin && hi === gemRateDataMax) {
+            table.getColumn('gemRate')?.setFilterValue(undefined);
+          } else {
+            table.getColumn('gemRate')?.setFilterValue([lo, hi]);
+          }
+        };
+
         const collectionOptions = [
           { value: 'owned', label: 'Owned', dot: 'bg-green-500' },
           { value: 'want', label: 'Want', dot: 'bg-amber-400' },
@@ -856,7 +916,9 @@ export function PokemonExclusivePromosTable({
           psaPopFilter[0] != null ||
           psaPopFilter[1] != null ||
           psa10PriceFilter[0] != null ||
-          psa10PriceFilter[1] != null;
+          psa10PriceFilter[1] != null ||
+          gemRateFilter[0] != null ||
+          gemRateFilter[1] != null;
 
         const clearAllFilters = () => {
           table.getColumn('set')?.setFilterValue(undefined);
@@ -864,6 +926,7 @@ export function PokemonExclusivePromosTable({
           table.getColumn('collectionStatus')?.setFilterValue(undefined);
           table.getColumn('psaTotal')?.setFilterValue(undefined);
           table.getColumn('cardmarketPsa10')?.setFilterValue(undefined);
+          table.getColumn('gemRate')?.setFilterValue(undefined);
         };
 
         return (
@@ -982,7 +1045,7 @@ export function PokemonExclusivePromosTable({
             {psaDataMax > psaDataMin && (
               <PsaPopSlider
                 label="Pop"
-                color="blue"
+                color="purple"
                 dataMin={psaDataMin}
                 dataMax={psaDataMax}
                 committed={psaCommitted}
@@ -992,10 +1055,21 @@ export function PokemonExclusivePromosTable({
             {psa10DataMax > psa10DataMin && (
               <PsaPopSlider
                 label="PSA 10 €"
+                color="orange"
                 dataMin={psa10DataMin}
                 dataMax={psa10DataMax}
                 committed={psa10Committed}
                 onCommit={onPsa10Commit}
+              />
+            )}
+            {gemRateDataMax > gemRateDataMin && (
+              <PsaPopSlider
+                label="Gem %"
+                color="blue"
+                dataMin={gemRateDataMin}
+                dataMax={gemRateDataMax}
+                committed={gemRateCommitted}
+                onCommit={onGemRateCommit}
               />
             )}
             {hasActiveFilters && (
