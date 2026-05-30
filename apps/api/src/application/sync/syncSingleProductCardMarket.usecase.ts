@@ -2,6 +2,7 @@ import { connect } from "puppeteer-real-browser";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
+import { CollectionRepositoryPort } from "../../repository/ports/collection.repository.port";
 import { SetPerformancesUsecase } from "./setPerformances.usecase";
 import { PerformanceRepositoryPort } from "repository/ports/performance.repository.port";
 import { PriceSourcePort, RawPrices } from "./sources/priceSource.port";
@@ -16,7 +17,8 @@ export class SyncSingleProductCardMarketUsecase {
     private readonly performanceRepository: PerformanceRepositoryPort,
     private readonly setPerformancesUsecase: SetPerformancesUsecase,
     private readonly cardmarketPriceSources: PriceSourcePort[],
-    private readonly psaPopReportRepository: PsaPopReportRepositoryPort
+    private readonly psaPopReportRepository: PsaPopReportRepositoryPort,
+    private readonly collectionRepository: CollectionRepositoryPort
   ) {}
 
   async execute(productId: string): Promise<SyncProductResponse> {
@@ -64,11 +66,12 @@ export class SyncSingleProductCardMarketUsecase {
     const yesterday = new Date(today);
     yesterday.setUTCDate(yesterday.getUTCDate() - 1);
 
-    const [pricesByProduct, yesterdayPricesByProduct, performances, psaReport] = await Promise.all([
+    const [pricesByProduct, yesterdayPricesByProduct, performances, psaReport, collectionEntry] = await Promise.all([
       this.priceRepository.getProductsPricesByDate([product.id], today),
       this.priceRepository.getProductsPricesByDate([product.id], yesterday),
       this.performanceRepository.getPerformances([product.id], today),
       this.psaPopReportRepository.findByProductId(product.id),
+      this.collectionRepository.findByProductId(product.id),
     ]);
     const currentPrices = pricesByProduct.get(product.id)!;
     const yesterdayPrices = yesterdayPricesByProduct.get(product.id);
@@ -82,7 +85,7 @@ export class SyncSingleProductCardMarketUsecase {
       performance,
       psaTotal: psaReport?.total ?? null,
       psaGrade10Pop: psaReport?.grade10 ?? null,
-      collectionEntry: null,
+      collectionEntry: collectionEntry ?? null,
     };
   }
 }

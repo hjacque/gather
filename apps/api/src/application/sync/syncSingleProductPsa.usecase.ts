@@ -2,6 +2,7 @@ import { connect } from "puppeteer-real-browser";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
+import { CollectionRepositoryPort } from "../../repository/ports/collection.repository.port";
 import { PerformanceRepositoryPort } from "repository/ports/performance.repository.port";
 import { scrapePsaPopReport } from "./sources/psa.source";
 import type { SyncProductResponse } from "@gather/api-contract";
@@ -11,7 +12,8 @@ export class SyncSingleProductPsaUsecase {
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
     private readonly performanceRepository: PerformanceRepositoryPort,
-    private readonly psaPopReportRepository: PsaPopReportRepositoryPort
+    private readonly psaPopReportRepository: PsaPopReportRepositoryPort,
+    private readonly collectionRepository: CollectionRepositoryPort
   ) {}
 
   async execute(productId: string): Promise<SyncProductResponse> {
@@ -47,13 +49,14 @@ export class SyncSingleProductPsaUsecase {
     await page.close();
     await browser.close();
 
-    const pricesByProduct = await this.priceRepository.getProductsPricesByDate([product.id], today);
+    const [pricesByProduct, performances, psaReport, collectionEntry] = await Promise.all([
+      this.priceRepository.getProductsPricesByDate([product.id], today),
+      this.performanceRepository.getPerformances([product.id], today),
+      this.psaPopReportRepository.findByProductId(product.id),
+      this.collectionRepository.findByProductId(product.id),
+    ]);
     const currentPrices = pricesByProduct.get(product.id)!;
-
-    const performances = await this.performanceRepository.getPerformances([product.id], today);
     const performance = performances.get(product.id)!;
-
-    const psaReport = await this.psaPopReportRepository.findByProductId(product.id);
 
     return {
       ...product,
@@ -63,7 +66,7 @@ export class SyncSingleProductPsaUsecase {
       performance,
       psaTotal: psaReport?.total ?? null,
       psaGrade10Pop: psaReport?.grade10 ?? null,
-      collectionEntry: null,
+      collectionEntry: collectionEntry ?? null,
     };
   }
 }

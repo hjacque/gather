@@ -93,14 +93,16 @@ export const initApplication = ({
     performanceRepository,
     setPerformancesUsecase,
     cardmarketPriceSources,
-    psaPopReportRepository
+    psaPopReportRepository,
+    collectionRepository
   );
 
   const syncSingleProductPsaUsecase = new SyncSingleProductPsaUsecase(
     productRepository,
     priceRepository,
     performanceRepository,
-    psaPopReportRepository
+    psaPopReportRepository,
+    collectionRepository
   );
   const syncPsaPopReportsUsecase = new SyncPsaPopReportsUsecase(
     productRepository,
