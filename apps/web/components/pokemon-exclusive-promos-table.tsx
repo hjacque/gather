@@ -349,7 +349,7 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
   {
     id: 'regions',
     accessorFn: (row) => row.regions,
-    filterFn: (row, _columnId, filterValue: string[]) => {
+    filterFn: (row, _columnId, filterValue: ('japan' | 'korea' | 'taiwan_hong_kong')[]) => {
       if (!filterValue || filterValue.length === 0) return true;
       return filterValue.some((r) => row.original.regions?.includes(r));
     },
