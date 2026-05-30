@@ -5,18 +5,15 @@ import {
   syncProductPsa as _syncProductPsa,
   syncAllPromos as _syncAllPromos,
 } from '@/lib/apiClient';
-import type { SyncProductResponse } from '@gather/api-contract';
 
-export async function syncProductCardMarket(productId: string): Promise<SyncProductResponse> {
+export async function syncProductCardMarket(productId: string) {
   return _syncProductCardMarket(productId);
 }
 
-export async function syncProductPsa(productId: string): Promise<SyncProductResponse> {
+export async function syncProductPsa(productId: string) {
   return _syncProductPsa(productId);
 }
 
-export async function syncAllPromos(): Promise<void> {
+export async function syncAllPromos() {
   return _syncAllPromos();
 }
-
-export type { SyncProductResponse };

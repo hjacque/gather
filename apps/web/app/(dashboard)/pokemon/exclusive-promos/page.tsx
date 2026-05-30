@@ -1,4 +1,5 @@
-import { GetProductFilter, getProducts } from '@/app/actions/getProducts';
+import type { GetProductsQuery as GetProductFilter } from '@gather/api-contract';
+import { getProducts } from '@/app/actions/getProducts';
 import { PokemonExclusivePromosTable } from '@/components/pokemon-exclusive-promos-table';
 
 export default function PokemonExclusivePromosPage() {

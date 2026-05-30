@@ -24,7 +24,7 @@ import { ProductCardImage } from '@/components/product-card-image';
 import { upsertCollectionEntry, deleteCollectionEntry } from '@/app/actions/collectionEntry';
 import type { CollectionEntry, UpsertCollectionEntryRequest } from '@gather/api-contract';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import type { GetProductResponse } from '@/app/actions/getProduct';
+import type { GetProductResponse } from '@gather/api-contract';
 import {
   Card,
   CardAction,
@@ -37,7 +37,7 @@ import { PsaGradePriceChart } from '@/components/psa-grade-price-chart';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
-import type { GetProductsResponseItem } from '@/app/actions/getProducts';
+import type { GetProductsResponseItem } from '@gather/api-contract';
 import { ProductTable, RowActionsCell, type ProductTableHandle } from './product-table';
 
 const ProductPanelContext = React.createContext<{

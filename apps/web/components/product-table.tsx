@@ -72,7 +72,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { syncProductCardMarket, syncProductPsa } from '@/app/actions/syncProduct';
-import type { GetProductsResponseItem } from '@/app/actions/getProducts';
+import type { GetProductsResponseItem } from '@gather/api-contract';
 
 type SyncAction = 'cardmarket' | 'psa';
 
