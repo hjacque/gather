@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { ArrowUpDown, ExternalLink, RefreshCw, ShoppingCart, Store, X } from 'lucide-react';
+import { ArrowUpDown, ExternalLink, RefreshCw, Search, ShoppingCart, Store, X } from 'lucide-react';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 
@@ -86,6 +86,11 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
   {
     accessorKey: 'name',
     size: 300,
+    filterFn: (row, columnId, filterValue: string) => {
+      if (!filterValue) return true;
+      const name = (row.getValue(columnId) as string).toLowerCase();
+      return filterValue.toLowerCase().split(/\s+/).filter(Boolean).every((word) => name.includes(word));
+    },
     header: ({ column }) => (
       <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
         Name <ArrowUpDown />
@@ -359,6 +364,54 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
     cell: ({ row }) => <PromoRowActionsCell row={row} />,
   },
 ];
+
+function NameSearchInput({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string | undefined) => void;
+}) {
+  const [local, setLocal] = React.useState(value);
+  const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    setLocal(value);
+  }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value;
+    setLocal(v);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => onChange(v || undefined), 300);
+  };
+
+  const handleClear = () => {
+    setLocal('');
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    onChange(undefined);
+  };
+
+  return (
+    <div className="relative">
+      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+      <Input
+        placeholder="Search cards..."
+        value={local}
+        onChange={handleChange}
+        className="h-8 w-48 pl-8 pr-7 text-sm"
+      />
+      {local && (
+        <button
+          onClick={handleClear}
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </div>
+  );
+}
 
 function PsaPopSlider({
   label,
@@ -909,7 +962,10 @@ export function PokemonExclusivePromosTable({
             ? 'Collection'
             : selectedCollection.map((v) => collectionOptions.find((o) => o.value === v)?.label ?? v).join(', ');
 
+        const nameSearch = (table.getColumn('name')?.getFilterValue() as string) ?? '';
+
         const hasActiveFilters =
+          nameSearch.length > 0 ||
           selected.length > 0 ||
           selectedRegions.length > 0 ||
           selectedCollection.length > 0 ||
@@ -921,6 +977,7 @@ export function PokemonExclusivePromosTable({
           gemRateFilter[1] != null;
 
         const clearAllFilters = () => {
+          table.getColumn('name')?.setFilterValue(undefined);
           table.getColumn('set')?.setFilterValue(undefined);
           table.getColumn('regions')?.setFilterValue(undefined);
           table.getColumn('collectionStatus')?.setFilterValue(undefined);
@@ -932,6 +989,10 @@ export function PokemonExclusivePromosTable({
         return (
           <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
+            <NameSearchInput
+              value={nameSearch}
+              onChange={(v) => table.getColumn('name')?.setFilterValue(v)}
+            />
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="w-48 justify-between font-normal">
