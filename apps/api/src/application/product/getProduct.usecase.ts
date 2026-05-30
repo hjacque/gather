@@ -1,19 +1,24 @@
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
+import { CollectionRepositoryPort } from "../../repository/ports/collection.repository.port";
 import type { GetProductResponse } from "@gather/api-contract";
 
 export class GetProductUsecase {
   constructor(
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
-    private readonly psaPopReportRepository: PsaPopReportRepositoryPort
+    private readonly psaPopReportRepository: PsaPopReportRepositoryPort,
+    private readonly collectionRepository: CollectionRepositoryPort
   ) {}
 
   async execute(productId: string): Promise<GetProductResponse> {
     const product = await this.productRepository.getProduct(productId);
-    const productPrices = await this.priceRepository.getProductPrices(productId);
-    const psaReport = await this.psaPopReportRepository.findByProductId(productId);
+    const [productPrices, psaReport, collectionEntry] = await Promise.all([
+      this.priceRepository.getProductPrices(productId),
+      this.psaPopReportRepository.findByProductId(productId),
+      this.collectionRepository.findByProductId(productId),
+    ]);
 
     const psaPopReport = psaReport
       ? {
@@ -36,6 +41,7 @@ export class GetProductUsecase {
       ...product,
       ...productPrices,
       psaPopReport,
+      collectionEntry: collectionEntry ?? null,
     };
   }
 }

@@ -4,6 +4,7 @@ import type {
   GetProductResponse,
   SyncProductResponse,
   UpdateProductNoteRequest,
+  UpsertCollectionEntryRequest,
 } from '@gather/api-contract';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
@@ -21,6 +22,20 @@ async function apiPatch(path: string, body: unknown): Promise<void> {
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`API ${res.status}: PATCH ${path}`);
+}
+
+async function apiPut(path: string, body: unknown): Promise<void> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`API ${res.status}: PUT ${path}`);
+}
+
+async function apiDelete(path: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}${path}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`API ${res.status}: DELETE ${path}`);
 }
 
 function toParams(filter: Record<string, unknown>): string {
@@ -61,4 +76,15 @@ export async function updateProductNote(productId: string, note: string | null):
 
 export async function syncAllPromos(): Promise<void> {
   await apiFetch('/sync?rarity=promo');
+}
+
+export async function upsertCollectionEntry(
+  productId: string,
+  entry: UpsertCollectionEntryRequest,
+): Promise<void> {
+  return apiPut(`/collection/${productId}`, entry satisfies UpsertCollectionEntryRequest);
+}
+
+export async function deleteCollectionEntry(productId: string): Promise<void> {
+  return apiDelete(`/collection/${productId}`);
 }

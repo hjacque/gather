@@ -51,6 +51,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
@@ -101,10 +102,10 @@ function DraggableRow({ row }: { row: Row<GetProductsResponseItem> }) {
       }}
     >
       {row.getVisibleCells().map((cell) => {
-        const fill = (cell.column.columnDef.meta as { fill?: boolean } | undefined)?.fill;
+        const meta = cell.column.columnDef.meta as { fill?: boolean; cellClassName?: string } | undefined;
         const size = cell.column.getSize();
         return (
-          <TableCell key={cell.id} style={fill ? undefined : { width: size, maxWidth: size }}>
+          <TableCell key={cell.id} className={meta?.cellClassName} style={meta?.fill ? undefined : { width: size, maxWidth: size }}>
             {flexRender(cell.column.columnDef.cell, cell.getContext())}
           </TableCell>
         );
@@ -113,7 +114,7 @@ function DraggableRow({ row }: { row: Row<GetProductsResponseItem> }) {
   );
 }
 
-export function RowActionsCell({ row }: { row: Row<GetProductsResponseItem> }) {
+export function RowActionsCell({ row, extraItems }: { row: Row<GetProductsResponseItem>; extraItems?: React.ReactNode }) {
   const { handleSyncProduct, loadingRow } = useProductSync();
   const isLoadingCardMarket = loadingRow?.id === row.original.id && loadingRow.action === 'cardmarket';
   const isLoadingPsa = loadingRow?.id === row.original.id && loadingRow.action === 'psa';
@@ -145,6 +146,7 @@ export function RowActionsCell({ row }: { row: Row<GetProductsResponseItem> }) {
           {isLoadingPsa && <IconLoader2 className="animate-spin" />}
           Sync PSA
         </DropdownMenuItem>
+        {extraItems && <><DropdownMenuSeparator />{extraItems}</>}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -154,6 +156,7 @@ export type ProductTableHandle = {
   getAllRows: () => GetProductsResponseItem[];
   goToPage: (idx: number) => void;
   pageSize: number;
+  updateRow: (id: string, patch: Partial<GetProductsResponseItem>) => void;
 };
 
 export function ProductTable({
@@ -232,6 +235,8 @@ export function ProductTable({
   React.useImperativeHandle(tableRef, () => ({
     getAllRows: () => table.getSortedRowModel().rows.map((r) => r.original),
     goToPage: (idx: number) => table.setPageIndex(idx),
+    updateRow: (id: string, patch: Partial<GetProductsResponseItem>) =>
+      setData((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p))),
     get pageSize() {
       return table.getState().pagination.pageSize;
     },

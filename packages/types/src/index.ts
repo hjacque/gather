@@ -88,6 +88,18 @@ export type Rarity = typeof RARITIES[number];
 export const FOIL_PATTERNS = ['rareHolo', 'reverse', 'regularHolo'] as const;
 export type FoilPattern = typeof FOIL_PATTERNS[number];
 
+export type CollectionEntryEntity = {
+  id: string;
+  productId: string;
+  isOwned: boolean;
+  isWanted: boolean;
+  grade: number | null;
+  paidPrice: number | null;
+  acquiredAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type ProductSetEntity = {
   id: string;
   name: string;

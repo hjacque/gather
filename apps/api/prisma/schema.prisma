@@ -132,10 +132,26 @@ model Product {
   performances              Performance[] @relation("ProductPerformances")
   psaPopReport              PsaPopReport?
 
+  collectionEntry           CollectionEntry?
+
   createdAt                 DateTime      @default(now())
   updatedAt                 DateTime      @updatedAt
 
   @@unique([name, productSetId, type, releaseDate, number])
+}
+
+model CollectionEntry {
+  id          String    @id @default(uuid())
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   String    @unique
+  isOwned     Boolean   @default(false)
+  isWanted    Boolean   @default(false)
+  grade       Int?
+  paidPrice   Float?
+  acquiredAt  DateTime?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model ProductSet {

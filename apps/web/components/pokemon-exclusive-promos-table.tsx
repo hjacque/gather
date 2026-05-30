@@ -21,6 +21,9 @@ import { getProduct } from '@/app/actions/getProduct';
 import { syncAllPromos, syncProductCardMarket, syncProductPsa } from '@/app/actions/syncProduct';
 import { ProductNoteSection } from '@/components/product-note-section';
 import { ProductCardImage } from '@/components/product-card-image';
+import { upsertCollectionEntry, deleteCollectionEntry } from '@/app/actions/collectionEntry';
+import type { CollectionEntry, UpsertCollectionEntryRequest } from '@gather/api-contract';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import type { GetProductResponse } from '@/app/actions/getProduct';
 import {
   Card,
@@ -41,7 +44,39 @@ const ProductPanelContext = React.createContext<{
   openPanel: (item: GetProductsResponseItem) => void;
 } | null>(null);
 
+const CollectionActionsContext = React.createContext<{
+  toggleCollection: (item: GetProductsResponseItem, flag: 'isOwned' | 'isWanted') => Promise<void>;
+  loadingId: string | null;
+} | null>(null);
+
 const columns: ColumnDef<GetProductsResponseItem>[] = [
+  {
+    id: 'collectionStatus',
+    size: 36,
+    meta: { cellClassName: 'pr-0' },
+    filterFn: (row, _columnId, filterValue: string[]) => {
+      if (!filterValue || filterValue.length === 0) return true;
+      const e = row.original.collectionEntry;
+      if (filterValue.includes('owned') && e?.isOwned) return true;
+      if (filterValue.includes('want') && e?.isWanted) return true;
+      return false;
+    },
+    header: '',
+    cell: ({ row }) => {
+      const e = row.original.collectionEntry;
+      if (!e?.isOwned && !e?.isWanted) return null;
+      const both = e.isOwned && e.isWanted;
+      const dotStyle = both
+        ? { background: 'linear-gradient(90deg, #fbbf24 50%, #22c55e 50%)' }
+        : { background: e.isOwned ? '#22c55e' : '#fbbf24' };
+      const title = both ? 'Owned & wanted' : e.isOwned ? 'Owned' : 'Wanted';
+      return (
+        <div className="flex w-full justify-center">
+          <span className="inline-block w-2.5 h-2.5 rounded-full" style={dotStyle} title={title} />
+        </div>
+      );
+    },
+  },
   {
     id: 'image',
     size: 40,
@@ -284,7 +319,7 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
   {
     id: 'actions',
     size: 52,
-    cell: ({ row }) => <RowActionsCell row={row} />,
+    cell: ({ row }) => <PromoRowActionsCell row={row} />,
   },
 ];
 
@@ -486,6 +521,41 @@ export function PokemonExclusivePromosTable({
   };
 
   const [panelSyncLoading, setPanelSyncLoading] = React.useState<'cardmarket' | 'psa' | null>(null);
+  const [loadingCollectionId, setLoadingCollectionId] = React.useState<string | null>(null);
+
+  const toggleCollection = useCallback(async (item: GetProductsResponseItem, flag: 'isOwned' | 'isWanted') => {
+    if (loadingCollectionId) return;
+    setLoadingCollectionId(item.id);
+    const existing = item.collectionEntry;
+    const newIsOwned = flag === 'isOwned' ? !(existing?.isOwned ?? false) : (existing?.isOwned ?? false);
+    const newIsWanted = flag === 'isWanted' ? !(existing?.isWanted ?? false) : (existing?.isWanted ?? false);
+    try {
+      if (!newIsOwned && !newIsWanted) {
+        await deleteCollectionEntry(item.id);
+        tableRef.current?.updateRow(item.id, { collectionEntry: null });
+      } else {
+        const entry: UpsertCollectionEntryRequest = {
+          isOwned: newIsOwned,
+          isWanted: newIsWanted,
+          grade: existing?.grade ?? null,
+          paidPrice: existing?.paidPrice ?? null,
+          acquiredAt: existing?.acquiredAt ? new Date(existing.acquiredAt).toISOString() : null,
+        };
+        await upsertCollectionEntry(item.id, entry);
+        tableRef.current?.updateRow(item.id, {
+          collectionEntry: {
+            isOwned: newIsOwned,
+            isWanted: newIsWanted,
+            grade: entry.grade,
+            paidPrice: entry.paidPrice,
+            acquiredAt: entry.acquiredAt ? new Date(entry.acquiredAt) : null,
+          },
+        });
+      }
+    } finally {
+      setLoadingCollectionId(null);
+    }
+  }, [loadingCollectionId]);
 
   const handlePanelSync = async (action: 'cardmarket' | 'psa') => {
     if (!displayedItem || panelSyncLoading) return;
@@ -535,6 +605,7 @@ export function PokemonExclusivePromosTable({
   };
 
   return (
+    <CollectionActionsContext.Provider value={{ toggleCollection, loadingId: loadingCollectionId }}>
     <ProductPanelContext.Provider value={{ openPanel }}>
       {displayedItem && (
         <Sheet open={panelOpen} onOpenChange={handlePanelOpenChange}>
@@ -762,9 +833,26 @@ export function PokemonExclusivePromosTable({
           }
         };
 
+        const collectionOptions = [
+          { value: 'owned', label: 'Owned', dot: 'bg-green-500' },
+          { value: 'want', label: 'Want', dot: 'bg-amber-400' },
+        ] as const;
+        const selectedCollection = (table.getColumn('collectionStatus')?.getFilterValue() as string[]) ?? [];
+        const toggleCollection = (value: string) => {
+          const next = selectedCollection.includes(value)
+            ? selectedCollection.filter((v) => v !== value)
+            : [...selectedCollection, value];
+          table.getColumn('collectionStatus')?.setFilterValue(next.length ? next : undefined);
+        };
+        const collectionLabel =
+          selectedCollection.length === 0
+            ? 'Collection'
+            : selectedCollection.map((v) => collectionOptions.find((o) => o.value === v)?.label ?? v).join(', ');
+
         const hasActiveFilters =
           selected.length > 0 ||
           selectedRegions.length > 0 ||
+          selectedCollection.length > 0 ||
           psaPopFilter[0] != null ||
           psaPopFilter[1] != null ||
           psa10PriceFilter[0] != null ||
@@ -773,6 +861,7 @@ export function PokemonExclusivePromosTable({
         const clearAllFilters = () => {
           table.getColumn('set')?.setFilterValue(undefined);
           table.getColumn('regions')?.setFilterValue(undefined);
+          table.getColumn('collectionStatus')?.setFilterValue(undefined);
           table.getColumn('psaTotal')?.setFilterValue(undefined);
           table.getColumn('cardmarketPsa10')?.setFilterValue(undefined);
         };
@@ -850,6 +939,46 @@ export function PokemonExclusivePromosTable({
                 )}
               </PopoverContent>
             </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={selectedCollection.length > 0 ? 'default' : 'outline'}
+                  size="sm"
+                  className="w-32 justify-between font-normal"
+                >
+                  <span className="truncate">{collectionLabel}</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-44 p-2" align="start">
+                <div className="flex flex-col gap-1">
+                  {collectionOptions.map((opt) => (
+                    <label
+                      key={opt.value}
+                      className="flex items-center gap-2 rounded px-2 py-1.5 text-sm cursor-pointer hover:bg-accent"
+                    >
+                      <Checkbox
+                        checked={selectedCollection.includes(opt.value)}
+                        onCheckedChange={() => toggleCollection(opt.value)}
+                      />
+                      <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${opt.dot}`} />
+                      {opt.label}
+                    </label>
+                  ))}
+                </div>
+                {selectedCollection.length > 0 && (
+                  <div className="mt-2 border-t pt-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-xs"
+                      onClick={() => table.getColumn('collectionStatus')?.setFilterValue(undefined)}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
             {psaDataMax > psaDataMin && (
               <PsaPopSlider
                 label="Pop"
@@ -891,6 +1020,29 @@ export function PokemonExclusivePromosTable({
       }}
     />
     </ProductPanelContext.Provider>
+    </CollectionActionsContext.Provider>
+  );
+}
+
+function PromoRowActionsCell({ row }: { row: import('@tanstack/react-table').Row<GetProductsResponseItem> }) {
+  const ctx = useContext(CollectionActionsContext);
+  const isLoading = ctx?.loadingId === row.original.id;
+  const e = row.original.collectionEntry;
+
+  return (
+    <RowActionsCell
+      row={row}
+      extraItems={
+        <>
+          <DropdownMenuItem disabled={isLoading} onSelect={() => ctx?.toggleCollection(row.original, 'isWanted')}>
+            {e?.isWanted ? 'Remove from wantlist' : 'Add to wantlist'}
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled={isLoading} onSelect={() => ctx?.toggleCollection(row.original, 'isOwned')}>
+            {e?.isOwned ? 'Remove from collection' : 'Add to collection'}
+          </DropdownMenuItem>
+        </>
+      }
+    />
   );
 }
 

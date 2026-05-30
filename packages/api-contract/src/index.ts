@@ -10,6 +10,24 @@ import type {
 
 export type { Franchise, ProductType, ProductSetEntity };
 
+// ─── Collection Entry ─────────────────────────────────────────────────────────
+
+export type CollectionEntry = {
+  isOwned: boolean;
+  isWanted: boolean;
+  grade: number | null;
+  paidPrice: number | null;
+  acquiredAt: Date | null;
+};
+
+export type UpsertCollectionEntryRequest = {
+  isOwned: boolean;
+  isWanted: boolean;
+  grade: number | null;
+  paidPrice: number | null;
+  acquiredAt: string | null;
+};
+
 // ─── Shared shapes ───────────────────────────────────────────────────────────
 
 export type PriceRecord = {
@@ -76,6 +94,7 @@ export type GetProductsResponseItem = ProductEntity & DailyPrices & {
   psaTotal: number | null;
   cardmarketPsa9Yesterday: number | null;
   cardmarketPsa10Yesterday: number | null;
+  collectionEntry: CollectionEntry | null;
 };
 
 export type GetProductsResponse = GetProductsResponseItem[];
@@ -93,6 +112,7 @@ export type GetProductResponse = ProductEntity & {
   bricklinkAveragePrices: PriceRecord[];
   psaGradePrices: PriceRecord[];
   psaPopReport: PsaPopReportSummary | null;
+  collectionEntry: CollectionEntry | null;
 };
 
 // ─── PATCH /products/:id ─────────────────────────────────────────────────────
@@ -109,4 +129,5 @@ export type SyncProductResponse = ProductEntity & DailyPrices & {
   psaTotal: number | null;
   cardmarketPsa9Yesterday: number | null;
   cardmarketPsa10Yesterday: number | null;
+  collectionEntry: CollectionEntry | null;
 };

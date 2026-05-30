@@ -1,11 +1,14 @@
 import { ProductRepositoryPort } from "../repository/ports/product.repository.port";
 import { PriceRepositoryPort } from "../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../repository/ports/psaPopReport.repository.port";
+import { CollectionRepositoryPort } from "../repository/ports/collection.repository.port";
 import { SyncUsecase } from "./sync/sync.usecase";
 import { GetProductsUsecase } from "./product/getProducts.usecase";
 import { GetProductUsecase } from "./product/getProduct.usecase";
 import { PerformanceRepositoryPort } from "../repository/ports/performance.repository.port";
 import { UpdateProductNoteUsecase } from "./product/updateProductNote.usecase";
+import { UpsertCollectionEntryUsecase } from "./product/upsertCollectionEntry.usecase";
+import { DeleteCollectionEntryUsecase } from "./product/deleteCollectionEntry.usecase";
 import { SyncSingleProductCardMarketUsecase } from "./sync/syncSingleProductCardMarket.usecase";
 import { SyncSingleProductPsaUsecase } from "./sync/syncSingleProductPsa.usecase";
 import { SetPerformancesUsecase } from "./sync/setPerformances.usecase";
@@ -28,6 +31,8 @@ export type Usecases = {
   setPerformancesUsecase: SetPerformancesUsecase;
   syncPsaPopReportsUsecase: SyncPsaPopReportsUsecase;
   updateProductNoteUsecase: UpdateProductNoteUsecase;
+  upsertCollectionEntryUsecase: UpsertCollectionEntryUsecase;
+  deleteCollectionEntryUsecase: DeleteCollectionEntryUsecase;
 };
 
 export const initApplication = ({
@@ -35,11 +40,13 @@ export const initApplication = ({
   priceRepository,
   performanceRepository,
   psaPopReportRepository,
+  collectionRepository,
 }: {
   productRepository: ProductRepositoryPort;
   priceRepository: PriceRepositoryPort;
   performanceRepository: PerformanceRepositoryPort;
   psaPopReportRepository: PsaPopReportRepositoryPort;
+  collectionRepository: CollectionRepositoryPort;
 }): Usecases => {
   const priceSources = [
     new CardMarketSource(),
@@ -66,12 +73,14 @@ export const initApplication = ({
     productRepository,
     priceRepository,
     performanceRepository,
-    psaPopReportRepository
+    psaPopReportRepository,
+    collectionRepository
   );
   const getProductUsecase = new GetProductUsecase(
     productRepository,
     priceRepository,
-    psaPopReportRepository
+    psaPopReportRepository,
+    collectionRepository
   );
   const cardmarketPriceSources = [
     new CardMarketSource(),
@@ -98,6 +107,8 @@ export const initApplication = ({
     psaPopReportRepository
   );
   const updateProductNoteUsecase = new UpdateProductNoteUsecase(productRepository);
+  const upsertCollectionEntryUsecase = new UpsertCollectionEntryUsecase(collectionRepository);
+  const deleteCollectionEntryUsecase = new DeleteCollectionEntryUsecase(collectionRepository);
 
   return {
     syncUsecase,
@@ -108,5 +119,7 @@ export const initApplication = ({
     setPerformancesUsecase,
     syncPsaPopReportsUsecase,
     updateProductNoteUsecase,
+    upsertCollectionEntryUsecase,
+    deleteCollectionEntryUsecase,
   };
 };

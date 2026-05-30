@@ -3,7 +3,7 @@ import { Usecases } from "../../application/init.application";
 import { z } from "zod";
 import { errorHandler } from "./middlewares/http.errors";
 import { SyncUsecaseInputDto } from "application/sync/sync.usecase";
-import type { UpdateProductNoteRequest } from "@gather/api-contract";
+import type { UpdateProductNoteRequest, UpsertCollectionEntryRequest } from "@gather/api-contract";
 import { PRODUCT_TYPES, FRANCHISES, REGIONS } from "@gather/types";
 require("express-async-errors");
 
@@ -18,6 +18,8 @@ export const http = async ({
   syncSingleProductPsaUsecase,
   syncPsaPopReportsUsecase,
   updateProductNoteUsecase,
+  upsertCollectionEntryUsecase,
+  deleteCollectionEntryUsecase,
 }: Usecases) => {
   // middlewares
   app.use(express.json());
@@ -107,6 +109,32 @@ export const http = async ({
     });
     const { note } = bodySchema.parse(req.body) as UpdateProductNoteRequest;
     await updateProductNoteUsecase.execute(req.params.productid, note);
+    res.status(204).end();
+  });
+
+  app.put("/collection/:productid", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    const bodySchema = z.object({
+      isOwned: z.boolean(),
+      isWanted: z.boolean(),
+      grade: z.number().int().min(1).max(10).nullable(),
+      paidPrice: z.number().nonnegative().nullable(),
+      acquiredAt: z.string().datetime().nullable(),
+    });
+    const body = bodySchema.parse(req.body) as UpsertCollectionEntryRequest;
+    await upsertCollectionEntryUsecase.execute(req.params.productid, {
+      isOwned: body.isOwned,
+      isWanted: body.isWanted,
+      grade: body.grade,
+      paidPrice: body.paidPrice,
+      acquiredAt: body.acquiredAt ? new Date(body.acquiredAt) : null,
+    });
+    res.status(204).end();
+  });
+
+  app.delete("/collection/:productid", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    await deleteCollectionEntryUsecase.execute(req.params.productid);
     res.status(204).end();
   });
 

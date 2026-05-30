@@ -81,6 +81,7 @@ export class SyncSingleProductCardMarketUsecase {
       cardmarketPsa10Yesterday: yesterdayPrices?.cardmarketPsa10 ?? null,
       performance,
       psaTotal: psaReport?.total ?? null,
+      collectionEntry: null,
     };
   }
 }
