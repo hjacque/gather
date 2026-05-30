@@ -959,7 +959,7 @@ export function PokemonExclusivePromosTable({
         };
         const collectionLabel =
           selectedCollection.length === 0
-            ? 'Collection'
+            ? 'Status'
             : selectedCollection.map((v) => collectionOptions.find((o) => o.value === v)?.label ?? v).join(', ');
 
         const nameSearch = (table.getColumn('name')?.getFilterValue() as string) ?? '';
@@ -995,11 +995,11 @@ export function PokemonExclusivePromosTable({
             />
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="w-48 justify-between font-normal">
+                <Button variant="outline" size="sm" className="justify-between font-normal">
                   <span className="truncate">{label}</span>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-56 p-2" align="start">
+              <PopoverContent className="w-auto p-2" align="start">
                 <div className="flex flex-col gap-1 max-h-72 overflow-y-auto">
                   {sets.map((s) => (
                     <label
@@ -1030,11 +1030,11 @@ export function PokemonExclusivePromosTable({
             </Popover>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="w-48 justify-between font-normal">
+                <Button variant="outline" size="sm" className="justify-between font-normal">
                   <span className="truncate">{regionLabel}</span>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-56 p-2" align="start">
+              <PopoverContent className="w-auto p-2" align="start">
                 <div className="flex flex-col gap-1">
                   {allRegions.map((region) => (
                     <label
@@ -1068,12 +1068,12 @@ export function PokemonExclusivePromosTable({
                 <Button
                   variant={selectedCollection.length > 0 ? 'default' : 'outline'}
                   size="sm"
-                  className="w-32 justify-between font-normal"
+                  className="justify-between font-normal"
                 >
                   <span className="truncate">{collectionLabel}</span>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-44 p-2" align="start">
+              <PopoverContent className="w-auto p-2" align="start">
                 <div className="flex flex-col gap-1">
                   {collectionOptions.map((opt) => (
                     <label
