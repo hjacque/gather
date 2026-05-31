@@ -169,6 +169,160 @@ _Avoid_: Comment, annotation, description
 > **Dev:** "Is the Ratio a Raw Price or a Derived Price?"
 > **Domain expert:** "Derived — it's computed from Market Price and Buylist Price, never scraped directly."
 
+## Fair Value Range
+
+**Fair Value Range**:
+A `(low, mid, high)` price band computed per Product per PSA Grade, derived from multiple signals (see below). Represents the range within which a card is fairly priced. Null for grades with insufficient sold history.
+_Avoid_: fair price, price estimate, valuation
+
+**Grade Fair Value**:
+The `(low, mid, high)` triplet for a specific PSA Grade of a Product. Computed independently per grade — grades with insufficient sold comps produce a null Grade Fair Value rather than a fabricated one.
+_Avoid_: graded fair value, PSA fair value
+
+**Base Range**:
+The initial `(low, mid, high)` derived from eBay sold prices only: `mid = median(sold comps)`, `low = mid − 1 stddev`, `high = mid + 1 stddev`. Foundation for the Fair Value Range before signal adjustments.
+_Avoid_: initial range, raw range
+
+**Sold Comp Window**:
+The lookback period used to gather eBay sold prices for Base Range computation. Adaptive: uses 30 days if sufficient comps exist, expands to 90 days otherwise. Exact thresholds require data calibration.
+_Avoid_: lookback window, time window, history window
+
+**Grade Liquidity Share**:
+The fraction of a Product's total eBay sold volume at a specific PSA Grade over the Sold Comp Window. High share = this grade is where the card actually trades. Low share = illiquid grade. Both relative share (within the card) and absolute floor count matter — a card with 2 total sales spread across grades is not liquid at any grade.
+_Avoid_: grade volume, grade activity
+
+**Opportunity Score**:
+A numeric score (0–100) per Product per PSA Grade combining all fair value signals to surface buying opportunities. Higher = stronger opportunity. Recomputed on each Sync.
+_Avoid_: deal score, buy score, opportunity index
+
+**Relative Pop Velocity**:
+How fast a card's PSA population at a given grade is growing compared to cards from the same era (±3 years from release date). High relative velocity = above-average supply pressure = compresses Opportunity Score. Always ≥ 0 (PSA populations can only grow).
+_Avoid_: pop growth rate, grading velocity, absolute pop velocity
+
+**Pokémon Popularity Score**:
+The inherent demand signal for a given Pokémon entity, independent of any specific card. Popular Pokémon (e.g. Charizard, Pikachu, Gengar) command stronger price floors and more resilient demand across all cards featuring them. Derived from grading volume, price premium vs. comparable cards, eBay sold frequency, and external popularity data (Pokémon GO usage, competitive play, fan rankings). Stored on the `Pokemon` entity.
+_Avoid_: Pokémon score, popularity rating
+
+**Multi-Pokémon Card Signal**:
+A bonus demand signal for cards depicting more than one Pokémon. Cards featuring multiple Pokémon (e.g. tag team cards, duo promos) attract collectors of each Pokémon depicted and tend to command higher demand than single-Pokémon cards of comparable rarity. Derived from the count of distinct Pokémon depicted on the card.
+_Avoid_: multi-Pokémon bonus, tag team bonus
+
+**Premium Card Symbol Signal**:
+A bonus demand signal for cards carrying exclusive symbols or markings — indicators of provenance, rarity tier, or event exclusivity that drive collector premiums beyond what rarity alone explains. Examples: Pokémon Center badge, tournament/championship stamps, regional exclusive markings. Boolean or tiered flag per card.
+_Avoid_: symbol bonus, badge signal, promo stamp signal
+
+**Card Popularity Score**:
+A composite demand-side weight per Product aggregating three sub-signals: Pokémon Popularity Score, Multi-Pokémon Card Signal, and Premium Card Symbol Signal. Supports a price premium and increases floor confidence in the Opportunity Score. Combination weights require empirical calibration.
+_Avoid_: card popularity, popularity score, demand score
+
+**Listing Depth**:
+The number and distribution of current CardMarket sell listings above the Market Price floor. A deep listing stack confirms the floor is real; a single isolated listing at the floor price is an unreliable signal.
+_Avoid_: listing count, supply depth
+
+**Listing Staleness**:
+A measure of how long a CardMarket listing has been active without selling. Stale listings at low prices do not reflect real market willingness to transact and are discounted in the Opportunity Score.
+_Avoid_: listing age, stale price
+
+**Fair Value Sync**:
+A scheduled computation job (separate from price Syncs) that reads already-stored signal data — primarily eBay sold history from #84's Sync — and writes `FairValueRange` and `OpportunityScore` rows. Makes no external API calls; purely a computation pass over stored data. Runs nightly or triggered after the eBay Sync completes.
+_Avoid_: fair value scrape, fair value update, fair value refresh
+
+## Fair Value signals
+
+| Signal | Source issue | Role |
+|---|---|---|
+| eBay sold prices | #84 | Base Range (primary — required) |
+| Relative Pop Velocity | #86 | Supply pressure; high relative velocity compresses score |
+| Card Popularity Score | #99 (sub-signals: #89, #97, #98) | Demand floor confidence; popular cards support a price premium |
+| 52-week high/low | #92 | Context; buying near 52-week low amplifies opportunity |
+| Listing Depth | #93 | Floor quality; shallow depth discounts the Market Price floor |
+| PSA grade price spread | #94 | Cross-grade coherence; validates range relative to adjacent grades |
+| Listing Staleness | #95 | Price reliability; stale floor listings are discounted |
+
+## MVP roadmap — Opportunity Score
+
+Milestone: **MVP: Opportunity Score** — minimum feature set to surface fair value ranges and buying opportunities for PSA graded Pokémon cards.
+
+### Phase 1 — Data foundation `high`
+
+| Issue | What | Why first |
+|---|---|---|
+| #84 | eBay sold listings | Gates Base Range, Grade Liquidity, and the entire Opportunity Score |
+
+### Phase 2 — Fair value core `high`
+
+Ships together once #84 data exists. #92–#95 are fast because they reuse existing data or scraping infrastructure.
+
+| Issue | What | Notes |
+|---|---|---|
+| #91 | Fair Value Range + Opportunity Score + all UI surfaces | Schema, FairValueSyncService, table column, side panel, opportunities page |
+| #92 | 52-week high / low | Fully derivable from existing price history |
+| #93 | CardMarket listing depth | Same scraping pass as current CardMarket source |
+| #94 | PSA grade price spread | Derived from existing PSA Grade Prices |
+| #95 | CardMarket listing staleness | Needs HTML verification first |
+
+### Phase 3 — Signal enrichment `mid`
+
+Meaningful signals, but each requires #84 data to have accumulated before thresholds can be calibrated. Ship after Phase 2.
+
+| Issue | What | Notes |
+|---|---|---|
+| #96 | Grade Liquidity Share | Requires per-grade eBay sold volume distribution |
+| #86 | Relative Pop Velocity | Requires PSA pop snapshot history (architectural change) |
+
+### Post-MVP — Popularity signal `low`
+
+Long dependency chain with manual data-entry work (card ↔ Pokémon associations). Adds meaningful demand-side signal once in place.
+
+| Issue | What |
+|---|---|
+| #87 | Pokémon entity (Pokédex seed) |
+| #88 | Pokémon ↔ card associations |
+| #101 | Research: external Pokémon popularity data sources |
+| #89 | Pokémon popularity score |
+| #97 | Multi-Pokémon card signal |
+| #98 | Premium card symbol signal |
+| #99 | Card popularity score (aggregator) |
+| #100 | Filter and browse products by Pokémon |
+
+## Fair Value dependency tree
+
+```
+#91 fair value range / opportunity score
+├── #84  eBay sold listings                          ← gates Base Range and Grade Liquidity
+├── #86  PSA pop velocity tracking                   → popVelocitySignal
+├── #92  52-week high / low per product              → weekHighLowSignal
+├── #93  CardMarket listing depth                    → listingDepthSignal
+├── #94  PSA grade price spread                      → gradeSpreadSignal
+├── #95  CardMarket listing staleness                → stalenessSignal
+├── #96  grade liquidity share                       → liquiditySignal
+│   └── #84  eBay sold listings
+└── #99  card popularity score                       → popularitySignal
+    ├── #89  Pokémon popularity score
+    │   ├── #87  Pokémon entity
+    │   ├── #88  Pokémon ↔ card associations
+    │   │   └── #87  Pokémon entity
+    │   └── #101 research: external Pokémon popularity data sources
+    ├── #97  multi-Pokémon card signal
+    │   └── #88  Pokémon ↔ card associations
+    └── #98  premium card symbol signal
+```
+
+Adjacent issues (enabled by the same foundation, not blocking #91):
+
+```
+#87  Pokémon entity
+└── #88  Pokémon ↔ card associations
+    └── #100 filter and browse products by Pokémon
+```
+
+## Opportunities page
+
+A dedicated page surfacing the top buying opportunities across all tracked Products for the day. Shows at most N cards with Opportunity Score above a minimum floor (both N and floor are tunable constants). Cards are ranked by Opportunity Score descending. An empty page on a slow day is valid and intentional — it means no real opportunities exist.
+
+Each opportunity card shows: card image, card name + Product Set, highest-scoring PSA Grade + its score, current Market Price vs Fair Value Range, and the dominant signal driving the score.
+
 ## Flagged ambiguities
 
 - "price" alone is ambiguous — always qualify as Raw Price, Derived Price, Market Price, Buylist Price, or a specific source name (e.g. "the CardMarket price").
+- "liquidity" without qualification is ambiguous — use Grade Liquidity Share (relative, per grade) or specify absolute sold count.
