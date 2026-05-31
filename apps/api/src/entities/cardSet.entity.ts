@@ -1,6 +1,6 @@
 import { Block } from "@gather/types";
 
-export type ProductSetEntity = {
+export type CardSetEntity = {
     id: string;
     name: string;
     code: string;

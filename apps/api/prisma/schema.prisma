@@ -44,11 +44,11 @@ enum PriceType {
   cardmarketPsa10
 }
 
-model Product {
+model Card {
   id                        String        @id @default(uuid())
   name                      String
-  productSet                ProductSet           @relation(fields: [productSetId], references: [id])
-  productSetId              String
+  cardSet                   CardSet       @relation(fields: [cardSetId], references: [id])
+  cardSetId                 String
   foilPattern               FoilPattern?
   tags                      String[]
 
@@ -62,7 +62,7 @@ model Product {
   number                    String?
   regions                   Region[]
 
-  prices                    Price[]       @relation("ProductPrices")
+  prices                    Price[]       @relation("CardPrices")
   psaPopReport              PsaPopReport?
 
   collectionEntry           CollectionEntry?
@@ -70,13 +70,13 @@ model Product {
   createdAt                 DateTime      @default(now())
   updatedAt                 DateTime      @updatedAt
 
-  @@unique([name, productSetId, releaseDate, number])
+  @@unique([name, cardSetId, releaseDate, number])
 }
 
 model CollectionEntry {
   id          String    @id @default(uuid())
-  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId   String    @unique
+  card        Card      @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  cardId      String    @unique
   isOwned     Boolean   @default(false)
   isWanted    Boolean   @default(false)
 
@@ -84,13 +84,13 @@ model CollectionEntry {
   updatedAt   DateTime  @updatedAt
 }
 
-model ProductSet {
+model CardSet {
   id          String     @id @default(uuid())
   code        String
   name        String
   releaseDate DateTime
   block       Block?
-  products    Product[]
+  cards       Card[]
 
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
@@ -100,8 +100,8 @@ model ProductSet {
 
 model Price {
   id        String      @id @default(uuid())
-  product   Product     @relation("ProductPrices", fields: [productId], references: [id], onDelete: Cascade)
-  productId String
+  card      Card        @relation("CardPrices", fields: [cardId], references: [id], onDelete: Cascade)
+  cardId    String
   date      DateTime
   value     Float?
   type      PriceType
@@ -109,13 +109,13 @@ model Price {
   createdAt DateTime    @default(now())
   updatedAt   DateTime  @updatedAt
 
-  @@unique([productId, date, type])
+  @@unique([cardId, date, type])
 }
 
 model PsaPopReport {
   id          String   @id @default(uuid())
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId   String   @unique
+  card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  cardId      String   @unique
   grade1      Int?
   grade2      Int?
   grade3      Int?

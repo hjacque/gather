@@ -71,21 +71,21 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { syncProductCardMarket, syncProductPsa } from '@/app/actions/syncProduct';
-import type { GetProductsResponseItem } from '@gather/api-contract';
+import { syncCardCardMarket, syncCardPsa } from '@/app/actions/syncCard';
+import type { GetCardsResponseItem } from '@gather/api-contract';
 
 type SyncAction = 'cardmarket' | 'psa';
 
-const ProductSyncContext = React.createContext<{
-  handleSyncProduct: (id: string, action: SyncAction) => Promise<void>;
+const CardSyncContext = React.createContext<{
+  handleSyncCard: (id: string, action: SyncAction) => Promise<void>;
   loadingRow: { id: string; action: SyncAction } | null;
-}>({ handleSyncProduct: async () => {}, loadingRow: null });
+}>({ handleSyncCard: async () => {}, loadingRow: null });
 
-export function useProductSync() {
-  return React.useContext(ProductSyncContext);
+export function useCardSync() {
+  return React.useContext(CardSyncContext);
 }
 
-function DraggableRow({ row }: { row: Row<GetProductsResponseItem> }) {
+function DraggableRow({ row }: { row: Row<GetCardsResponseItem> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
     id: row.original.id,
   });
@@ -114,8 +114,8 @@ function DraggableRow({ row }: { row: Row<GetProductsResponseItem> }) {
   );
 }
 
-export function RowActionsCell({ row, extraItems }: { row: Row<GetProductsResponseItem>; extraItems?: React.ReactNode }) {
-  const { handleSyncProduct, loadingRow } = useProductSync();
+export function RowActionsCell({ row, extraItems }: { row: Row<GetCardsResponseItem>; extraItems?: React.ReactNode }) {
+  const { handleSyncCard, loadingRow } = useCardSync();
   const isLoadingCardMarket = loadingRow?.id === row.original.id && loadingRow.action === 'cardmarket';
   const isLoadingPsa = loadingRow?.id === row.original.id && loadingRow.action === 'psa';
 
@@ -134,14 +134,14 @@ export function RowActionsCell({ row, extraItems }: { row: Row<GetProductsRespon
       <DropdownMenuContent align="end" className="w-full">
         <DropdownMenuItem
           disabled={isLoadingCardMarket}
-          onSelect={() => handleSyncProduct(row.original.id, 'cardmarket')}
+          onSelect={() => handleSyncCard(row.original.id, 'cardmarket')}
         >
           {isLoadingCardMarket && <IconLoader2 className="animate-spin" />}
           Sync CardMarket
         </DropdownMenuItem>
         <DropdownMenuItem
           disabled={isLoadingPsa}
-          onSelect={() => handleSyncProduct(row.original.id, 'psa')}
+          onSelect={() => handleSyncCard(row.original.id, 'psa')}
         >
           {isLoadingPsa && <IconLoader2 className="animate-spin" />}
           Sync PSA
@@ -152,14 +152,14 @@ export function RowActionsCell({ row, extraItems }: { row: Row<GetProductsRespon
   );
 }
 
-export type ProductTableHandle = {
-  getAllRows: () => GetProductsResponseItem[];
+export type CardTableHandle = {
+  getAllRows: () => GetCardsResponseItem[];
   goToPage: (idx: number) => void;
   pageSize: number;
-  updateRow: (id: string, patch: Partial<GetProductsResponseItem>) => void;
+  updateRow: (id: string, patch: Partial<GetCardsResponseItem>) => void;
 };
 
-export function ProductTable({
+export function CardTable({
   dataPromise: initialData,
   columns,
   pageSize = 250,
@@ -167,15 +167,15 @@ export function ProductTable({
   filters,
   tableRef,
 }: {
-  dataPromise: Promise<GetProductsResponseItem[]>;
-  columns: ColumnDef<GetProductsResponseItem>[];
+  dataPromise: Promise<GetCardsResponseItem[]>;
+  columns: ColumnDef<GetCardsResponseItem>[];
   pageSize?: number;
   defaultSorting?: SortingState;
   filters?: (
-    data: GetProductsResponseItem[],
-    table: TableInstance<GetProductsResponseItem>,
+    data: GetCardsResponseItem[],
+    table: TableInstance<GetCardsResponseItem>,
   ) => React.ReactNode;
-  tableRef?: React.RefObject<ProductTableHandle | null>;
+  tableRef?: React.RefObject<CardTableHandle | null>;
 }) {
   const [data, setData] = React.useState(use(initialData));
   const [rowSelection, setRowSelection] = React.useState({});
@@ -194,13 +194,13 @@ export function ProductTable({
   );
   const [loadingRow, setLoadingRow] = useState<{ id: string; action: SyncAction } | null>(null);
 
-  const handleSyncProduct = async (id: string, action: SyncAction) => {
+  const handleSyncCard = async (id: string, action: SyncAction) => {
     try {
       setLoadingRow({ id, action });
-      const updatedProduct = action === 'cardmarket'
-        ? await syncProductCardMarket(id)
-        : await syncProductPsa(id);
-      setData((prev) => prev.map((p) => (p.id === id ? updatedProduct : p)));
+      const updatedCard = action === 'cardmarket'
+        ? await syncCardCardMarket(id)
+        : await syncCardPsa(id);
+      setData((prev) => prev.map((c) => (c.id === id ? updatedCard : c)));
     } catch (error) {
       console.error(error);
     } finally {
@@ -235,8 +235,8 @@ export function ProductTable({
   React.useImperativeHandle(tableRef, () => ({
     getAllRows: () => table.getSortedRowModel().rows.map((r) => r.original),
     goToPage: (idx: number) => table.setPageIndex(idx),
-    updateRow: (id: string, patch: Partial<GetProductsResponseItem>) =>
-      setData((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p))),
+    updateRow: (id: string, patch: Partial<GetCardsResponseItem>) =>
+      setData((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c))),
     get pageSize() {
       return table.getState().pagination.pageSize;
     },
@@ -254,7 +254,7 @@ export function ProductTable({
   }
 
   return (
-    <ProductSyncContext.Provider value={{ handleSyncProduct, loadingRow }}>
+    <CardSyncContext.Provider value={{ handleSyncCard, loadingRow }}>
       <Tabs defaultValue="outline" className="w-full flex-col justify-start gap-6">
         <TabsContent
           value="outline"
@@ -412,6 +412,6 @@ export function ProductTable({
           <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
         </TabsContent>
       </Tabs>
-    </ProductSyncContext.Provider>
+    </CardSyncContext.Provider>
   );
 }

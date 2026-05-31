@@ -11,15 +11,15 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
   }
 
   async upsertPrice(
-    productId: string,
+    cardId: string,
     value: number | undefined,
     type: PriceType,
     date: Date
   ): Promise<void> {
     const existingPrice = await this.prisma.price.findUnique({
       where: {
-        productId_date_type: {
-          productId,
+        cardId_date_type: {
+          cardId,
           type,
           date,
         },
@@ -28,8 +28,8 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
     if (existingPrice) {
       await this.prisma.price.update({
         where: {
-          productId_date_type: {
-            productId,
+          cardId_date_type: {
+            cardId,
             type,
             date,
           },
@@ -45,7 +45,7 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
     }
     await this.prisma.price.create({
       data: {
-        productId,
+        cardId,
         value,
         type,
         date,
@@ -53,10 +53,10 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
     });
   }
 
-  async getProductPrices(productId: string) {
+  async getCardPrices(cardId: string) {
     const psaGradePrices = await this.prisma.price.findMany({
       where: {
-        productId,
+        cardId,
         type: {
           in: [
             "cardmarketPsa1",
@@ -82,10 +82,10 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
     };
   }
 
-  async getProductsPricesByDate(productIds: string[], date: Date) {
+  async getCardsPricesByDate(cardIds: string[], date: Date) {
     const prices = await this.prisma.price.findMany({
       where: {
-        productId: { in: productIds },
+        cardId: { in: cardIds },
         date,
         type: {
           in: [
@@ -101,16 +101,16 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
       | "cardmarketPsa10";
     const result: Map<string, Record<ResKey, number | null>> = new Map();
 
-    for (const productId of productIds) {
-      result.set(productId, {
+    for (const cardId of cardIds) {
+      result.set(cardId, {
         cardmarketPsa9: null,
         cardmarketPsa10: null,
       });
     }
 
     for (const price of prices) {
-      result.set(price.productId.toString(), {
-        ...result.get(price.productId.toString()),
+      result.set(price.cardId.toString(), {
+        ...result.get(price.cardId.toString()),
         [price.type]: price.value,
       } as Record<ResKey, number | null>);
     }
@@ -118,11 +118,11 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
     return result;
   }
 
-  async getOne(productId: string, type: PriceType, date: Date) {
+  async getOne(cardId: string, type: PriceType, date: Date) {
     const price = await this.prisma.price.findUnique({
       where: {
-        productId_date_type: {
-          productId,
+        cardId_date_type: {
+          cardId,
           date,
           type,
         },

@@ -4,11 +4,11 @@ export type CollectionEntryData = {
 };
 
 export abstract class CollectionRepositoryPort {
-  abstract upsert(productId: string, data: CollectionEntryData): Promise<void>;
+  abstract upsert(cardId: string, data: CollectionEntryData): Promise<void>;
 
-  abstract delete(productId: string): Promise<void>;
+  abstract delete(cardId: string): Promise<void>;
 
-  abstract findByProductId(productId: string): Promise<CollectionEntryData | null>;
+  abstract findByCardId(cardId: string): Promise<CollectionEntryData | null>;
 
-  abstract findByProductIds(productIds: string[]): Promise<Map<string, CollectionEntryData>>;
+  abstract findByCardIds(cardIds: string[]): Promise<Map<string, CollectionEntryData>>;
 }

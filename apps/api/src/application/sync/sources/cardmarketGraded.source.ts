@@ -1,5 +1,5 @@
 import type { Page } from "rebrowser-puppeteer-core";
-import { ProductEntity } from "../../../entities/product.entity";
+import { CardEntity } from "../../../entities/card.entity";
 import { PriceSourcePort, RawPrices } from "./priceSource.port";
 
 const BANNED_DESCRIPTION_KEYWORDS = ["contendent", "Probably", "Sealed", "maybe", "possible", "like"];
@@ -18,12 +18,12 @@ const PSA_GRADE_TYPES = [
 ] as const;
 
 export class CardMarketGradedSource implements PriceSourcePort {
-  appliesTo(product: ProductEntity): boolean {
+  appliesTo(product: CardEntity): boolean {
     return !!product.cardMarketLink;
   }
 
   async fetch(
-    product: ProductEntity,
+    product: CardEntity,
     page: Page,
     _usdToEur: number,
     retry = 0

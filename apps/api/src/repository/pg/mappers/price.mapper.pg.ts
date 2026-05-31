@@ -4,7 +4,7 @@ import { PriceModel } from "../models/price.model.pg";
 export class PriceMapper {
   toEntity({
     id,
-    productId,
+    cardId,
     date,
     value,
     type,
@@ -13,7 +13,7 @@ export class PriceMapper {
   }: PriceModel): NewPriceEntity {
     return {
       id,
-      productId,
+      cardId,
       date,
       value,
       type,

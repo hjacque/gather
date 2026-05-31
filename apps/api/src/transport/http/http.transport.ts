@@ -3,7 +3,7 @@ import { Usecases } from "../../application/init.application";
 import { z } from "zod";
 import { errorHandler } from "./middlewares/http.errors";
 import { SyncUsecaseInputDto } from "application/sync/sync.usecase";
-import type { UpdateProductNoteRequest, UpsertCollectionEntryRequest } from "@gather/api-contract";
+import type { UpdateCardNoteRequest, UpsertCollectionEntryRequest } from "@gather/api-contract";
 import { REGIONS } from "@gather/types";
 require("express-async-errors");
 
@@ -12,12 +12,12 @@ const port = 3000;
 
 export const http = async ({
   syncUsecase,
-  getProductsUsecase,
-  getProductUsecase,
-  syncSingleProductCardMarketUsecase,
-  syncSingleProductPsaUsecase,
+  getCardsUsecase,
+  getCardUsecase,
+  syncSingleCardCardMarketUsecase,
+  syncSingleCardPsaUsecase,
   syncPsaPopReportsUsecase,
-  updateProductNoteUsecase,
+  updateCardNoteUsecase,
   upsertCollectionEntryUsecase,
   deleteCollectionEntryUsecase,
 }: Usecases) => {
@@ -37,17 +37,17 @@ export const http = async ({
     res.json(result);
   });
 
-  app.get("/sync/product/:productid/cardmarket", async (req, res) => {
+  app.get("/sync/card/:cardid/cardmarket", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
-    const result = await syncSingleProductCardMarketUsecase.execute(req.params.productid);
+    const result = await syncSingleCardCardMarketUsecase.execute(req.params.cardid);
 
     res.status(200);
     res.json(result);
   });
 
-  app.get("/sync/product/:productid/psa", async (req, res) => {
+  app.get("/sync/card/:cardid/psa", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
-    const result = await syncSingleProductPsaUsecase.execute(req.params.productid);
+    const result = await syncSingleCardPsaUsecase.execute(req.params.cardid);
 
     res.status(200);
     res.json(result);
@@ -71,7 +71,7 @@ export const http = async ({
     res.json({ success: true });
   });
 
-  app.get("/products", async (req, res) => {
+  app.get("/cards", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
 
     const dtoSchema = z.object({
@@ -83,47 +83,47 @@ export const http = async ({
     });
     const dto = dtoSchema.parse(req.query);
 
-    const result = await getProductsUsecase.execute(dto);
+    const result = await getCardsUsecase.execute(dto);
 
     res.status(200);
     res.json(result);
   });
 
-  app.get("/products/:productid", async (req, res) => {
+  app.get("/cards/:cardid", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
-    const result = await getProductUsecase.execute(req.params.productid);
+    const result = await getCardUsecase.execute(req.params.cardid);
 
     res.status(200);
     res.json(result);
   });
 
-  app.patch("/products/:productid", async (req, res) => {
+  app.patch("/cards/:cardid", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
     const bodySchema = z.object({
       note: z.string().max(1000).nullable(),
     });
-    const { note } = bodySchema.parse(req.body) as UpdateProductNoteRequest;
-    await updateProductNoteUsecase.execute(req.params.productid, note);
+    const { note } = bodySchema.parse(req.body) as UpdateCardNoteRequest;
+    await updateCardNoteUsecase.execute(req.params.cardid, note);
     res.status(204).end();
   });
 
-  app.put("/collection/:productid", async (req, res) => {
+  app.put("/collection/:cardid", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
     const bodySchema = z.object({
       isOwned: z.boolean(),
       isWanted: z.boolean(),
     });
     const body = bodySchema.parse(req.body) as UpsertCollectionEntryRequest;
-    await upsertCollectionEntryUsecase.execute(req.params.productid, {
+    await upsertCollectionEntryUsecase.execute(req.params.cardid, {
       isOwned: body.isOwned,
       isWanted: body.isWanted,
     });
     res.status(204).end();
   });
 
-  app.delete("/collection/:productid", async (req, res) => {
+  app.delete("/collection/:cardid", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
-    await deleteCollectionEntryUsecase.execute(req.params.productid);
+    await deleteCollectionEntryUsecase.execute(req.params.cardid);
     res.status(204).end();
   });
 

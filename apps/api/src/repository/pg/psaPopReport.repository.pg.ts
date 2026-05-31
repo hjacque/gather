@@ -9,14 +9,14 @@ export class PsaPopReportRepositoryPg implements PsaPopReportRepositoryPort {
   constructor(private readonly prisma: PrismaClient) {}
 
   async upsert(
-    productId: string,
+    cardId: string,
     grades: PsaGrades,
     syncedAt: Date
   ): Promise<void> {
     await this.prisma.psaPopReport.upsert({
-      where: { productId },
+      where: { cardId },
       create: {
-        productId,
+        cardId,
         grade1: grades.grade1,
         grade2: grades.grade2,
         grade3: grades.grade3,
@@ -47,20 +47,20 @@ export class PsaPopReportRepositoryPg implements PsaPopReportRepositoryPort {
     });
   }
 
-  async findByProductId(productId: string): Promise<PsaPopReportEntity | null> {
+  async findByCardId(cardId: string): Promise<PsaPopReportEntity | null> {
     const record = await this.prisma.psaPopReport.findUnique({
-      where: { productId },
+      where: { cardId },
     });
     return record;
   }
 
-  async findByProductIds(productIds: string[]): Promise<Map<string, PsaPopReportEntity>> {
+  async findByCardIds(cardIds: string[]): Promise<Map<string, PsaPopReportEntity>> {
     const records = await this.prisma.psaPopReport.findMany({
-      where: { productId: { in: productIds } },
+      where: { cardId: { in: cardIds } },
     });
     const map = new Map<string, PsaPopReportEntity>();
     for (const record of records) {
-      map.set(record.productId, record);
+      map.set(record.cardId, record);
     }
     return map;
   }

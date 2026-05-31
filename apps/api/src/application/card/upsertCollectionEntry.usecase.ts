@@ -3,7 +3,7 @@ import type { CollectionRepositoryPort, CollectionEntryData } from '../../reposi
 export class UpsertCollectionEntryUsecase {
   constructor(private readonly collectionRepository: CollectionRepositoryPort) {}
 
-  async execute(productId: string, data: CollectionEntryData): Promise<void> {
-    await this.collectionRepository.upsert(productId, data);
+  async execute(cardId: string, data: CollectionEntryData): Promise<void> {
+    await this.collectionRepository.upsert(cardId, data);
   }
 }

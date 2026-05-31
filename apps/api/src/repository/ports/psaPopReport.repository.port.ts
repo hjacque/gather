@@ -2,7 +2,7 @@ import type { PsaGrades } from "../../application/sync/sources/psa.source";
 
 export type PsaPopReportEntity = {
   id: string;
-  productId: string;
+  cardId: string;
   grade1: number | null;
   grade2: number | null;
   grade3: number | null;
@@ -21,16 +21,16 @@ export type PsaPopReportEntity = {
 
 export abstract class PsaPopReportRepositoryPort {
   abstract upsert(
-    productId: string,
+    cardId: string,
     grades: PsaGrades,
     syncedAt: Date
   ): Promise<void>;
 
-  abstract findByProductId(
-    productId: string
+  abstract findByCardId(
+    cardId: string
   ): Promise<PsaPopReportEntity | null>;
 
-  abstract findByProductIds(
-    productIds: string[]
+  abstract findByCardIds(
+    cardIds: string[]
   ): Promise<Map<string, PsaPopReportEntity>>;
 }

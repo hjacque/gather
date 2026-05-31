@@ -1,20 +1,20 @@
 import { connect } from "puppeteer-real-browser";
-import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
+import { CardRepositoryPort } from "../../repository/ports/card.repository.port";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import { CollectionRepositoryPort } from "../../repository/ports/collection.repository.port";
 import { scrapePsaPopReport } from "./sources/psa.source";
-import type { SyncProductResponse } from "@gather/api-contract";
+import type { SyncCardResponse } from "@gather/api-contract";
 
-export class SyncSingleProductPsaUsecase {
+export class SyncSingleCardPsaUsecase {
   constructor(
-    private readonly productRepository: ProductRepositoryPort,
+    private readonly cardRepository: CardRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
     private readonly psaPopReportRepository: PsaPopReportRepositoryPort,
     private readonly collectionRepository: CollectionRepositoryPort
   ) {}
 
-  async execute(productId: string): Promise<SyncProductResponse> {
+  async execute(cardId: string): Promise<SyncCardResponse> {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 
@@ -33,29 +33,29 @@ export class SyncSingleProductPsaUsecase {
       height: Math.floor(768 + Math.random() * 100),
     });
 
-    const product = await this.productRepository.getProduct(productId);
+    const card = await this.cardRepository.getCard(cardId);
 
-    if (product.psaLink) {
+    if (card.psaLink) {
       try {
-        const grades = await scrapePsaPopReport(product.psaLink, product.name, product.number, page);
-        await this.psaPopReportRepository.upsert(product.id, grades, new Date());
+        const grades = await scrapePsaPopReport(card.psaLink, card.name, card.number, page);
+        await this.psaPopReportRepository.upsert(card.id, grades, new Date());
       } catch (error) {
-        console.error(`[Sync] Failed to sync PSA pop report for product ${product.id}:`, error);
+        console.error(`[Sync] Failed to sync PSA pop report for card ${card.id}:`, error);
       }
     }
 
     await page.close();
     await browser.close();
 
-    const [pricesByProduct, psaReport, collectionEntry] = await Promise.all([
-      this.priceRepository.getProductsPricesByDate([product.id], today),
-      this.psaPopReportRepository.findByProductId(product.id),
-      this.collectionRepository.findByProductId(product.id),
+    const [pricesByCard, psaReport, collectionEntry] = await Promise.all([
+      this.priceRepository.getCardsPricesByDate([card.id], today),
+      this.psaPopReportRepository.findByCardId(card.id),
+      this.collectionRepository.findByCardId(card.id),
     ]);
-    const currentPrices = pricesByProduct.get(product.id)!;
+    const currentPrices = pricesByCard.get(card.id)!;
 
     return {
-      ...product,
+      ...card,
       ...currentPrices,
       cardmarketPsa9Yesterday: null,
       cardmarketPsa10Yesterday: null,

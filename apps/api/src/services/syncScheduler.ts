@@ -1,6 +1,6 @@
 import { SyncUsecase } from "application/sync/sync.usecase";
 import { SyncPsaPopReportsUsecase } from "application/sync/syncPsaPopReports.usecase";
-import { Set } from "../entities/product.entity";
+import { Set } from "../entities/card.entity";
 import cron from "node-cron";
 
 export class SyncSchedulerService {

@@ -1,9 +1,9 @@
 import { SyncPsaPopReportsUsecase } from "./syncPsaPopReports.usecase";
-import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
+import { CardRepositoryPort } from "../../repository/ports/card.repository.port";
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import type { PsaGrades } from "./sources/psa.source";
-import { ProductEntity } from "../../entities/product.entity";
-import { ProductSetEntity } from "../../entities/productSet.entity";
+import { CardEntity } from "../../entities/card.entity";
+import { CardSetEntity } from "../../entities/cardSet.entity";
 
 // Mock puppeteer-real-browser so tests don't need a browser
 jest.mock("puppeteer-real-browser", () => ({
@@ -35,14 +35,14 @@ jest.mock("./sources/psa.source", () => ({
 
 jest.mock("puppeteer-extra-plugin-stealth", () => jest.fn(() => ({})));
 
-type ProductWithSet = ProductEntity & { productSet: ProductSetEntity };
+type CardWithSet = CardEntity & { cardSet: CardSetEntity };
 
-function makeProduct(id: string, psaLink: string | null): ProductWithSet {
+function makeCard(id: string, psaLink: string | null): CardWithSet {
   return {
     id,
-    name: `Product ${id}`,
+    name: `Card ${id}`,
     psaLink,
-    productSetId: "set-1",
+    cardSetId: "set-1",
     imageUrl: null,
     cardMarketLink: null,
     number: null,
@@ -53,7 +53,7 @@ function makeProduct(id: string, psaLink: string | null): ProductWithSet {
     regions: [],
     createdAt: new Date(),
     updatedAt: new Date(),
-    productSet: {
+    cardSet: {
       id: "set-1",
       name: "Promo Set",
       code: "PROMO",
@@ -66,71 +66,71 @@ function makeProduct(id: string, psaLink: string | null): ProductWithSet {
 }
 
 describe("SyncPsaPopReportsUsecase", () => {
-  let productRepo: jest.Mocked<ProductRepositoryPort>;
+  let cardRepo: jest.Mocked<CardRepositoryPort>;
   let psaPopReportRepo: jest.Mocked<PsaPopReportRepositoryPort>;
   let usecase: SyncPsaPopReportsUsecase;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    productRepo = {
-      getProducts: jest.fn(),
-      getProduct: jest.fn(),
-    } as unknown as jest.Mocked<ProductRepositoryPort>;
+    cardRepo = {
+      getCards: jest.fn(),
+      getCard: jest.fn(),
+    } as unknown as jest.Mocked<CardRepositoryPort>;
 
     psaPopReportRepo = {
       upsert: jest.fn().mockResolvedValue(undefined),
-      findByProductId: jest.fn().mockResolvedValue(null),
+      findByCardId: jest.fn().mockResolvedValue(null),
     } as unknown as jest.Mocked<PsaPopReportRepositoryPort>;
 
-    usecase = new SyncPsaPopReportsUsecase(productRepo, psaPopReportRepo);
+    usecase = new SyncPsaPopReportsUsecase(cardRepo, psaPopReportRepo);
   });
 
-  it("calls upsert once for each product with a psaLink", async () => {
-    const product1 = makeProduct("product-1", "https://www.psacard.com/pop/1");
-    const product2 = makeProduct("product-2", "https://www.psacard.com/pop/2");
+  it("calls upsert once for each card with a psaLink", async () => {
+    const card1 = makeCard("card-1", "https://www.psacard.com/pop/1");
+    const card2 = makeCard("card-2", "https://www.psacard.com/pop/2");
 
-    productRepo.getProducts.mockResolvedValue([product1, product2]);
+    cardRepo.getCards.mockResolvedValue([card1, card2]);
 
     await usecase.execute();
 
     expect(psaPopReportRepo.upsert).toHaveBeenCalledTimes(2);
     expect(psaPopReportRepo.upsert).toHaveBeenCalledWith(
-      "product-1",
+      "card-1",
       expect.objectContaining({ grade10: 10 }),
       expect.any(Date)
     );
     expect(psaPopReportRepo.upsert).toHaveBeenCalledWith(
-      "product-2",
+      "card-2",
       expect.objectContaining({ grade10: 10 }),
       expect.any(Date)
     );
   });
 
-  it("skips products without a psaLink", async () => {
-    const productNoLink = makeProduct("product-1", null);
-    const productWithLink = makeProduct("product-2", "https://www.psacard.com/pop/2");
+  it("skips cards without a psaLink", async () => {
+    const cardNoLink = makeCard("card-1", null);
+    const cardWithLink = makeCard("card-2", "https://www.psacard.com/pop/2");
 
-    productRepo.getProducts.mockResolvedValue([productNoLink, productWithLink]);
+    cardRepo.getCards.mockResolvedValue([cardNoLink, cardWithLink]);
 
     await usecase.execute();
 
     expect(psaPopReportRepo.upsert).toHaveBeenCalledTimes(1);
     expect(psaPopReportRepo.upsert).toHaveBeenCalledWith(
-      "product-2",
+      "card-2",
       expect.any(Object),
       expect.any(Date)
     );
   });
 
-  it("continues processing remaining products if one scrape fails", async () => {
+  it("continues processing remaining cards if one scrape fails", async () => {
     const { scrapePsaPopReport } = require("./sources/psa.source");
-    const product1 = makeProduct("product-1", "https://psa.com/1");
-    const product2 = makeProduct("product-2", "https://psa.com/2");
+    const card1 = makeCard("card-1", "https://psa.com/1");
+    const card2 = makeCard("card-2", "https://psa.com/2");
 
-    productRepo.getProducts.mockResolvedValue([product1, product2]);
+    cardRepo.getCards.mockResolvedValue([card1, card2]);
 
-    // Make product-1 scrape fail but product-2 succeed
+    // Make card-1 scrape fail but card-2 succeed
     (scrapePsaPopReport as jest.Mock)
       .mockRejectedValueOnce(new Error("Network error"))
       .mockResolvedValueOnce({
@@ -140,10 +140,10 @@ describe("SyncPsaPopReportsUsecase", () => {
 
     await usecase.execute();
 
-    // Only product-2 should have been upserted (product-1 scrape threw, upsert not reached)
+    // Only card-2 should have been upserted (card-1 scrape threw, upsert not reached)
     expect(psaPopReportRepo.upsert).toHaveBeenCalledTimes(1);
     expect(psaPopReportRepo.upsert).toHaveBeenCalledWith(
-      "product-2",
+      "card-2",
       expect.any(Object),
       expect.any(Date)
     );

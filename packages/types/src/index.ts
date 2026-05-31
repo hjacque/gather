@@ -36,14 +36,14 @@ export type FoilPattern = typeof FOIL_PATTERNS[number];
 
 export type CollectionEntryEntity = {
   id: string;
-  productId: string;
+  cardId: string;
   isOwned: boolean;
   isWanted: boolean;
   createdAt: Date;
   updatedAt: Date;
 };
 
-export type ProductSetEntity = {
+export type CardSetEntity = {
   id: string;
   name: string;
   code: string;
@@ -53,13 +53,13 @@ export type ProductSetEntity = {
   updatedAt: Date;
 };
 
-export type ProductEntity = {
+export type CardEntity = {
   id: string;
   name: string;
   foilPattern: FoilPattern | null;
   imageUrl: string | null;
   releaseDate: Date | null;
-  productSetId: string;
+  cardSetId: string;
   cardMarketLink: string | null;
   psaLink: string | null;
   number: string | null;

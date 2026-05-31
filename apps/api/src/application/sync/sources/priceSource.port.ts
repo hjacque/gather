@@ -1,13 +1,13 @@
 import type { Page } from "rebrowser-puppeteer-core";
 import { PriceType } from "@gather/types";
-import { ProductEntity } from "../../../entities/product.entity";
+import { CardEntity } from "../../../entities/card.entity";
 
 export type RawPrices = Partial<Record<PriceType, number | undefined>>;
 
 export interface PriceSourcePort {
-  appliesTo(product: ProductEntity): boolean;
+  appliesTo(card: CardEntity): boolean;
   fetch(
-    product: ProductEntity,
+    card: CardEntity,
     page: Page,
     usdToEur: number
   ): Promise<RawPrices>;

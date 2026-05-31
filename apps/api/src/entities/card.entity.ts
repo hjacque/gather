@@ -1,4 +1,4 @@
-export { ProductEntity } from "@gather/types";
+export { CardEntity } from "@gather/types";
 
 export const enum MtgSet {
   alpha = "alpha",

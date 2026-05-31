@@ -1,7 +1,7 @@
-import { ProductSetEntity } from "../../../entities/productSet.entity";
-import { ProductSetModel } from "../models/productSet.model.pg";
+import { CardSetEntity } from "../../../entities/cardSet.entity";
+import { CardSetModel } from "../models/cardSet.model.pg";
 
-export class ProductSetMapper {
+export class CardSetMapper {
   toEntity({
     id,
     name,
@@ -10,7 +10,7 @@ export class ProductSetMapper {
     releaseDate,
     createdAt,
     updatedAt
-  }: ProductSetModel): ProductSetEntity {
+  }: CardSetModel): CardSetEntity {
     return {
       id,
       name,

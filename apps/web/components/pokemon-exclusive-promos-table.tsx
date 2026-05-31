@@ -17,14 +17,14 @@ import {
   SheetHeader,
   SheetTitle,
 } from './ui/sheet';
-import { getProduct } from '@/app/actions/getProduct';
-import { syncAllPromos, syncProductCardMarket, syncProductPsa } from '@/app/actions/syncProduct';
-import { ProductNoteSection } from '@/components/product-note-section';
-import { ProductCardImage } from '@/components/product-card-image';
+import { getCard } from '@/app/actions/getCard';
+import { syncAllPromos, syncCardCardMarket, syncCardPsa } from '@/app/actions/syncCard';
+import { CardNoteSection } from '@/components/card-note-section';
+import { CardImage } from '@/components/card-image';
 import { upsertCollectionEntry, deleteCollectionEntry } from '@/app/actions/collectionEntry';
 import type { CollectionEntry, UpsertCollectionEntryRequest } from '@gather/api-contract';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import type { GetProductResponse } from '@gather/api-contract';
+import type { GetCardResponse } from '@gather/api-contract';
 import {
   Card,
   CardAction,
@@ -37,19 +37,19 @@ import { PsaGradePriceChart } from '@/components/psa-grade-price-chart';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
-import type { GetProductsResponseItem } from '@gather/api-contract';
-import { ProductTable, RowActionsCell, type ProductTableHandle } from './product-table';
+import type { GetCardsResponseItem } from '@gather/api-contract';
+import { CardTable, RowActionsCell, type CardTableHandle } from './card-table';
 
-const ProductPanelContext = React.createContext<{
-  openPanel: (item: GetProductsResponseItem) => void;
+const CardPanelContext = React.createContext<{
+  openPanel: (item: GetCardsResponseItem) => void;
 } | null>(null);
 
 const CollectionActionsContext = React.createContext<{
-  toggleCollection: (item: GetProductsResponseItem, flag: 'isOwned' | 'isWanted') => Promise<void>;
+  toggleCollection: (item: GetCardsResponseItem, flag: 'isOwned' | 'isWanted') => Promise<void>;
   loadingId: string | null;
 } | null>(null);
 
-const columns: ColumnDef<GetProductsResponseItem>[] = [
+const columns: ColumnDef<GetCardsResponseItem>[] = [
   {
     id: 'collectionStatus',
     size: 36,
@@ -140,10 +140,10 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
   {
     id: 'set',
     size: 110,
-    accessorFn: (row) => row.productSet.name,
+    accessorFn: (row) => row.cardSet.name,
     filterFn: (row, _columnId, filterValue: string[]) => {
       if (!filterValue || filterValue.length === 0) return true;
-      return filterValue.includes(row.original.productSet.name);
+      return filterValue.includes(row.original.cardSet.name);
     },
     header: ({ column }) => (
       <div className="flex justify-center">
@@ -160,11 +160,11 @@ const columns: ColumnDef<GetProductsResponseItem>[] = [
               variant="outline"
               className="text-muted-foreground px-1.5 max-w-full truncate overflow-hidden whitespace-nowrap"
             >
-              {row.original.productSet.code}
+              {row.original.cardSet.code}
             </Badge>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{row.original.productSet.name}</p>
+            <p>{row.original.cardSet.name}</p>
           </TooltipContent>
         </Tooltip>
       </div>
@@ -518,51 +518,48 @@ export function PokemonExclusivePromosTable({
   dataPromise,
   pageSize = 250,
 }: {
-  dataPromise: Promise<GetProductsResponseItem[]>;
+  dataPromise: Promise<GetCardsResponseItem[]>;
   pageSize?: number;
 }) {
   const isMobile = useIsMobile();
   const [isSyncing, setIsSyncing] = React.useState(false);
-  const tableRef = useRef<ProductTableHandle | null>(null);
+  const tableRef = useRef<CardTableHandle | null>(null);
 
   const [panelOpen, setPanelOpen] = useState(false);
-  const [displayedItem, setDisplayedItem] = useState<GetProductsResponseItem | null>(null);
-  const [displayedProduct, setDisplayedProduct] = useState<GetProductResponse | null>(null);
+  const [displayedItem, setDisplayedItem] = useState<GetCardsResponseItem | null>(null);
+  const [displayedCard, setDisplayedCard] = useState<GetCardResponse | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [spotlightOpen, setSpotlightOpen] = useState(false);
-  // Tracks nav position independently of what's displayed, and detects stale fetches
-  const activeItemRef = useRef<GetProductsResponseItem | null>(null);
+  const activeItemRef = useRef<GetCardsResponseItem | null>(null);
   const loadingIdRef = useRef<string | null>(null);
 
-  const openPanel = useCallback(async (item: GetProductsResponseItem, isNavigation = false) => {
+  const openPanel = useCallback(async (item: GetCardsResponseItem, isNavigation = false) => {
     activeItemRef.current = item;
     const loadId = item.id;
     loadingIdRef.current = loadId;
 
     if (!isNavigation) {
-      // First open: show item header/image immediately, fetch details in background
       setDisplayedItem(item);
-      setDisplayedProduct(null);
+      setDisplayedCard(null);
       setPanelOpen(true);
       setIsTransitioning(true);
     } else {
-      // Navigation: keep old content fully visible, fetch next in background
       setIsTransitioning(true);
     }
 
     try {
-      const data = await getProduct(item.id);
+      const data = await getCard(item.id);
       if (loadingIdRef.current === loadId) {
         setDisplayedItem(item);
-        setDisplayedProduct(data);
+        setDisplayedCard(data);
         setIsTransitioning(false);
       }
     } catch (err) {
       if (loadingIdRef.current === loadId) {
-        console.error('Failed to load product detail', err);
+        console.error('Failed to load card detail', err);
         if (isNavigation) {
           setDisplayedItem(item);
-          setDisplayedProduct(null);
+          setDisplayedCard(null);
         }
         setIsTransitioning(false);
       }
@@ -618,7 +615,7 @@ export function PokemonExclusivePromosTable({
   const [panelSyncLoading, setPanelSyncLoading] = React.useState<'cardmarket' | 'psa' | null>(null);
   const [loadingCollectionId, setLoadingCollectionId] = React.useState<string | null>(null);
 
-  const toggleCollection = useCallback(async (item: GetProductsResponseItem, flag: 'isOwned' | 'isWanted') => {
+  const toggleCollection = useCallback(async (item: GetCardsResponseItem, flag: 'isOwned' | 'isWanted') => {
     if (loadingCollectionId) return;
     setLoadingCollectionId(item.id);
     const existing = item.collectionEntry;
@@ -652,14 +649,14 @@ export function PokemonExclusivePromosTable({
     setPanelSyncLoading(action);
     try {
       const updatedItem = action === 'cardmarket'
-        ? await syncProductCardMarket(id)
-        : await syncProductPsa(id);
+        ? await syncCardCardMarket(id)
+        : await syncCardPsa(id);
       tableRef.current?.updateRow(id, updatedItem);
       if (activeItemRef.current?.id === id) {
         setDisplayedItem(updatedItem);
-        const data = await getProduct(id);
+        const data = await getCard(id);
         if (activeItemRef.current?.id === id) {
-          setDisplayedProduct(data);
+          setDisplayedCard(data);
         }
       }
     } catch (err) {
@@ -669,7 +666,7 @@ export function PokemonExclusivePromosTable({
     }
   };
 
-  const psaReport = displayedProduct?.psaPopReport ?? null;
+  const psaReport = displayedCard?.psaPopReport ?? null;
   const grades = psaReport
     ? [
         { grade: 1, count: psaReport.grade1 },
@@ -696,7 +693,7 @@ export function PokemonExclusivePromosTable({
 
   return (
     <CollectionActionsContext.Provider value={{ toggleCollection, loadingId: loadingCollectionId }}>
-    <ProductPanelContext.Provider value={{ openPanel }}>
+    <CardPanelContext.Provider value={{ openPanel }}>
       {displayedItem && (
         <Sheet open={panelOpen} onOpenChange={handlePanelOpenChange}>
           <SheetContent
@@ -706,8 +703,8 @@ export function PokemonExclusivePromosTable({
             <SheetHeader>
               <SheetTitle>{displayedItem.name}</SheetTitle>
               <SheetDescription>
-                {displayedItem.productSet.name}
-                {displayedItem.number && ` #${displayedItem.number}/${displayedItem.productSet.code}`}
+                {displayedItem.cardSet.name}
+                {displayedItem.number && ` #${displayedItem.number}/${displayedItem.cardSet.code}`}
                 {displayedItem.regions?.map((region) => (
                   <Badge key={region} className="ml-1" variant="outline">
                     {({ japan: 'Japan', korea: 'Korea', taiwan_hong_kong: 'Taiwan & Hong Kong' } as Record<string, string>)[region] ?? region}
@@ -719,7 +716,7 @@ export function PokemonExclusivePromosTable({
             {!isMobile && (
               <div className="flex gap-6 items-stretch px-4 lg:px-6">
                 {displayedItem.imageUrl && (
-                  <ProductCardImage
+                  <CardImage
                     src={displayedItem.imageUrl}
                     alt={displayedItem.name}
                     spotlightOpen={spotlightOpen}
@@ -729,7 +726,7 @@ export function PokemonExclusivePromosTable({
                 )}
                 <div className="flex-1 min-w-0">
                   <PsaGradePriceChart
-                    psaGradePrices={displayedProduct?.psaGradePrices ?? []}
+                    psaGradePrices={displayedCard?.psaGradePrices ?? []}
                     onSyncCardMarket={() => handlePanelSync('cardmarket')}
                     isSyncingCardMarket={panelSyncLoading === 'cardmarket'}
                   />
@@ -737,7 +734,7 @@ export function PokemonExclusivePromosTable({
               </div>
             )}
 
-            {displayedProduct && (
+            {displayedCard && (
               <div className="w-full px-4 lg:px-6">
                 <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
                   <CardHeader>
@@ -777,7 +774,7 @@ export function PokemonExclusivePromosTable({
                       </div>
                     ) : (
                       <div className="flex items-center justify-center h-16 text-sm text-muted-foreground">
-                        No pop report data — sync this product to populate
+                        No pop report data — sync this card to populate
                       </div>
                     )}
                   </CardContent>
@@ -788,7 +785,7 @@ export function PokemonExclusivePromosTable({
             <div className="w-full px-4 lg:px-6">
               <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
                 <CardHeader>
-                  <CardTitle>Product Links</CardTitle>
+                  <CardTitle>Card Links</CardTitle>
                   <CardDescription>Marketplaces & resources</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -809,11 +806,11 @@ export function PokemonExclusivePromosTable({
                 </CardContent>
               </Card>
             </div>
-            <ProductNoteSection key={displayedItem.id} productId={displayedItem.id} initialNote={displayedProduct?.note ?? displayedItem.note} />
+            <CardNoteSection key={displayedItem.id} cardId={displayedItem.id} initialNote={displayedCard?.note ?? displayedItem.note} />
           </SheetContent>
         </Sheet>
       )}
-      <ProductTable
+      <CardTable
         dataPromise={dataPromise}
         columns={columns}
         pageSize={pageSize}
@@ -823,15 +820,15 @@ export function PokemonExclusivePromosTable({
         const setDateMap = new Map<string, number>();
         const setCountMap = new Map<string, number>();
         for (const d of data) {
-          setCountMap.set(d.productSet.name, (setCountMap.get(d.productSet.name) ?? 0) + 1);
+          setCountMap.set(d.cardSet.name, (setCountMap.get(d.cardSet.name) ?? 0) + 1);
           if (!d.releaseDate) continue;
           const ts = new Date(d.releaseDate).getTime();
-          const existing = setDateMap.get(d.productSet.name);
+          const existing = setDateMap.get(d.cardSet.name);
           if (existing === undefined || ts < existing) {
-            setDateMap.set(d.productSet.name, ts);
+            setDateMap.set(d.cardSet.name, ts);
           }
         }
-        const sets = Array.from(new Set(data.map((d) => d.productSet.name))).sort((a, b) => {
+        const sets = Array.from(new Set(data.map((d) => d.cardSet.name))).sort((a, b) => {
           const da = setDateMap.get(a) ?? Infinity;
           const db = setDateMap.get(b) ?? Infinity;
           return da !== db ? da - db : a.localeCompare(b);
@@ -1126,12 +1123,12 @@ export function PokemonExclusivePromosTable({
         );
       }}
     />
-    </ProductPanelContext.Provider>
+    </CardPanelContext.Provider>
     </CollectionActionsContext.Provider>
   );
 }
 
-function PromoRowActionsCell({ row }: { row: import('@tanstack/react-table').Row<GetProductsResponseItem> }) {
+function PromoRowActionsCell({ row }: { row: import('@tanstack/react-table').Row<GetCardsResponseItem> }) {
   const ctx = useContext(CollectionActionsContext);
   const isLoading = ctx?.loadingId === row.original.id;
   const e = row.original.collectionEntry;
@@ -1153,8 +1150,8 @@ function PromoRowActionsCell({ row }: { row: import('@tanstack/react-table').Row
   );
 }
 
-function ImageCell({ item }: { item: GetProductsResponseItem }) {
-  const ctx = useContext(ProductPanelContext);
+function ImageCell({ item }: { item: GetCardsResponseItem }) {
+  const ctx = useContext(CardPanelContext);
 
   if (!item.imageUrl) return null;
   return (
@@ -1171,8 +1168,8 @@ function ImageCell({ item }: { item: GetProductsResponseItem }) {
   );
 }
 
-function TableCellViewer({ item }: { item: GetProductsResponseItem }) {
-  const ctx = useContext(ProductPanelContext);
+function TableCellViewer({ item }: { item: GetCardsResponseItem }) {
+  const ctx = useContext(CardPanelContext);
 
   return (
     <Tooltip>

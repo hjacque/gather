@@ -16,9 +16,11 @@ DELETE FROM "CollectionEntry" WHERE "productId" IN (SELECT "id" FROM "Product" W
 DELETE FROM "Product" WHERE "type" != 'single';
 
 -- Remove non-single values from ProductType enum
+ALTER TABLE "Product" ALTER COLUMN "type" DROP DEFAULT;
 ALTER TYPE "ProductType" RENAME TO "ProductType_old";
 CREATE TYPE "ProductType" AS ENUM ('single');
 ALTER TABLE "Product" ALTER COLUMN "type" TYPE "ProductType" USING "type"::text::"ProductType";
+ALTER TABLE "Product" ALTER COLUMN "type" SET DEFAULT 'single'::"ProductType";
 DROP TYPE "ProductType_old";
 
 -- Remove dropped price types from PriceType enum

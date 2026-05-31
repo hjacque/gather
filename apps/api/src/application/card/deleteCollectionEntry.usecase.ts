@@ -3,7 +3,7 @@ import type { CollectionRepositoryPort } from '../../repository/ports/collection
 export class DeleteCollectionEntryUsecase {
   constructor(private readonly collectionRepository: CollectionRepositoryPort) {}
 
-  async execute(productId: string): Promise<void> {
-    await this.collectionRepository.delete(productId);
+  async execute(cardId: string): Promise<void> {
+    await this.collectionRepository.delete(cardId);
   }
 }

@@ -3,24 +3,24 @@ import { PriceEntity } from "../../entities/price.entity";
 
 export abstract class PriceRepositoryPort {
   abstract upsertPrice(
-    productId: string,
+    cardId: string,
     value: number | undefined,
     type: PriceType,
     date: Date
   ): Promise<void>;
 
-  abstract getProductPrices(productId: string): Promise<{
+  abstract getCardPrices(cardId: string): Promise<{
     psaGradePrices: PriceEntity[];
   }>;
 
   abstract getOne(
-    productId: string,
+    cardId: string,
     type: PriceType,
     date: Date
   ): Promise<PriceEntity | null>;
 
-  abstract getProductsPricesByDate(
-    productIds: string[],
+  abstract getCardsPricesByDate(
+    cardIds: string[],
     date: Date
   ): Promise<
     Map<

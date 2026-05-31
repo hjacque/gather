@@ -1,37 +1,37 @@
-import { ProductRepositoryPort } from "../repository/ports/product.repository.port";
+import { CardRepositoryPort } from "../repository/ports/card.repository.port";
 import { PriceRepositoryPort } from "../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../repository/ports/psaPopReport.repository.port";
 import { CollectionRepositoryPort } from "../repository/ports/collection.repository.port";
 import { SyncUsecase } from "./sync/sync.usecase";
-import { GetProductsUsecase } from "./product/getProducts.usecase";
-import { GetProductUsecase } from "./product/getProduct.usecase";
-import { UpdateProductNoteUsecase } from "./product/updateProductNote.usecase";
-import { UpsertCollectionEntryUsecase } from "./product/upsertCollectionEntry.usecase";
-import { DeleteCollectionEntryUsecase } from "./product/deleteCollectionEntry.usecase";
-import { SyncSingleProductCardMarketUsecase } from "./sync/syncSingleProductCardMarket.usecase";
-import { SyncSingleProductPsaUsecase } from "./sync/syncSingleProductPsa.usecase";
+import { GetCardsUsecase } from "./card/getCards.usecase";
+import { GetCardUsecase } from "./card/getCard.usecase";
+import { UpdateCardNoteUsecase } from "./card/updateCardNote.usecase";
+import { UpsertCollectionEntryUsecase } from "./card/upsertCollectionEntry.usecase";
+import { DeleteCollectionEntryUsecase } from "./card/deleteCollectionEntry.usecase";
+import { SyncSingleCardCardMarketUsecase } from "./sync/syncSingleCardCardMarket.usecase";
+import { SyncSingleCardPsaUsecase } from "./sync/syncSingleCardPsa.usecase";
 import { SyncPsaPopReportsUsecase } from "./sync/syncPsaPopReports.usecase";
 import { CardMarketGradedSource } from "./sync/sources/cardmarketGraded.source";
 
 export type Usecases = {
   syncUsecase: SyncUsecase;
-  getProductsUsecase: GetProductsUsecase;
-  getProductUsecase: GetProductUsecase;
-  syncSingleProductCardMarketUsecase: SyncSingleProductCardMarketUsecase;
-  syncSingleProductPsaUsecase: SyncSingleProductPsaUsecase;
+  getCardsUsecase: GetCardsUsecase;
+  getCardUsecase: GetCardUsecase;
+  syncSingleCardCardMarketUsecase: SyncSingleCardCardMarketUsecase;
+  syncSingleCardPsaUsecase: SyncSingleCardPsaUsecase;
   syncPsaPopReportsUsecase: SyncPsaPopReportsUsecase;
-  updateProductNoteUsecase: UpdateProductNoteUsecase;
+  updateCardNoteUsecase: UpdateCardNoteUsecase;
   upsertCollectionEntryUsecase: UpsertCollectionEntryUsecase;
   deleteCollectionEntryUsecase: DeleteCollectionEntryUsecase;
 };
 
 export const initApplication = ({
-  productRepository,
+  cardRepository,
   priceRepository,
   psaPopReportRepository,
   collectionRepository,
 }: {
-  productRepository: ProductRepositoryPort;
+  cardRepository: CardRepositoryPort;
   priceRepository: PriceRepositoryPort;
   psaPopReportRepository: PsaPopReportRepositoryPort;
   collectionRepository: CollectionRepositoryPort;
@@ -41,18 +41,18 @@ export const initApplication = ({
   ];
 
   const syncUsecase = new SyncUsecase(
-    productRepository,
+    cardRepository,
     priceRepository,
     priceSources
   );
-  const getProductsUsecase = new GetProductsUsecase(
-    productRepository,
+  const getCardsUsecase = new GetCardsUsecase(
+    cardRepository,
     priceRepository,
     psaPopReportRepository,
     collectionRepository
   );
-  const getProductUsecase = new GetProductUsecase(
-    productRepository,
+  const getCardUsecase = new GetCardUsecase(
+    cardRepository,
     priceRepository,
     psaPopReportRepository,
     collectionRepository
@@ -61,36 +61,36 @@ export const initApplication = ({
     new CardMarketGradedSource(),
   ];
 
-  const syncSingleProductCardMarketUsecase = new SyncSingleProductCardMarketUsecase(
-    productRepository,
+  const syncSingleCardCardMarketUsecase = new SyncSingleCardCardMarketUsecase(
+    cardRepository,
     priceRepository,
     cardmarketPriceSources,
     psaPopReportRepository,
     collectionRepository
   );
 
-  const syncSingleProductPsaUsecase = new SyncSingleProductPsaUsecase(
-    productRepository,
+  const syncSingleCardPsaUsecase = new SyncSingleCardPsaUsecase(
+    cardRepository,
     priceRepository,
     psaPopReportRepository,
     collectionRepository
   );
   const syncPsaPopReportsUsecase = new SyncPsaPopReportsUsecase(
-    productRepository,
+    cardRepository,
     psaPopReportRepository
   );
-  const updateProductNoteUsecase = new UpdateProductNoteUsecase(productRepository);
+  const updateCardNoteUsecase = new UpdateCardNoteUsecase(cardRepository);
   const upsertCollectionEntryUsecase = new UpsertCollectionEntryUsecase(collectionRepository);
   const deleteCollectionEntryUsecase = new DeleteCollectionEntryUsecase(collectionRepository);
 
   return {
     syncUsecase,
-    getProductsUsecase,
-    getProductUsecase,
-    syncSingleProductCardMarketUsecase,
-    syncSingleProductPsaUsecase,
+    getCardsUsecase,
+    getCardUsecase,
+    syncSingleCardCardMarketUsecase,
+    syncSingleCardPsaUsecase,
     syncPsaPopReportsUsecase,
-    updateProductNoteUsecase,
+    updateCardNoteUsecase,
     upsertCollectionEntryUsecase,
     deleteCollectionEntryUsecase,
   };

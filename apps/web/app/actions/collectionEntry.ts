@@ -7,12 +7,12 @@ import {
 import type { UpsertCollectionEntryRequest } from '@gather/api-contract';
 
 export async function upsertCollectionEntry(
-  productId: string,
+  cardId: string,
   entry: UpsertCollectionEntryRequest,
 ): Promise<void> {
-  return _upsertCollectionEntry(productId, entry);
+  return _upsertCollectionEntry(cardId, entry);
 }
 
-export async function deleteCollectionEntry(productId: string): Promise<void> {
-  return _deleteCollectionEntry(productId);
+export async function deleteCollectionEntry(cardId: string): Promise<void> {
+  return _deleteCollectionEntry(cardId);
 }

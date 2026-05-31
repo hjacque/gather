@@ -12,7 +12,7 @@ import {
 } from 'framer-motion';
 import type { FoilPattern } from '@gather/types';
 
-interface ProductCardImageProps {
+interface CardImageProps {
   src: string;
   alt: string;
   containerClassName?: string;
@@ -140,7 +140,7 @@ function FoilLayers({ pointer, foilBgImage, foilBgPosition }: FoilLayersProps) {
   );
 }
 
-export function ProductCardImage({ src, alt, containerClassName, spotlightOpen: controlledOpen, onSpotlightOpenChange, foilPattern }: ProductCardImageProps) {
+export function CardImage({ src, alt, containerClassName, spotlightOpen: controlledOpen, onSpotlightOpenChange, foilPattern }: CardImageProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = controlledOpen !== undefined;
   const spotlightOpen = isControlled ? controlledOpen : internalOpen;

@@ -7,11 +7,11 @@ import type {
 export class CollectionRepositoryPg implements CollectionRepositoryPort {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async upsert(productId: string, data: CollectionEntryData): Promise<void> {
+  async upsert(cardId: string, data: CollectionEntryData): Promise<void> {
     await this.prisma.collectionEntry.upsert({
-      where: { productId },
+      where: { cardId },
       create: {
-        productId,
+        cardId,
         isOwned: data.isOwned,
         isWanted: data.isWanted,
       },
@@ -22,12 +22,12 @@ export class CollectionRepositoryPg implements CollectionRepositoryPort {
     });
   }
 
-  async delete(productId: string): Promise<void> {
-    await this.prisma.collectionEntry.deleteMany({ where: { productId } });
+  async delete(cardId: string): Promise<void> {
+    await this.prisma.collectionEntry.deleteMany({ where: { cardId } });
   }
 
-  async findByProductId(productId: string): Promise<CollectionEntryData | null> {
-    const record = await this.prisma.collectionEntry.findUnique({ where: { productId } });
+  async findByCardId(cardId: string): Promise<CollectionEntryData | null> {
+    const record = await this.prisma.collectionEntry.findUnique({ where: { cardId } });
     if (!record) return null;
     return {
       isOwned: record.isOwned,
@@ -35,13 +35,13 @@ export class CollectionRepositoryPg implements CollectionRepositoryPort {
     };
   }
 
-  async findByProductIds(productIds: string[]): Promise<Map<string, CollectionEntryData>> {
+  async findByCardIds(cardIds: string[]): Promise<Map<string, CollectionEntryData>> {
     const records = await this.prisma.collectionEntry.findMany({
-      where: { productId: { in: productIds } },
+      where: { cardId: { in: cardIds } },
     });
     const map = new Map<string, CollectionEntryData>();
     for (const record of records) {
-      map.set(record.productId, {
+      map.set(record.cardId, {
         isOwned: record.isOwned,
         isWanted: record.isWanted,
       });

@@ -1,11 +1,11 @@
 import { connect } from "puppeteer-real-browser";
-import { ProductEntity, Set } from "../../entities/product.entity";
-import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
+import { CardEntity, Set } from "../../entities/card.entity";
+import { CardRepositoryPort } from "../../repository/ports/card.repository.port";
 import { DEFAULT_USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PriceSourcePort } from "./sources/priceSource.port";
 import { getEurToUsdRate } from "./helper";
-import { syncProduct } from "./syncProduct";
+import { syncCard } from "./syncCard";
 
 export type SyncUsecaseInputDto = {
   filter: {
@@ -19,7 +19,7 @@ export type SyncUsecaseInputDto = {
 
 export class SyncUsecase {
   constructor(
-    private readonly productRepository: ProductRepositoryPort,
+    private readonly cardRepository: CardRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
     private readonly priceSources: PriceSourcePort[]
   ) {}
@@ -50,20 +50,20 @@ export class SyncUsecase {
 
     while (true) {
       const take = 4;
-      const products = await this.productRepository.getProducts(filter, {
+      const cards = await this.cardRepository.getCards(filter, {
         take,
         page: paginationPage,
       });
-      if (!products?.length) {
-        console.log("No products found");
+      if (!cards?.length) {
+        console.log("No cards found");
         paginationPage = 1;
         break;
       }
       paginationPage++;
 
-      for (const product of products) {
-        await syncProduct(
-          product,
+      for (const card of cards) {
+        await syncCard(
+          card,
           today,
           page,
           usdToEur,

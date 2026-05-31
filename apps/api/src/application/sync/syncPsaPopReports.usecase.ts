@@ -1,27 +1,27 @@
 import { connect } from "puppeteer-real-browser";
-import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
+import { CardRepositoryPort } from "../../repository/ports/card.repository.port";
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import { scrapePsaPopReport } from "./sources/psa.source";
 
 export class SyncPsaPopReportsUsecase {
   constructor(
-    private readonly productRepository: ProductRepositoryPort,
+    private readonly cardRepository: CardRepositoryPort,
     private readonly psaPopReportRepository: PsaPopReportRepositoryPort
   ) {}
 
   async execute(): Promise<void> {
     console.log("[PSA Sync] Starting PSA pop report sync");
 
-    const products = await this.productRepository.getProducts({});
+    const cards = await this.cardRepository.getCards({});
 
-    const promoProducts = products.filter((p) => p.psaLink != null);
+    const cardsWithPsaLink = cards.filter((c) => c.psaLink != null);
 
     console.log(
-      `[PSA Sync] Found ${promoProducts.length} products with PSA links`
+      `[PSA Sync] Found ${cardsWithPsaLink.length} cards with PSA links`
     );
 
-    if (promoProducts.length === 0) {
-      console.log("[PSA Sync] No products to sync, done");
+    if (cardsWithPsaLink.length === 0) {
+      console.log("[PSA Sync] No cards to sync, done");
       return;
     }
 
@@ -39,22 +39,21 @@ export class SyncPsaPopReportsUsecase {
     try {
       const syncedAt = new Date();
 
-      for (const product of promoProducts) {
+      for (const card of cardsWithPsaLink) {
         try {
           console.log(
-            `[PSA Sync] Scraping pop report for product ${product.id} (${product.name})`
+            `[PSA Sync] Scraping pop report for card ${card.id} (${card.name})`
           );
-          const grades = await scrapePsaPopReport(product.psaLink!, product.name, product.number, page);
-          await this.psaPopReportRepository.upsert(product.id, grades, syncedAt);
+          const grades = await scrapePsaPopReport(card.psaLink!, card.name, card.number, page);
+          await this.psaPopReportRepository.upsert(card.id, grades, syncedAt);
           console.log(
-            `[PSA Sync] Successfully upserted pop report for product ${product.id}`
+            `[PSA Sync] Successfully upserted pop report for card ${card.id}`
           );
         } catch (error) {
           console.error(
-            `[PSA Sync] Failed to sync product ${product.id} (${product.name}):`,
+            `[PSA Sync] Failed to sync card ${card.id} (${card.name}):`,
             error
           );
-          // Continue processing remaining products
         }
       }
     } finally {

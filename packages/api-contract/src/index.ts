@@ -1,11 +1,11 @@
 import type {
-  ProductEntity,
-  ProductSetEntity,
+  CardEntity,
+  CardSetEntity,
   Region,
   PriceType,
 } from '@gather/types';
 
-export type { ProductSetEntity };
+export type { CardSetEntity };
 
 // ─── Collection Entry ─────────────────────────────────────────────────────────
 
@@ -23,7 +23,7 @@ export type UpsertCollectionEntryRequest = {
 
 export type PriceRecord = {
   id: string;
-  productId: string;
+  cardId: string;
   date: Date;
   value: number | null;
   type: PriceType;
@@ -51,16 +51,16 @@ export type PsaPopReportSummary = {
   syncedAt: Date;
 };
 
-// ─── GET /products ────────────────────────────────────────────────────────────
+// ─── GET /cards ───────────────────────────────────────────────────────────────
 
-export type GetProductsQuery = {
+export type GetCardsQuery = {
   tags?: string | string[];
   set?: string;
   region?: Region | Region[];
 };
 
-export type GetProductsResponseItem = ProductEntity & DailyPrices & {
-  productSet: ProductSetEntity;
+export type GetCardsResponseItem = CardEntity & DailyPrices & {
+  cardSet: CardSetEntity;
   psaTotal: number | null;
   psaGrade10Pop: number | null;
   cardmarketPsa9Yesterday: number | null;
@@ -68,27 +68,27 @@ export type GetProductsResponseItem = ProductEntity & DailyPrices & {
   collectionEntry: CollectionEntry | null;
 };
 
-export type GetProductsResponse = GetProductsResponseItem[];
+export type GetCardsResponse = GetCardsResponseItem[];
 
-// ─── GET /products/:id ────────────────────────────────────────────────────────
+// ─── GET /cards/:id ───────────────────────────────────────────────────────────
 
-export type GetProductResponse = ProductEntity & {
-  productSet: ProductSetEntity;
+export type GetCardResponse = CardEntity & {
+  cardSet: CardSetEntity;
   psaGradePrices: PriceRecord[];
   psaPopReport: PsaPopReportSummary | null;
   collectionEntry: CollectionEntry | null;
 };
 
-// ─── PATCH /products/:id ─────────────────────────────────────────────────────
+// ─── PATCH /cards/:id ────────────────────────────────────────────────────────
 
-export type UpdateProductNoteRequest = {
+export type UpdateCardNoteRequest = {
   note: string | null;
 };
 
-// ─── GET /sync/product/:id/cardmarket | GET /sync/product/:id/psa ────────────
+// ─── GET /sync/card/:id/cardmarket | GET /sync/card/:id/psa ─────────────────
 
-export type SyncProductResponse = ProductEntity & DailyPrices & {
-  productSet: ProductSetEntity;
+export type SyncCardResponse = CardEntity & DailyPrices & {
+  cardSet: CardSetEntity;
   psaTotal: number | null;
   psaGrade10Pop: number | null;
   cardmarketPsa9Yesterday: number | null;

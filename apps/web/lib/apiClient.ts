@@ -1,9 +1,9 @@
 import type {
-  GetProductsQuery,
-  GetProductsResponse,
-  GetProductResponse,
-  SyncProductResponse,
-  UpdateProductNoteRequest,
+  GetCardsQuery,
+  GetCardsResponse,
+  GetCardResponse,
+  SyncCardResponse,
+  UpdateCardNoteRequest,
   UpsertCollectionEntryRequest,
 } from '@gather/api-contract';
 
@@ -52,26 +52,26 @@ function toParams(filter: Record<string, unknown>): string {
   return qs ? `?${qs}` : '';
 }
 
-export async function getProducts(
-  filter: GetProductsQuery,
-): Promise<GetProductsResponse> {
-  return apiFetch(`/products${toParams(filter)}`);
+export async function getCards(
+  filter: GetCardsQuery,
+): Promise<GetCardsResponse> {
+  return apiFetch(`/cards${toParams(filter)}`);
 }
 
-export async function getProduct(productId: string): Promise<GetProductResponse> {
-  return apiFetch(`/products/${productId}`);
+export async function getCard(cardId: string): Promise<GetCardResponse> {
+  return apiFetch(`/cards/${cardId}`);
 }
 
-export async function syncProductCardMarket(productId: string): Promise<SyncProductResponse> {
-  return apiFetch(`/sync/product/${productId}/cardmarket`);
+export async function syncCardCardMarket(cardId: string): Promise<SyncCardResponse> {
+  return apiFetch(`/sync/card/${cardId}/cardmarket`);
 }
 
-export async function syncProductPsa(productId: string): Promise<SyncProductResponse> {
-  return apiFetch(`/sync/product/${productId}/psa`);
+export async function syncCardPsa(cardId: string): Promise<SyncCardResponse> {
+  return apiFetch(`/sync/card/${cardId}/psa`);
 }
 
-export async function updateProductNote(productId: string, note: string | null): Promise<void> {
-  return apiPatch(`/products/${productId}`, { note } satisfies UpdateProductNoteRequest);
+export async function updateCardNote(cardId: string, note: string | null): Promise<void> {
+  return apiPatch(`/cards/${cardId}`, { note } satisfies UpdateCardNoteRequest);
 }
 
 export async function syncAllPromos(): Promise<void> {
@@ -79,12 +79,12 @@ export async function syncAllPromos(): Promise<void> {
 }
 
 export async function upsertCollectionEntry(
-  productId: string,
+  cardId: string,
   entry: UpsertCollectionEntryRequest,
 ): Promise<void> {
-  return apiPut(`/collection/${productId}`, entry satisfies UpsertCollectionEntryRequest);
+  return apiPut(`/collection/${cardId}`, entry satisfies UpsertCollectionEntryRequest);
 }
 
-export async function deleteCollectionEntry(productId: string): Promise<void> {
-  return apiDelete(`/collection/${productId}`);
+export async function deleteCollectionEntry(cardId: string): Promise<void> {
+  return apiDelete(`/collection/${cardId}`);
 }

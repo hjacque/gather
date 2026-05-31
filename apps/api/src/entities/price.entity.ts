@@ -2,7 +2,7 @@ import { PriceType } from "@gather/types";
 
 export type PriceEntity = {
   id: string;
-  productId: string;
+  cardId: string;
   date: Date;
   value: number | null;
   type: PriceType;
@@ -10,7 +10,7 @@ export type PriceEntity = {
 
 export type NewPriceEntity = {
   id: string;
-  productId: string;
+  cardId: string;
   date: Date;
   value: number | null;
   type: PriceType;

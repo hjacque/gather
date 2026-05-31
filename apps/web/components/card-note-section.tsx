@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import { Pencil, Save } from 'lucide-react';
-import { updateProductNote } from '@/app/actions/updateProductNote';
+import { updateCardNote } from '@/app/actions/updateCardNote';
 
-export function ProductNoteSection({
-  productId,
+export function CardNoteSection({
+  cardId,
   initialNote,
 }: {
-  productId: string;
+  cardId: string;
   initialNote: string | null;
 }) {
   const [note, setNote] = useState<string>(initialNote ?? '');
@@ -22,7 +22,7 @@ export function ProductNoteSection({
 
   const save = async () => {
     const trimmed = input.trim();
-    await updateProductNote(productId, trimmed || null);
+    await updateCardNote(cardId, trimmed || null);
     setNote(trimmed);
     setEditing(false);
   };
