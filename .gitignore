@@ -6,6 +6,7 @@ build
 .env*
 !.env.example
 /src/generated/prisma
+backups
 
 # Beads / Dolt files (added by bd init)
 .dolt/
