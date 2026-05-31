@@ -38,15 +38,6 @@ export type PriceRecord = {
   type: PriceType;
 };
 
-export type PerformanceSummary = {
-  oneDayMarketPricePerformance: number | null;
-  oneDayBuylistPricePerformance: number | null;
-  oneWeekMarketPricePerformance: number | null;
-  oneWeekBuylistPricePerformance: number | null;
-  oneMonthMarketPricePerformance: number | null;
-  oneMonthBuylistPricePerformance: number | null;
-};
-
 export type DailyPrices = {
   market: number | null;
   buylist: number | null;
@@ -90,7 +81,6 @@ export type GetProductsQuery = {
 
 export type GetProductsResponseItem = ProductEntity & DailyPrices & {
   productSet: ProductSetEntity;
-  performance: PerformanceSummary;
   psaTotal: number | null;
   psaGrade10Pop: number | null;
   cardmarketPsa9Yesterday: number | null;
@@ -126,7 +116,6 @@ export type UpdateProductNoteRequest = {
 
 export type SyncProductResponse = ProductEntity & DailyPrices & {
   productSet: ProductSetEntity;
-  performance: PerformanceSummary;
   psaTotal: number | null;
   psaGrade10Pop: number | null;
   cardmarketPsa9Yesterday: number | null;

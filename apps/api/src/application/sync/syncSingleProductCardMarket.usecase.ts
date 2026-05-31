@@ -3,8 +3,6 @@ import { ProductRepositoryPort } from "../../repository/ports/product.repository
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import { CollectionRepositoryPort } from "../../repository/ports/collection.repository.port";
-import { SetPerformancesUsecase } from "./setPerformances.usecase";
-import { PerformanceRepositoryPort } from "repository/ports/performance.repository.port";
 import { PriceSourcePort, RawPrices } from "./sources/priceSource.port";
 import { aggregatePrices } from "./priceAggregator";
 import { getEurToUsdRate } from "./helper";
@@ -14,8 +12,6 @@ export class SyncSingleProductCardMarketUsecase {
   constructor(
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
-    private readonly performanceRepository: PerformanceRepositoryPort,
-    private readonly setPerformancesUsecase: SetPerformancesUsecase,
     private readonly cardmarketPriceSources: PriceSourcePort[],
     private readonly psaPopReportRepository: PsaPopReportRepositoryPort,
     private readonly collectionRepository: CollectionRepositoryPort
@@ -58,7 +54,6 @@ export class SyncSingleProductCardMarketUsecase {
         await this.priceRepository.upsertPrice(product.id, value, key, today);
       }
     }
-    await this.setPerformancesUsecase.execute({ productIds: [product.id] });
 
     await page.close();
     await browser.close();
@@ -66,23 +61,20 @@ export class SyncSingleProductCardMarketUsecase {
     const yesterday = new Date(today);
     yesterday.setUTCDate(yesterday.getUTCDate() - 1);
 
-    const [pricesByProduct, yesterdayPricesByProduct, performances, psaReport, collectionEntry] = await Promise.all([
+    const [pricesByProduct, yesterdayPricesByProduct, psaReport, collectionEntry] = await Promise.all([
       this.priceRepository.getProductsPricesByDate([product.id], today),
       this.priceRepository.getProductsPricesByDate([product.id], yesterday),
-      this.performanceRepository.getPerformances([product.id], today),
       this.psaPopReportRepository.findByProductId(product.id),
       this.collectionRepository.findByProductId(product.id),
     ]);
     const currentPrices = pricesByProduct.get(product.id)!;
     const yesterdayPrices = yesterdayPricesByProduct.get(product.id);
-    const performance = performances.get(product.id)!;
 
     return {
       ...product,
       ...currentPrices,
       cardmarketPsa9Yesterday: yesterdayPrices?.cardmarketPsa9 ?? null,
       cardmarketPsa10Yesterday: yesterdayPrices?.cardmarketPsa10 ?? null,
-      performance,
       psaTotal: psaReport?.total ?? null,
       psaGrade10Pop: psaReport?.grade10 ?? null,
       collectionEntry: collectionEntry ?? null,

@@ -3,7 +3,6 @@ import { ProductRepositoryPort } from "../../repository/ports/product.repository
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import { CollectionRepositoryPort } from "../../repository/ports/collection.repository.port";
-import { PerformanceRepositoryPort } from "repository/ports/performance.repository.port";
 import { scrapePsaPopReport } from "./sources/psa.source";
 import type { SyncProductResponse } from "@gather/api-contract";
 
@@ -11,7 +10,6 @@ export class SyncSingleProductPsaUsecase {
   constructor(
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
-    private readonly performanceRepository: PerformanceRepositoryPort,
     private readonly psaPopReportRepository: PsaPopReportRepositoryPort,
     private readonly collectionRepository: CollectionRepositoryPort
   ) {}
@@ -49,21 +47,18 @@ export class SyncSingleProductPsaUsecase {
     await page.close();
     await browser.close();
 
-    const [pricesByProduct, performances, psaReport, collectionEntry] = await Promise.all([
+    const [pricesByProduct, psaReport, collectionEntry] = await Promise.all([
       this.priceRepository.getProductsPricesByDate([product.id], today),
-      this.performanceRepository.getPerformances([product.id], today),
       this.psaPopReportRepository.findByProductId(product.id),
       this.collectionRepository.findByProductId(product.id),
     ]);
     const currentPrices = pricesByProduct.get(product.id)!;
-    const performance = performances.get(product.id)!;
 
     return {
       ...product,
       ...currentPrices,
       cardmarketPsa9Yesterday: null,
       cardmarketPsa10Yesterday: null,
-      performance,
       psaTotal: psaReport?.total ?? null,
       psaGrade10Pop: psaReport?.grade10 ?? null,
       collectionEntry: collectionEntry ?? null,

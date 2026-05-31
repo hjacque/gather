@@ -3,7 +3,6 @@ import { ProductEntity } from "../../entities/product.entity";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PriceSourcePort, RawPrices } from "./sources/priceSource.port";
 import { aggregatePrices, DerivedPrices } from "./priceAggregator";
-import { SetPerformancesUsecase } from "./setPerformances.usecase";
 
 export async function syncProduct(
   product: ProductEntity,
@@ -11,8 +10,7 @@ export async function syncProduct(
   page: Page,
   usdToEur: number,
   priceSources: PriceSourcePort[],
-  priceRepository: PriceRepositoryPort,
-  setPerformancesUsecase: SetPerformancesUsecase
+  priceRepository: PriceRepositoryPort
 ): Promise<DerivedPrices> {
   const raw: RawPrices = {};
 
@@ -28,8 +26,6 @@ export async function syncProduct(
   for (const key of prices.keys()) {
     await priceRepository.upsertPrice(product.id, prices.get(key), key, today);
   }
-
-  await setPerformancesUsecase.execute({ productIds: [product.id] });
 
   console.debug(product, prices);
 

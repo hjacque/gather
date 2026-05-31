@@ -87,18 +87,6 @@ enum PriceType {
   cardmarketPsa10
 }
 
-enum PerformancePeriodType {
-  daily
-  weekly
-  monthly
-  yearly
-}
-
-enum PerformanceType {
-  market
-  buylist
-}
-
 model Product {
   id                        String        @id @default(uuid())
   name                      String
@@ -129,7 +117,6 @@ model Product {
   regions                   Region[]
 
   prices                    Price[]       @relation("ProductPrices")
-  performances              Performance[] @relation("ProductPerformances")
   psaPopReport              PsaPopReport?
 
   collectionEntry           CollectionEntry?
@@ -181,21 +168,6 @@ model Price {
   updatedAt   DateTime  @updatedAt
 
   @@unique([productId, date, type])
-}
-
-model Performance {
-  id          String           @id @default(uuid())
-  product     Product          @relation("ProductPerformances", fields: [productId], references: [id], onDelete: Cascade)
-  productId   String
-  date        DateTime
-  value       Float?
-  periodType  PerformancePeriodType
-  type        PerformanceType
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@unique([productId, date, periodType, type])
 }
 
 model PsaPopReport {

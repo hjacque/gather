@@ -5,13 +5,11 @@ import { CollectionRepositoryPort } from "../repository/ports/collection.reposit
 import { SyncUsecase } from "./sync/sync.usecase";
 import { GetProductsUsecase } from "./product/getProducts.usecase";
 import { GetProductUsecase } from "./product/getProduct.usecase";
-import { PerformanceRepositoryPort } from "../repository/ports/performance.repository.port";
 import { UpdateProductNoteUsecase } from "./product/updateProductNote.usecase";
 import { UpsertCollectionEntryUsecase } from "./product/upsertCollectionEntry.usecase";
 import { DeleteCollectionEntryUsecase } from "./product/deleteCollectionEntry.usecase";
 import { SyncSingleProductCardMarketUsecase } from "./sync/syncSingleProductCardMarket.usecase";
 import { SyncSingleProductPsaUsecase } from "./sync/syncSingleProductPsa.usecase";
-import { SetPerformancesUsecase } from "./sync/setPerformances.usecase";
 import { SyncPsaPopReportsUsecase } from "./sync/syncPsaPopReports.usecase";
 import { CardMarketSource } from "./sync/sources/cardmarket.source";
 import { CardMarketGradedSource } from "./sync/sources/cardmarketGraded.source";
@@ -28,7 +26,6 @@ export type Usecases = {
   getProductUsecase: GetProductUsecase;
   syncSingleProductCardMarketUsecase: SyncSingleProductCardMarketUsecase;
   syncSingleProductPsaUsecase: SyncSingleProductPsaUsecase;
-  setPerformancesUsecase: SetPerformancesUsecase;
   syncPsaPopReportsUsecase: SyncPsaPopReportsUsecase;
   updateProductNoteUsecase: UpdateProductNoteUsecase;
   upsertCollectionEntryUsecase: UpsertCollectionEntryUsecase;
@@ -38,13 +35,11 @@ export type Usecases = {
 export const initApplication = ({
   productRepository,
   priceRepository,
-  performanceRepository,
   psaPopReportRepository,
   collectionRepository,
 }: {
   productRepository: ProductRepositoryPort;
   priceRepository: PriceRepositoryPort;
-  performanceRepository: PerformanceRepositoryPort;
   psaPopReportRepository: PsaPopReportRepositoryPort;
   collectionRepository: CollectionRepositoryPort;
 }): Usecases => {
@@ -59,20 +54,14 @@ export const initApplication = ({
     new BricklinkAverageSource(),
   ];
 
-  const setPerformancesUsecase = new SetPerformancesUsecase(
-    priceRepository,
-    performanceRepository
-  );
   const syncUsecase = new SyncUsecase(
     productRepository,
     priceRepository,
-    setPerformancesUsecase,
     priceSources
   );
   const getProductsUsecase = new GetProductsUsecase(
     productRepository,
     priceRepository,
-    performanceRepository,
     psaPopReportRepository,
     collectionRepository
   );
@@ -90,8 +79,6 @@ export const initApplication = ({
   const syncSingleProductCardMarketUsecase = new SyncSingleProductCardMarketUsecase(
     productRepository,
     priceRepository,
-    performanceRepository,
-    setPerformancesUsecase,
     cardmarketPriceSources,
     psaPopReportRepository,
     collectionRepository
@@ -100,7 +87,6 @@ export const initApplication = ({
   const syncSingleProductPsaUsecase = new SyncSingleProductPsaUsecase(
     productRepository,
     priceRepository,
-    performanceRepository,
     psaPopReportRepository,
     collectionRepository
   );
@@ -118,7 +104,6 @@ export const initApplication = ({
     getProductUsecase,
     syncSingleProductCardMarketUsecase,
     syncSingleProductPsaUsecase,
-    setPerformancesUsecase,
     syncPsaPopReportsUsecase,
     updateProductNoteUsecase,
     upsertCollectionEntryUsecase,

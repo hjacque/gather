@@ -4,7 +4,6 @@ import { Rarity } from "@gather/types";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { DEFAULT_USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
-import { SetPerformancesUsecase } from "./setPerformances.usecase";
 import { PriceSourcePort } from "./sources/priceSource.port";
 import { getEurToUsdRate } from "./helper";
 import { syncProduct } from "./syncProduct";
@@ -27,7 +26,6 @@ export class SyncUsecase {
   constructor(
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
-    private readonly setPerformancesUsecase: SetPerformancesUsecase,
     private readonly priceSources: PriceSourcePort[]
   ) {}
 
@@ -75,8 +73,7 @@ export class SyncUsecase {
           page,
           usdToEur,
           this.priceSources,
-          this.priceRepository,
-          this.setPerformancesUsecase
+          this.priceRepository
         );
         await new Promise((resolve) =>
           setTimeout(resolve, 4000 + Math.random() * 4000)

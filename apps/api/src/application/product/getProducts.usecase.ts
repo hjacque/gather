@@ -1,5 +1,4 @@
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
-import { PerformanceRepositoryPort } from "../../repository/ports/performance.repository.port";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import { CollectionRepositoryPort } from "../../repository/ports/collection.repository.port";
@@ -11,7 +10,6 @@ export class GetProductsUsecase {
   constructor(
     private readonly productRepository: ProductRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
-    private readonly performanceRepository: PerformanceRepositoryPort,
     private readonly psaPopReportRepository: PsaPopReportRepositoryPort,
     private readonly collectionRepository: CollectionRepositoryPort
   ) {}
@@ -31,10 +29,9 @@ export class GetProductsUsecase {
     const yesterday = new Date(today);
     yesterday.setUTCDate(yesterday.getUTCDate() - 1);
 
-    const [prices, yesterdayPrices, performances, psaReports, collectionEntries] = await Promise.all([
+    const [prices, yesterdayPrices, psaReports, collectionEntries] = await Promise.all([
       this.priceRepository.getProductsPricesByDate(productIds, today),
       this.priceRepository.getProductsPricesByDate(productIds, yesterday),
-      this.performanceRepository.getPerformances(productIds, today),
       this.psaPopReportRepository.findByProductIds(productIds),
       this.collectionRepository.findByProductIds(productIds),
     ]);
@@ -53,7 +50,6 @@ export class GetProductsUsecase {
         cardmarketPsa10,
       } = prices.get(product.id)!;
       const yp = yesterdayPrices.get(product.id)!;
-      const performance = performances.get(product.id)!;
       const psaReport = psaReports.get(product.id) ?? null;
       const psaTotal = psaReport?.total ?? null;
       const psaGrade10Pop = psaReport?.grade10 ?? null;
@@ -66,7 +62,6 @@ export class GetProductsUsecase {
         ratio,
         perBooster,
         cardmarketListingCount,
-        performance,
         fullSet,
         tcgp,
         bricklinkAverage,
