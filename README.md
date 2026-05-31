@@ -1,16 +1,14 @@
 # Gather
 
-A price aggregation and performance tracking tool for Pokémon exclusive promo cards (Japanese, Korean, and Taiwan/HK releases). Gather fetches Raw Prices from external marketplaces (Price Sources), computes Derived Prices (Market Price, Buylist Price, Ratio), and surfaces Performance metrics alongside PSA population data.
+A price aggregation tool for Pokémon exclusive promo cards (Japanese, Korean, and Taiwan/HK releases). Gather fetches Raw Prices from CardMarket across PSA grades, stores them, and surfaces derived data alongside PSA population counts and collection tracking.
 
 ---
 
 ## What it does
 
-- **Syncs** prices from CardMarket, CardKingdom, ABUGames, TCGPlayer, and BrickLink on a rolling schedule
-- **Derives** Market Price (lowest sell listing), Buylist Price (highest buy offer), Ratio (seller margin %), and Per Booster price for sealed products
-- **Tracks Performance** — daily, weekly, monthly, and yearly percentage changes per product
-- **Surfaces a Product of the Day** — the top-performing product for a given date
-- **Tracks PSA population** — graded card counts per product via PSA pop reports
+- **Syncs** CardMarket prices across PSA grades 1–10 for each card, on a rolling schedule
+- **Tracks PSA population** — graded card counts per grade via PSA pop reports
+- **Manages a collection** — mark cards as owned or on the wantlist
 
 ---
 
@@ -96,14 +94,16 @@ npm run build
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/products` | List all products with today's Derived Prices and Performance |
-| `GET` | `/products/:id` | Single product with full price history |
-| `PATCH` | `/products/:id` | Update a product's note |
-| `GET` | `/product-of-the-day` | Top-performing product for a given day |
-| `GET` | `/sync` | Trigger a full Sync (filter by franchise / type / set / tags) |
-| `GET` | `/sync/product/:id` | Trigger a Sync for a single product |
-| `GET` | `/sync/set/:set` | Trigger a Sync for an entire Product Set |
-| `GET` | `/sync/psa` | Trigger a PSA pop report Sync |
+| `GET` | `/cards` | List all cards with today's prices and PSA pop data |
+| `GET` | `/cards/:cardid` | Single card with full price history |
+| `PATCH` | `/cards/:cardid` | Update a card's note |
+| `GET` | `/sync` | Trigger a full CardMarket sync (filter by set / tags) |
+| `GET` | `/sync/card/:cardid/cardmarket` | Trigger a CardMarket sync for a single card |
+| `GET` | `/sync/card/:cardid/psa` | Trigger a PSA pop report sync for a single card |
+| `GET` | `/sync/set/:set` | Trigger a CardMarket sync for an entire Card Set |
+| `GET` | `/sync/psa` | Trigger a full PSA pop report sync |
+| `PUT` | `/collection/:cardid` | Upsert a collection entry (owned / wanted flags) |
+| `DELETE` | `/collection/:cardid` | Remove a card from the collection |
 
 ---
 
@@ -124,41 +124,29 @@ Repositories are injected into use cases via port interfaces — concrete Prisma
 
 ## Price Sources
 
-| Source | Type | Franchises |
-|---|---|---|
-| CardMarket | Sell listings | MTG, Pokémon, One Piece, Riftbound |
-| CardKingdom | Buylist | MTG |
-| ABUGames | Buylist | MTG |
-| TCGPlayer | Sell listings | MTG |
-| BrickLink | Sell listings | LEGO |
-| FullSet | Sell listings | MTG |
-| PSA | Pop report | Pokémon |
+| Source | Type |
+|---|---|
+| CardMarket | PSA grade sell listings (grades 1–10) |
+| PSA | Pop report (graded card counts per grade) |
 
-All Raw Prices are stored in EUR after conversion where needed.
+All Raw Prices are stored in EUR.
 
 ---
 
-## Derived price computation
+## Price types
 
-All derivation happens in `priceAggregator.ts` after Raw Prices are collected:
+Each card stores up to ten Raw Prices, one per PSA grade:
 
-| Derived Price | Formula |
-|---|---|
-| Market Price | `min(cardmarket)` |
-| Buylist Price | `max(cardkingdom, abugames)` |
-| Ratio (cards) | `round((market / buylist) × 100) − 100` |
-| Ratio (minifigures) | `round((market / bricklinkAverage) × 100) − 100` |
-| Per Booster | `market / boosterCount` (sealed products only) |
+`cardmarketPsa1` through `cardmarketPsa10`
 
 ---
 
 ## Sync schedule (UTC)
 
-| Product type | Frequency | Times |
+| Target | Frequency | Time |
 |---|---|---|
-| Singles | Every 2 hours | :00 on even hours (0:00, 2:00 … 22:00) |
-| Sealed products | Every 2 hours | :30 on odd hours (1:30, 3:30 … 23:30) |
-| Minifigures | Every 15 minutes | (defined, not scheduled by default) |
+| All cards (CardMarket) | Every 2 hours | :00 on even hours (0:00, 2:00 … 22:00) |
+| PSA pop reports | Daily | 03:00 |
 
 ---
 
@@ -166,18 +154,14 @@ All derivation happens in `priceAggregator.ts` after Raw Prices are collected:
 
 | Term | Meaning |
 |---|---|
-| **Product** | A single tradeable item — card, sealed box, booster bundle, ETB, or LEGO minifigure |
-| **Product Set** | A named release grouping Products (e.g. "Scarlet & Violet Base Set") |
-| **Franchise** | The brand a Product belongs to (MTG, Pokémon, One Piece, Riftbound, LEGO) |
-| **Region** | The release market of a Product — `japan`, `korea`, or `taiwan_hong_kong` |
-| **Block** | A Pokémon era grouping Product Sets (e.g. `scarlet_and_violet`, `sword_and_shield`) |
+| **Card** | A single Pokémon exclusive promo card being tracked |
+| **Card Set** | A named release grouping Cards (e.g. "Scarlet & Violet Base Set") |
+| **Region** | The release market of a Card — `japan`, `korea`, or `taiwan_hong_kong` |
+| **Block** | A Pokémon era grouping Card Sets (e.g. `scarlet_and_violet`, `sword_and_shield`) |
 | **Rarity** | Card rarity (`common`, `uncommon`, `rare`, `special_illustration_rare`, `promo`, etc.) |
+| **Foil Pattern** | The card's foil treatment — `rareHolo`, `reverse`, or `regularHolo` |
 | **Price Source** | An external marketplace providing Raw Prices |
 | **Raw Price** | A price fetched directly from a Price Source, in EUR |
-| **Derived Price** | A price computed from Raw Prices (Market Price, Buylist Price, Ratio, Per Booster) |
-| **Market Price** | The minimum sell listing across applicable Price Sources |
-| **Buylist Price** | The maximum buy offer across buylist Price Sources |
-| **Ratio** | The percentage spread between Market Price and Buylist Price — seller margin |
-| **Performance** | Percentage change in Market or Buylist Price over a fixed period |
-| **Sync** | The process of fetching Raw Prices and persisting Derived Prices |
-| **PSA Pop** | PSA population report data — graded card counts per grade for a product |
+| **PSA Pop** | PSA population report data — graded card counts per grade for a card |
+| **Collection Entry** | A record marking a card as owned and/or on the wantlist |
+| **Sync** | The process of fetching Raw Prices from CardMarket and persisting them |
