@@ -46,7 +46,7 @@ export class SyncSingleProductCardMarketUsecase {
         Object.assign(raw, result);
       }
     }
-    const prices = aggregatePrices(product, raw);
+    const prices = aggregatePrices(raw);
     for (const [key, value] of prices) {
       // Upsert null PSA grades so a no-listings sync still produces a dated data point.
       const isPsaGrade = key.startsWith('cardmarketPsa');

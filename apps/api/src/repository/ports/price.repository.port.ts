@@ -10,13 +10,6 @@ export abstract class PriceRepositoryPort {
   ): Promise<void>;
 
   abstract getProductPrices(productId: string): Promise<{
-    marketPrices: PriceEntity[];
-    buylistPrices: PriceEntity[];
-    ratioPrices: PriceEntity[];
-    cardmarketListingCount: PriceEntity[];
-    fullSetPrices: PriceEntity[];
-    tcgpPrices: PriceEntity[];
-    bricklinkAveragePrices: PriceEntity[];
     psaGradePrices: PriceEntity[];
   }>;
 
@@ -33,14 +26,6 @@ export abstract class PriceRepositoryPort {
     Map<
       string,
       {
-        market: number | null;
-        buylist: number | null;
-        ratio: number | null;
-        perBooster: number | null;
-        cardmarketListingCount: number | null;
-        fullSet: number | null;
-        tcgp: number | null;
-        bricklinkAverage: number | null;
         cardmarketPsa9: number | null;
         cardmarketPsa10: number | null;
       }

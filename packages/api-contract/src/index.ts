@@ -1,31 +1,22 @@
 import type {
   ProductEntity,
   ProductSetEntity,
-  Franchise,
-  ProductType,
-  Rarity,
   Region,
   PriceType,
 } from '@gather/types';
 
-export type { Franchise, ProductType, ProductSetEntity };
+export type { ProductSetEntity };
 
 // ─── Collection Entry ─────────────────────────────────────────────────────────
 
 export type CollectionEntry = {
   isOwned: boolean;
   isWanted: boolean;
-  grade: number | null;
-  paidPrice: number | null;
-  acquiredAt: Date | null;
 };
 
 export type UpsertCollectionEntryRequest = {
   isOwned: boolean;
   isWanted: boolean;
-  grade: number | null;
-  paidPrice: number | null;
-  acquiredAt: string | null;
 };
 
 // ─── Shared shapes ───────────────────────────────────────────────────────────
@@ -39,14 +30,6 @@ export type PriceRecord = {
 };
 
 export type DailyPrices = {
-  market: number | null;
-  buylist: number | null;
-  ratio: number | null;
-  perBooster: number | null;
-  cardmarketListingCount: number | null;
-  fullSet: number | null;
-  tcgp: number | null;
-  bricklinkAverage: number | null;
   cardmarketPsa9: number | null;
   cardmarketPsa10: number | null;
 };
@@ -71,11 +54,8 @@ export type PsaPopReportSummary = {
 // ─── GET /products ────────────────────────────────────────────────────────────
 
 export type GetProductsQuery = {
-  franchise?: Franchise;
-  type?: ProductType | ProductType[];
   tags?: string | string[];
   set?: string;
-  rarity?: Rarity;
   region?: Region | Region[];
 };
 
@@ -94,13 +74,6 @@ export type GetProductsResponse = GetProductsResponseItem[];
 
 export type GetProductResponse = ProductEntity & {
   productSet: ProductSetEntity;
-  marketPrices: PriceRecord[];
-  buylistPrices: PriceRecord[];
-  ratioPrices: PriceRecord[];
-  cardmarketListingCount: PriceRecord[];
-  fullSetPrices: PriceRecord[];
-  tcgpPrices: PriceRecord[];
-  bricklinkAveragePrices: PriceRecord[];
   psaGradePrices: PriceRecord[];
   psaPopReport: PsaPopReportSummary | null;
   collectionEntry: CollectionEntry | null;

@@ -1,4 +1,4 @@
-export { Franchise, ProductType, ProductEntity } from "@gather/types";
+export { ProductEntity } from "@gather/types";
 
 export const enum MtgSet {
   alpha = "alpha",

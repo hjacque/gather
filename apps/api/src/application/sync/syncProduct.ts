@@ -21,7 +21,7 @@ export async function syncProduct(
     }
   }
 
-  const prices = aggregatePrices(product, raw);
+  const prices = aggregatePrices(raw);
 
   for (const key of prices.keys()) {
     await priceRepository.upsertPrice(product.id, prices.get(key), key, today);

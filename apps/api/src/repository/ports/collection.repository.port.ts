@@ -1,9 +1,6 @@
 export type CollectionEntryData = {
   isOwned: boolean;
   isWanted: boolean;
-  grade: number | null;
-  paidPrice: number | null;
-  acquiredAt: Date | null;
 };
 
 export abstract class CollectionRepositoryPort {

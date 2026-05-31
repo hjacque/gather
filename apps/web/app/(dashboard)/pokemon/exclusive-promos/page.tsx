@@ -3,11 +3,7 @@ import { getProducts } from '@/app/actions/getProducts';
 import { PokemonExclusivePromosTable } from '@/components/pokemon-exclusive-promos-table';
 
 export default function PokemonExclusivePromosPage() {
-  const filter: GetProductFilter = {
-    type: 'single',
-    franchise: 'pokemon',
-    rarity: 'promo',
-  };
+  const filter: GetProductFilter = {};
   const productsPromise = getProducts(filter);
 
   return (

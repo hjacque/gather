@@ -632,18 +632,12 @@ export function PokemonExclusivePromosTable({
         const entry: UpsertCollectionEntryRequest = {
           isOwned: newIsOwned,
           isWanted: newIsWanted,
-          grade: existing?.grade ?? null,
-          paidPrice: existing?.paidPrice ?? null,
-          acquiredAt: existing?.acquiredAt ? new Date(existing.acquiredAt).toISOString() : null,
         };
         await upsertCollectionEntry(item.id, entry);
         tableRef.current?.updateRow(item.id, {
           collectionEntry: {
             isOwned: newIsOwned,
             isWanted: newIsWanted,
-            grade: entry.grade,
-            paidPrice: entry.paidPrice,
-            acquiredAt: entry.acquiredAt ? new Date(entry.acquiredAt) : null,
           },
         });
       }
@@ -714,11 +708,6 @@ export function PokemonExclusivePromosTable({
               <SheetDescription>
                 {displayedItem.productSet.name}
                 {displayedItem.number && ` #${displayedItem.number}/${displayedItem.productSet.code}`}
-                {displayedItem.rarity && (
-                  <Badge className="ml-2" variant="secondary">
-                    {displayedItem.rarity.charAt(0).toUpperCase() + displayedItem.rarity.slice(1)}
-                  </Badge>
-                )}
                 {displayedItem.regions?.map((region) => (
                   <Badge key={region} className="ml-1" variant="outline">
                     {({ japan: 'Japan', korea: 'Korea', taiwan_hong_kong: 'Taiwan & Hong Kong' } as Record<string, string>)[region] ?? region}
@@ -808,24 +797,6 @@ export function PokemonExclusivePromosTable({
                       <a href={displayedItem.cardMarketLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
                         <ShoppingCart className="w-5 h-5 text-primary" />
                         <span className="text-sm font-medium">CardMarket</span>
-                      </a>
-                    )}
-                    {displayedItem.tcgpLink && (
-                      <a href={displayedItem.tcgpLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
-                        <ShoppingCart className="w-5 h-5 text-primary" />
-                        <span className="text-sm font-medium">TCGPlayer</span>
-                      </a>
-                    )}
-                    {displayedItem.cardkingdomBuyListLink && (
-                      <a href={displayedItem.cardkingdomBuyListLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
-                        <Store className="w-5 h-5 text-primary" />
-                        <span className="text-sm font-medium">Card Kingdom</span>
-                      </a>
-                    )}
-                    {displayedItem.abugamesBuyListLink && (
-                      <a href={displayedItem.abugamesBuyListLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
-                        <Store className="w-5 h-5 text-primary" />
-                        <span className="text-sm font-medium">ABU Games</span>
                       </a>
                     )}
                     {displayedItem.psaLink && (

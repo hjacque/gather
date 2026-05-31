@@ -11,14 +11,7 @@ import { DeleteCollectionEntryUsecase } from "./product/deleteCollectionEntry.us
 import { SyncSingleProductCardMarketUsecase } from "./sync/syncSingleProductCardMarket.usecase";
 import { SyncSingleProductPsaUsecase } from "./sync/syncSingleProductPsa.usecase";
 import { SyncPsaPopReportsUsecase } from "./sync/syncPsaPopReports.usecase";
-import { CardMarketSource } from "./sync/sources/cardmarket.source";
 import { CardMarketGradedSource } from "./sync/sources/cardmarketGraded.source";
-import { CardKingdomSource } from "./sync/sources/cardkingdom.source";
-import { AbugamesSource } from "./sync/sources/abugames.source";
-import { FullSetSource } from "./sync/sources/fullSet.source";
-import { TcgpSource } from "./sync/sources/tcgp.source";
-import { BricklinkSource } from "./sync/sources/bricklink.source";
-import { BricklinkAverageSource } from "./sync/sources/bricklinkAverage.source";
 
 export type Usecases = {
   syncUsecase: SyncUsecase;
@@ -44,14 +37,7 @@ export const initApplication = ({
   collectionRepository: CollectionRepositoryPort;
 }): Usecases => {
   const priceSources = [
-    new CardMarketSource(),
     new CardMarketGradedSource(),
-    new BricklinkSource(),
-    new CardKingdomSource(),
-    new AbugamesSource(),
-    new FullSetSource(),
-    new TcgpSource(),
-    new BricklinkAverageSource(),
   ];
 
   const syncUsecase = new SyncUsecase(
@@ -72,7 +58,6 @@ export const initApplication = ({
     collectionRepository
   );
   const cardmarketPriceSources = [
-    new CardMarketSource(),
     new CardMarketGradedSource(),
   ];
 

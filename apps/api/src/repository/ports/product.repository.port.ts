@@ -1,18 +1,13 @@
 import { ProductSetEntity } from "../../entities/productSet.entity";
 import {
-  Franchise,
   ProductEntity,
-  ProductType,
   Set,
 } from "../../entities/product.entity";
-import { Region, Rarity } from "@gather/types";
+import { Region } from "@gather/types";
 
 export type GetProductsFilter = {
   set?: string;
-  type?: ProductType | ProductType[];
-  franchise?: Franchise;
   tags?: string | string[];
-  rarity?: Rarity;
   region?: Region | Region[];
 };
 

@@ -75,7 +75,7 @@ export async function updateProductNote(productId: string, note: string | null):
 }
 
 export async function syncAllPromos(): Promise<void> {
-  await apiFetch('/sync?rarity=promo');
+  await apiFetch('/sync');
 }
 
 export async function upsertCollectionEntry(

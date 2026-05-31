@@ -4,7 +4,7 @@ import { z } from "zod";
 import { errorHandler } from "./middlewares/http.errors";
 import { SyncUsecaseInputDto } from "application/sync/sync.usecase";
 import type { UpdateProductNoteRequest, UpsertCollectionEntryRequest } from "@gather/api-contract";
-import { PRODUCT_TYPES, FRANCHISES, REGIONS } from "@gather/types";
+import { REGIONS } from "@gather/types";
 require("express-async-errors");
 
 const app = express();
@@ -54,9 +54,9 @@ export const http = async ({
   });
 
   app.get("/sync", async (req, res) => {
-    const { set, type, franchise, tags, rarity } = req.query;
+    const { set, tags } = req.query;
     const result = await syncUsecase.execute({
-      filter: { set, type, franchise, tags, rarity },
+      filter: { set, tags },
       mode: { headless: true },
     } as SyncUsecaseInputDto);
 
@@ -76,12 +76,7 @@ export const http = async ({
 
     const dtoSchema = z.object({
       set: z.string().optional(),
-      type: z
-        .union([z.array(z.enum(PRODUCT_TYPES)), z.enum(PRODUCT_TYPES)])
-        .optional(),
-      franchise: z.enum(FRANCHISES).optional(),
       tags: z.union([z.string(), z.array(z.string())]).optional(),
-      rarity: z.string().optional(),
       region: z
         .union([z.array(z.enum(REGIONS)), z.enum(REGIONS)])
         .optional(),
@@ -117,17 +112,11 @@ export const http = async ({
     const bodySchema = z.object({
       isOwned: z.boolean(),
       isWanted: z.boolean(),
-      grade: z.number().int().min(1).max(10).nullable(),
-      paidPrice: z.number().nonnegative().nullable(),
-      acquiredAt: z.string().datetime().nullable(),
     });
     const body = bodySchema.parse(req.body) as UpsertCollectionEntryRequest;
     await upsertCollectionEntryUsecase.execute(req.params.productid, {
       isOwned: body.isOwned,
       isWanted: body.isWanted,
-      grade: body.grade,
-      paidPrice: body.paidPrice,
-      acquiredAt: body.acquiredAt ? new Date(body.acquiredAt) : null,
     });
     res.status(204).end();
   });

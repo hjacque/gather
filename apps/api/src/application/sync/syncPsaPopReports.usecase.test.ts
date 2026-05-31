@@ -3,7 +3,6 @@ import { ProductRepositoryPort } from "../../repository/ports/product.repository
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import type { PsaGrades } from "./sources/psa.source";
 import { ProductEntity } from "../../entities/product.entity";
-import type { Rarity } from "@gather/types";
 import { ProductSetEntity } from "../../entities/productSet.entity";
 
 // Mock puppeteer-real-browser so tests don't need a browser
@@ -38,29 +37,18 @@ jest.mock("puppeteer-extra-plugin-stealth", () => jest.fn(() => ({})));
 
 type ProductWithSet = ProductEntity & { productSet: ProductSetEntity };
 
-function makeProduct(id: string, psaLink: string | null, rarity: Rarity = "promo"): ProductWithSet {
+function makeProduct(id: string, psaLink: string | null): ProductWithSet {
   return {
     id,
     name: `Product ${id}`,
-    type: "single",
-    rarity,
     psaLink,
     productSetId: "set-1",
-    boosterCount: null,
-    msrp: null,
     imageUrl: null,
     cardMarketLink: null,
-    cardkingdomBuyListLink: null,
-    abugamesBuyListLink: null,
-    fullSetLink: null,
-    tcgpLink: null,
-    bricklinkLink: null,
     number: null,
     note: null,
     releaseDate: null,
     tags: [],
-    keyword: null,
-    blocked: [],
     foilPattern: null,
     regions: [],
     createdAt: new Date(),
@@ -69,7 +57,6 @@ function makeProduct(id: string, psaLink: string | null, rarity: Rarity = "promo
       id: "set-1",
       name: "Promo Set",
       code: "PROMO",
-      franchise: "pokemon",
       releaseDate: new Date(),
       block: null,
       createdAt: new Date(),
@@ -131,22 +118,6 @@ describe("SyncPsaPopReportsUsecase", () => {
     expect(psaPopReportRepo.upsert).toHaveBeenCalledTimes(1);
     expect(psaPopReportRepo.upsert).toHaveBeenCalledWith(
       "product-2",
-      expect.any(Object),
-      expect.any(Date)
-    );
-  });
-
-  it("skips products with rarity other than promo", async () => {
-    const rareSingle = makeProduct("product-rare", "https://psa.com/1", "holo_rare");
-    const promoSingle = makeProduct("product-promo", "https://psa.com/2", "promo");
-
-    productRepo.getProducts.mockResolvedValue([rareSingle, promoSingle]);
-
-    await usecase.execute();
-
-    expect(psaPopReportRepo.upsert).toHaveBeenCalledTimes(1);
-    expect(psaPopReportRepo.upsert).toHaveBeenCalledWith(
-      "product-promo",
       expect.any(Object),
       expect.any(Date)
     );

@@ -7,18 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum ProductType {
-  single
-  booster_box
-  collector_booster_box
-  booster_box_18
-  booster_bundle
-  elite_trainer_box
-  premium_booster_box
-  extra_booster_box
-  minifigure
-}
-
 enum Block {
   scarlet_and_violet
   sword_and_shield
@@ -29,25 +17,6 @@ enum Block {
   web
   vs
   wotc
-}
-
-enum Franchise {
-  mtg
-  pokemon
-  one_piece
-  riftbound
-  lego
-}
-
-enum Rarity {
-  common
-  uncommon
-  rare
-  land
-  special_illustration_rare
-  rainbow_rare
-  promo
-  holo_rare
 }
 
 enum FoilPattern {
@@ -63,18 +32,6 @@ enum Region {
 }
 
 enum PriceType {
-  cardmarket
-  cardkingdom
-  abugames
-  buylist
-  market
-  ratio
-  perBooster
-  cardmarketListingCount
-  fullSet
-  tcgp
-  bricklink
-  bricklinkAverage
   cardmarketPsa1
   cardmarketPsa2
   cardmarketPsa3
@@ -90,16 +47,10 @@ enum PriceType {
 model Product {
   id                        String        @id @default(uuid())
   name                      String
-  type                      ProductType
-  boosterCount              Int?
-  msrp                      Float?
   productSet                ProductSet           @relation(fields: [productSetId], references: [id])
   productSetId              String
-  rarity                    Rarity?
   foilPattern               FoilPattern?
   tags                      String[]
-  keyword                   String?
-  blocked                   String[]
 
   imageUrl                  String?
   releaseDate               DateTime?
@@ -107,11 +58,6 @@ model Product {
   note                      String?
 
   cardMarketLink            String?
-  cardkingdomBuyListLink    String?
-  abugamesBuyListLink       String?
-  fullSetLink               String?
-  tcgpLink                  String?
-  bricklinkLink             String?
   psaLink                   String?
   number                    String?
   regions                   Region[]
@@ -124,7 +70,7 @@ model Product {
   createdAt                 DateTime      @default(now())
   updatedAt                 DateTime      @updatedAt
 
-  @@unique([name, productSetId, type, releaseDate, number])
+  @@unique([name, productSetId, releaseDate, number])
 }
 
 model CollectionEntry {
@@ -133,9 +79,6 @@ model CollectionEntry {
   productId   String    @unique
   isOwned     Boolean   @default(false)
   isWanted    Boolean   @default(false)
-  grade       Int?
-  paidPrice   Float?
-  acquiredAt  DateTime?
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -145,7 +88,6 @@ model ProductSet {
   id          String     @id @default(uuid())
   code        String
   name        String
-  franchise   Franchise
   releaseDate DateTime
   block       Block?
   products    Product[]
@@ -153,7 +95,7 @@ model ProductSet {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  @@unique([code, franchise])
+  @@unique([code])
 }
 
 model Price {

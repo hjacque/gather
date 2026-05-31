@@ -14,16 +14,10 @@ export class CollectionRepositoryPg implements CollectionRepositoryPort {
         productId,
         isOwned: data.isOwned,
         isWanted: data.isWanted,
-        grade: data.grade,
-        paidPrice: data.paidPrice,
-        acquiredAt: data.acquiredAt,
       },
       update: {
         isOwned: data.isOwned,
         isWanted: data.isWanted,
-        grade: data.grade,
-        paidPrice: data.paidPrice,
-        acquiredAt: data.acquiredAt,
       },
     });
   }
@@ -38,9 +32,6 @@ export class CollectionRepositoryPg implements CollectionRepositoryPort {
     return {
       isOwned: record.isOwned,
       isWanted: record.isWanted,
-      grade: record.grade,
-      paidPrice: record.paidPrice,
-      acquiredAt: record.acquiredAt,
     };
   }
 
@@ -53,9 +44,6 @@ export class CollectionRepositoryPg implements CollectionRepositoryPort {
       map.set(record.productId, {
         isOwned: record.isOwned,
         isWanted: record.isWanted,
-        grade: record.grade,
-        paidPrice: record.paidPrice,
-        acquiredAt: record.acquiredAt,
       });
     }
     return map;

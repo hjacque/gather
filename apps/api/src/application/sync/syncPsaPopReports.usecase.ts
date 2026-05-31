@@ -12,17 +12,12 @@ export class SyncPsaPopReportsUsecase {
   async execute(): Promise<void> {
     console.log("[PSA Sync] Starting PSA pop report sync");
 
-    const products = await this.productRepository.getProducts({
-      franchise: "pokemon",
-      type: "single",
-    });
+    const products = await this.productRepository.getProducts({});
 
-    const promoProducts = products.filter(
-      (p) => p.rarity === "promo" && p.psaLink != null
-    );
+    const promoProducts = products.filter((p) => p.psaLink != null);
 
     console.log(
-      `[PSA Sync] Found ${promoProducts.length} promo products with PSA links`
+      `[PSA Sync] Found ${promoProducts.length} products with PSA links`
     );
 
     if (promoProducts.length === 0) {

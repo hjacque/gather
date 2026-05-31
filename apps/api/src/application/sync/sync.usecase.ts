@@ -1,21 +1,16 @@
 import { connect } from "puppeteer-real-browser";
-import { Franchise, ProductEntity, Set } from "../../entities/product.entity";
-import { Rarity } from "@gather/types";
+import { ProductEntity, Set } from "../../entities/product.entity";
 import { ProductRepositoryPort } from "../../repository/ports/product.repository.port";
 import { DEFAULT_USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PriceSourcePort } from "./sources/priceSource.port";
 import { getEurToUsdRate } from "./helper";
 import { syncProduct } from "./syncProduct";
-import { ProductType } from "@prisma/client";
 
 export type SyncUsecaseInputDto = {
   filter: {
     set?: Set;
-    franchise?: Franchise;
-    type?: ProductType | ProductType[];
     tags?: string | string[];
-    rarity?: Rarity;
   };
   mode: {
     headless: boolean;

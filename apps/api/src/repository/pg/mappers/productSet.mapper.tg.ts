@@ -7,7 +7,6 @@ export class ProductSetMapper {
     name,
     code,
     block,
-    franchise,
     releaseDate,
     createdAt,
     updatedAt
@@ -17,7 +16,6 @@ export class ProductSetMapper {
       name,
       code,
       block,
-      franchise,
       releaseDate,
       createdAt,
       updatedAt

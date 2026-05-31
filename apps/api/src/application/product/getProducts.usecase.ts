@@ -2,7 +2,6 @@ import { ProductRepositoryPort } from "../../repository/ports/product.repository
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import { CollectionRepositoryPort } from "../../repository/ports/collection.repository.port";
-import { Franchise, ProductType } from "entities/product.entity";
 import { Region } from "@gather/types";
 import type { GetProductsResponse } from "@gather/api-contract";
 
@@ -15,8 +14,6 @@ export class GetProductsUsecase {
   ) {}
 
   async execute(filter?: {
-    franchise?: Franchise;
-    type?: ProductType | ProductType[];
     tags?: string | string[];
     set?: string;
     region?: Region | Region[];
@@ -38,14 +35,6 @@ export class GetProductsUsecase {
 
     return products.map((product) => {
       const {
-        market,
-        buylist,
-        ratio,
-        perBooster,
-        cardmarketListingCount,
-        fullSet,
-        tcgp,
-        bricklinkAverage,
         cardmarketPsa9,
         cardmarketPsa10,
       } = prices.get(product.id)!;
@@ -57,14 +46,6 @@ export class GetProductsUsecase {
 
       return {
         ...product,
-        market,
-        buylist,
-        ratio,
-        perBooster,
-        cardmarketListingCount,
-        fullSet,
-        tcgp,
-        bricklinkAverage,
         cardmarketPsa9,
         cardmarketPsa10,
         cardmarketPsa9Yesterday: yp.cardmarketPsa9,
