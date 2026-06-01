@@ -80,6 +80,17 @@ export const http = async ({
     res.json(result);
   });
 
+  app.get("/sync/sales", async (req, res) => {
+    const { set, tags } = req.query;
+    const result = await syncSalesUsecase.executeBatch({
+      set: set as string | undefined,
+      tags: tags as string | string[] | undefined,
+    });
+
+    res.status(200);
+    res.json(result);
+  });
+
   app.get("/cards", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
 
