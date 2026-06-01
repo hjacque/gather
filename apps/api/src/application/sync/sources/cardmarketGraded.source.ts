@@ -64,6 +64,32 @@ export class CardMarketGradedSource implements PriceSourcePort {
         await new Promise((resolve) => setTimeout(resolve, 5500));
       }
 
+      // Click "Show more results" until all listings are loaded
+      let loadMoreAttempts = 0;
+      const MAX_LOAD_MORE = 20;
+      while (loadMoreAttempts < MAX_LOAD_MORE) {
+        const canLoadMore = await page.evaluate(() => {
+          const button = document.querySelector("#loadMoreButton");
+          if (!button) return false;
+          const notice = document.querySelector("#MaxResultsReachedNotice");
+          if (notice && !notice.classList.contains("d-none")) return false;
+          return true;
+        });
+        if (!canLoadMore) break;
+
+        const rowsBefore = await page.$$eval(".article-row", (rows) => rows.length);
+        await page.evaluate(() => {
+          (document.querySelector("#loadMoreButton") as HTMLButtonElement | null)?.click();
+        });
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        const rowsAfter = await page.$$eval(".article-row", (rows) => rows.length);
+        if (rowsAfter === rowsBefore) break;
+        loadMoreAttempts++;
+      }
+      if (loadMoreAttempts > 0) {
+        console.log(`[GradedSource] Clicked "Show more results" ${loadMoreAttempts} time(s)`);
+      }
+
       // Parse all rows and find the minimum price per PSA grade
       const gradeMinPrices = await page.$$eval(".article-row", (rows) => {
         const banned = ["contendent", "Probably", "Sealed", "maybe", "possible", "like"];
@@ -114,7 +140,7 @@ export class CardMarketGradedSource implements PriceSourcePort {
 
       return raw;
     } catch (error) {
-      console.log("[GradedSource] Failed to scrape graded prices for", product.name);
+      console.log("[GradedSource] Failed to scrape graded prices for", product.name, error);
       return {};
     }
   }
