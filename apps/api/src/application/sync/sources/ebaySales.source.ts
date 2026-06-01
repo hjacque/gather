@@ -1,6 +1,13 @@
 import type { Page } from "rebrowser-puppeteer-core";
 import { CardEntity } from "../../../entities/card.entity";
 import { RawSaleRow, SaleCandidate, extractSaleRow } from "./saleRowExtractor";
+import { ItemPageState } from "./reverificationClassifier";
+
+// Visible text that marks an item page as still showing a completed sale.
+const SOLD_SIGNAL = /item sold on|already sold|this listing sold/i;
+// Text eBay shows when a listing id no longer resolves to a real listing.
+const NOT_FOUND_SIGNAL =
+  /the listing you'?re looking for|no longer available|isn'?t available|page not found/i;
 
 // Cap on completed-listings pages walked per Card. A single card's trailing
 // 30-day sold window is rarely more than a few pages; this bounds a runaway
@@ -61,6 +68,35 @@ export class EbaySalesSource {
 
     console.log(`[EbaySales] ${card.name}: ${candidates.length} sale candidate(s)`);
     return candidates;
+  }
+
+  // Revisit a sold listing by item id and resolve its current page state for
+  // the Re-verification Classifier. A non-resolving listing (bad status / "no
+  // longer available") is "not-found"; a page still showing the sale is "sold";
+  // anything else reachable (a live or relisted listing) is "active".
+  async revisitItem(itemId: string, page: Page): Promise<ItemPageState> {
+    const url = `https://www.ebay.com/itm/${itemId}`;
+    let status: number | null = null;
+    try {
+      const response = await page.goto(url, {
+        waitUntil: "networkidle2",
+        timeout: 60000,
+      });
+      status = response?.status() ?? null;
+    } catch (error) {
+      console.log(`[EbaySales] revisit navigation failed for ${itemId}`, error);
+      return "not-found";
+    }
+
+    await this.sleep(2500);
+    await this.handleInterstitials(page);
+
+    const body = await this.readBodyText(page);
+    if ((status !== null && status >= 400) || NOT_FOUND_SIGNAL.test(body)) {
+      return "not-found";
+    }
+    if (SOLD_SIGNAL.test(body)) return "sold";
+    return "active";
   }
 
   private withPage(ebayLink: string, pageNum: number): string {
