@@ -26,8 +26,8 @@ import {
   IconChevronsLeft,
   IconChevronsRight,
   IconDotsVertical,
-  IconLoader2,
 } from '@tabler/icons-react';
+import { RefreshCw } from 'lucide-react';
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -118,16 +118,17 @@ export function RowActionsCell({ row, extraItems }: { row: Row<GetCardsResponseI
   const { handleSyncCard, loadingRow } = useCardSync();
   const isLoadingCardMarket = loadingRow?.id === row.original.id && loadingRow.action === 'cardmarket';
   const isLoadingPsa = loadingRow?.id === row.original.id && loadingRow.action === 'psa';
+  const isAnySyncing = isLoadingCardMarket || isLoadingPsa;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+          className={`data-[state=open]:bg-muted text-muted-foreground flex size-8${isAnySyncing ? ' transition-none' : ''}`}
           size="icon"
         >
-          <IconDotsVertical />
+          {isAnySyncing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <IconDotsVertical />}
           <span className="sr-only">Open menu</span>
         </Button>
       </DropdownMenuTrigger>
@@ -136,14 +137,14 @@ export function RowActionsCell({ row, extraItems }: { row: Row<GetCardsResponseI
           disabled={isLoadingCardMarket}
           onSelect={() => handleSyncCard(row.original.id, 'cardmarket')}
         >
-          {isLoadingCardMarket && <IconLoader2 className="animate-spin" />}
+          <RefreshCw className={`w-3.5 h-3.5${isLoadingCardMarket ? ' animate-spin' : ''}`} />
           Sync CardMarket
         </DropdownMenuItem>
         <DropdownMenuItem
           disabled={isLoadingPsa}
           onSelect={() => handleSyncCard(row.original.id, 'psa')}
         >
-          {isLoadingPsa && <IconLoader2 className="animate-spin" />}
+          <RefreshCw className={`w-3.5 h-3.5${isLoadingPsa ? ' animate-spin' : ''}`} />
           Sync PSA
         </DropdownMenuItem>
         {extraItems && <><DropdownMenuSeparator />{extraItems}</>}
