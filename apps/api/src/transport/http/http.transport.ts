@@ -17,6 +17,7 @@ export const http = async ({
   syncSingleCardCardMarketUsecase,
   syncSingleCardPsaUsecase,
   syncPsaPopReportsUsecase,
+  syncSalesUsecase,
   updateCardNoteUsecase,
   upsertCollectionEntryUsecase,
   deleteCollectionEntryUsecase,
@@ -69,6 +70,14 @@ export const http = async ({
 
     res.status(200);
     res.json({ success: true });
+  });
+
+  app.get("/sync/sales/card/:cardid", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    const result = await syncSalesUsecase.execute(req.params.cardid);
+
+    res.status(200);
+    res.json(result);
   });
 
   app.get("/cards", async (req, res) => {

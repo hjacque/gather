@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { ArrowUpDown, ExternalLink, RefreshCw, Search, ShoppingCart, Store, X } from 'lucide-react';
+import { ArrowUpDown, ExternalLink, Gavel, RefreshCw, Search, ShoppingCart, Store, X } from 'lucide-react';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 
@@ -715,25 +715,29 @@ export function PokemonExclusivePromosTable({
             </SheetHeader>
 
             {!isMobile && (
-              <div className="flex gap-6 items-stretch px-4 lg:px-6">
-                {displayedItem.imageUrl && (
-                  <CardImage
-                    src={displayedItem.imageUrl}
-                    alt={displayedItem.name}
-                    spotlightOpen={spotlightOpen}
-                    onSpotlightOpenChange={setSpotlightOpen}
-                    foilPattern={displayedItem.foilPattern}
-                  />
-                )}
-                <div className="flex-1 min-w-0 flex flex-col gap-6">
-                  <EbaySalesChart sales={displayedCard?.sales ?? []} />
+              <>
+                <div className="flex gap-6 items-stretch px-4 lg:px-6">
+                  {displayedItem.imageUrl && (
+                    <CardImage
+                      src={displayedItem.imageUrl}
+                      alt={displayedItem.name}
+                      spotlightOpen={spotlightOpen}
+                      onSpotlightOpenChange={setSpotlightOpen}
+                      foilPattern={displayedItem.foilPattern}
+                    />
+                  )}
+                  <div className="flex-1 min-w-0 flex flex-col gap-6">
+                    <EbaySalesChart sales={displayedCard?.sales ?? []} />
+                  </div>
+                </div>
+                <div className="w-full px-4 lg:px-6">
                   <PsaGradePriceChart
                     psaGradePrices={displayedCard?.psaGradePrices ?? []}
                     onSyncCardMarket={() => handlePanelSync('cardmarket')}
                     isSyncingCardMarket={panelSyncLoading === 'cardmarket'}
                   />
                 </div>
-              </div>
+              </>
             )}
 
             {displayedCard && (
@@ -802,6 +806,12 @@ export function PokemonExclusivePromosTable({
                       <a href={displayedItem.psaLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
                         <ExternalLink className="w-5 h-5 text-primary" />
                         <span className="text-sm font-medium">PSA</span>
+                      </a>
+                    )}
+                    {displayedItem.ebayLink && (
+                      <a href={displayedItem.ebayLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
+                        <Gavel className="w-5 h-5 text-primary" />
+                        <span className="text-sm font-medium">eBay Sold</span>
                       </a>
                     )}
                   </div>
