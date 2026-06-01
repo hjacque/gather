@@ -18,7 +18,7 @@ import {
   SheetTitle,
 } from './ui/sheet';
 import { getCard } from '@/app/actions/getCard';
-import { syncAllPromos, syncCardCardMarket, syncCardPsa } from '@/app/actions/syncCard';
+import { syncAllPromos, syncCardCardMarket, syncCardPsa, syncCardSales } from '@/app/actions/syncCard';
 import { CardNoteSection } from '@/components/card-note-section';
 import { CardImage } from '@/components/card-image';
 import { upsertCollectionEntry, deleteCollectionEntry } from '@/app/actions/collectionEntry';
@@ -613,7 +613,7 @@ export function PokemonExclusivePromosTable({
     }
   };
 
-  const [panelSyncLoading, setPanelSyncLoading] = React.useState<'cardmarket' | 'psa' | null>(null);
+  const [panelSyncLoading, setPanelSyncLoading] = React.useState<'cardmarket' | 'psa' | 'sales' | null>(null);
   const [loadingCollectionId, setLoadingCollectionId] = React.useState<string | null>(null);
 
   const toggleCollection = useCallback(async (item: GetCardsResponseItem, flag: 'isOwned' | 'isWanted') => {
@@ -644,11 +644,23 @@ export function PokemonExclusivePromosTable({
     }
   }, [loadingCollectionId]);
 
-  const handlePanelSync = async (action: 'cardmarket' | 'psa') => {
+  const handlePanelSync = async (action: 'cardmarket' | 'psa' | 'sales') => {
     if (!displayedItem || panelSyncLoading) return;
     const id = displayedItem.id;
     setPanelSyncLoading(action);
     try {
+      if (action === 'sales') {
+        // Sale Sync returns run counters, not a card; refetch the card so the
+        // freshly scraped sales show up in the panel graph.
+        await syncCardSales(id);
+        if (activeItemRef.current?.id === id) {
+          const data = await getCard(id);
+          if (activeItemRef.current?.id === id) {
+            setDisplayedCard(data);
+          }
+        }
+        return;
+      }
       const updatedItem = action === 'cardmarket'
         ? await syncCardCardMarket(id)
         : await syncCardPsa(id);
@@ -727,7 +739,11 @@ export function PokemonExclusivePromosTable({
                     />
                   )}
                   <div className="flex-1 min-w-0 flex flex-col gap-6">
-                    <EbaySalesChart sales={displayedCard?.sales ?? []} />
+                    <EbaySalesChart
+                    sales={displayedCard?.sales ?? []}
+                    onSyncEbay={displayedItem.ebayLink ? () => handlePanelSync('sales') : undefined}
+                    isSyncingEbay={panelSyncLoading === 'sales'}
+                  />
                   </div>
                 </div>
                 <div className="w-full px-4 lg:px-6">
