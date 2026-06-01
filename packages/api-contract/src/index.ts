@@ -3,6 +3,7 @@ import type {
   CardSetEntity,
   Region,
   PriceType,
+  SaleStatus,
 } from '@gather/types';
 
 export type { CardSetEntity };
@@ -32,6 +33,17 @@ export type PriceRecord = {
 export type DailyPrices = {
   cardmarketPsa9: number | null;
   cardmarketPsa10: number | null;
+};
+
+// A confirmed-or-pending Sale with its price converted to EUR at read time.
+// Cancelled Sales and Sales in unsupported currencies are excluded by the API.
+export type SaleRecord = {
+  id: string;
+  psaGrade: number;
+  priceEur: number;
+  soldAt: Date;
+  status: SaleStatus;
+  isBestOffer: boolean;
 };
 
 // ─── PSA Pop Report ───────────────────────────────────────────────────────────
@@ -75,6 +87,7 @@ export type GetCardsResponse = GetCardsResponseItem[];
 export type GetCardResponse = CardEntity & {
   cardSet: CardSetEntity;
   psaGradePrices: PriceRecord[];
+  sales: SaleRecord[];
   psaPopReport: PsaPopReportSummary | null;
   collectionEntry: CollectionEntry | null;
 };

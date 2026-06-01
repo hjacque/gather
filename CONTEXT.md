@@ -151,6 +151,22 @@ _Avoid_: Card number, set number, collector number
 A free-text annotation attached to a single Product by the user. At most one Note per Product (stored as a nullable field on Product). Plain text, max 1000 characters. Displayed read-only at the bottom of the Product side panel; editable via a pen icon.
 _Avoid_: Comment, annotation, description
 
+**Sale**:
+A single recorded transaction for a Card at a specific PSA Grade on a secondary marketplace. Carries a `platform` field (enum: `ebay`; others may be added later), the PSA grade (1–10), the price in its **original currency** plus a `currency` code, a `status` (`pending` → `confirmed` | `cancelled`), and an `isBestOffer` flag. Prices are stored in original currency (never EUR-normalized at write time, because Sales are immutable history) and converted to EUR at read time using today's rate; only USD and EUR are supported initially, and Sales in other currencies are stored but excluded from EUR views until conversion exists. When `isBestOffer` is true the stored price is the listed price, not the actual accepted offer; the real transaction price is unknown until a separate enrichment pass resolves it. Also stores the raw listing title (for debugging and re-classification), the `soldAt` date (drives the Base Range window and re-verification checkpoints), and `createdAt` (when first scraped). Identified globally by `(platform, itemId)` — the eBay item ID is globally unique, so a sale attaches to exactly one Card — and the item URL reconstructed from the item ID is revisited during re-verification.
+_Avoid_: eBay sale, sold listing, transaction
+
+**Sold Comp**:
+Informal shorthand for a confirmed Sale used as an input to Base Range computation. A Sale is a Sold Comp once its status is `confirmed` and (for non-Best-Offer sales) its price is the actual transaction price.
+_Avoid_: comp, sold price, sold listing
+
+**Sale Sync**:
+A scheduled job (separate from price Syncs and the Fair Value Sync) that scrapes a Card's completed-listing search results from its `ebayLink` and upserts the resulting Sales by platform item ID. Runs once daily. Each run re-fetches the trailing 30-day window in full (idempotent upsert by item ID), then folds in a re-verification pass over `pending` Sales that have reached their 7-day or 30-day checkpoint. Skips Cards with no `ebayLink`, mirroring how price Syncs skip Cards with no `cardMarketLink`.
+_Avoid_: eBay sync, sold listings sync, comp sync
+
+**Sale Status**:
+The lifecycle state of a Sale: `pending`, `confirmed`, or `cancelled`. Re-verification navigates (via Puppeteer) to the Sale's item URL at two checkpoints — 7 days and 30 days after the Sale was first scraped — and reads the rendered page. A 404 (listing removed) or a live active listing (item relisted) both mean `cancelled`. An ended/sold item page means the sale still looks valid. Crucially, a still-valid sale is **not** confirmed at the 7-day checkpoint — it stays `pending`; the 7-day check exists only to catch early cancellations. A Sale becomes `confirmed` only if it still looks valid at the 30-day checkpoint, because cancellations can occur throughout the 30-day window. Once a Sale reaches a terminal state (`confirmed` or `cancelled`) it is no longer re-verified. A separate `verificationStage` enum (`unverified` → `checked_7d` → `complete`) tracks which checkpoints have run so the daily job re-renders each Sale at most twice, never daily.
+_Avoid_: sale state, verification status
+
 ## Relationships
 
 - A **Product** belongs to exactly one **Product Set**
@@ -160,6 +176,8 @@ _Avoid_: Comment, annotation, description
 - **Performance** is computed from a Product's **Market Price** or **Buylist Price** across two dates
 - A **Sync** produces **Raw Prices** for each applicable **Price Source**, then derives **Derived Prices** and **Performance**
 - A **Product** has at most one **PSA Pop Report** (latest snapshot); a PSA Sync updates it via `/sync/psa`
+- A **Card** has zero or more **Sales**, one per platform item ID; each Sale carries a PSA Grade and a Sale Status
+- A **Sale** with status `confirmed` and `isBestOffer = false` is a **Sold Comp** usable in Base Range computation
 
 ## Example dialogue
 

@@ -2,6 +2,7 @@ import { CardRepositoryPort } from "../repository/ports/card.repository.port";
 import { PriceRepositoryPort } from "../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../repository/ports/psaPopReport.repository.port";
 import { CollectionRepositoryPort } from "../repository/ports/collection.repository.port";
+import { SaleRepositoryPort } from "../repository/ports/sale.repository.port";
 import { SyncUsecase } from "./sync/sync.usecase";
 import { GetCardsUsecase } from "./card/getCards.usecase";
 import { GetCardUsecase } from "./card/getCard.usecase";
@@ -30,11 +31,13 @@ export const initApplication = ({
   priceRepository,
   psaPopReportRepository,
   collectionRepository,
+  saleRepository,
 }: {
   cardRepository: CardRepositoryPort;
   priceRepository: PriceRepositoryPort;
   psaPopReportRepository: PsaPopReportRepositoryPort;
   collectionRepository: CollectionRepositoryPort;
+  saleRepository: SaleRepositoryPort;
 }): Usecases => {
   const priceSources = [
     new CardMarketGradedSource(),
@@ -55,7 +58,8 @@ export const initApplication = ({
     cardRepository,
     priceRepository,
     psaPopReportRepository,
-    collectionRepository
+    collectionRepository,
+    saleRepository
   );
   const cardmarketPriceSources = [
     new CardMarketGradedSource(),

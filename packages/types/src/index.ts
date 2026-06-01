@@ -34,6 +34,15 @@ export type Region = typeof REGIONS[number];
 export const FOIL_PATTERNS = ['rareHolo', 'reverse', 'regularHolo'] as const;
 export type FoilPattern = typeof FOIL_PATTERNS[number];
 
+export const PLATFORMS = ['ebay'] as const;
+export type Platform = typeof PLATFORMS[number];
+
+export const SALE_STATUSES = ['pending', 'confirmed', 'cancelled'] as const;
+export type SaleStatus = typeof SALE_STATUSES[number];
+
+export const VERIFICATION_STAGES = ['unverified', 'checked_7d', 'complete'] as const;
+export type VerificationStage = typeof VERIFICATION_STAGES[number];
+
 export type CollectionEntryEntity = {
   id: string;
   cardId: string;
@@ -62,10 +71,28 @@ export type CardEntity = {
   cardSetId: string;
   cardMarketLink: string | null;
   psaLink: string | null;
+  ebayLink: string | null;
   number: string | null;
   note: string | null;
   tags: string[];
   regions: Region[];
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type SaleEntity = {
+  id: string;
+  cardId: string;
+  platform: Platform;
+  itemId: string;
+  psaGrade: number;
+  price: number;
+  currency: string;
+  title: string;
+  isBestOffer: boolean;
+  status: SaleStatus;
+  verificationStage: VerificationStage;
+  soldAt: Date;
   createdAt: Date;
   updatedAt: Date;
 };
