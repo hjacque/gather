@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { ArrowUpDown, ExternalLink, RefreshCw, Search, ShoppingCart, Store, X } from 'lucide-react';
+import { ArrowUpDown, ExternalLink, Gavel, RefreshCw, Search, ShoppingCart, Store, X } from 'lucide-react';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 
@@ -18,7 +18,8 @@ import {
   SheetTitle,
 } from './ui/sheet';
 import { getCard } from '@/app/actions/getCard';
-import { syncAllPromos, syncCardCardMarket, syncCardPsa } from '@/app/actions/syncCard';
+import { syncAllPromos, syncCardCardMarket, syncCardPsa, syncCardSales } from '@/app/actions/syncCard';
+import { invalidateSale } from '@/app/actions/invalidateSale';
 import { CardNoteSection } from '@/components/card-note-section';
 import { CardImage } from '@/components/card-image';
 import { upsertCollectionEntry, deleteCollectionEntry } from '@/app/actions/collectionEntry';
@@ -34,6 +35,7 @@ import {
   CardTitle,
 } from './ui/card';
 import { PsaGradePriceChart } from '@/components/psa-grade-price-chart';
+import { EbaySalesChart } from '@/components/ebay-sales-chart';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
@@ -612,7 +614,7 @@ export function PokemonExclusivePromosTable({
     }
   };
 
-  const [panelSyncLoading, setPanelSyncLoading] = React.useState<'cardmarket' | 'psa' | null>(null);
+  const [panelSyncLoading, setPanelSyncLoading] = React.useState<'cardmarket' | 'psa' | 'sales' | null>(null);
   const [loadingCollectionId, setLoadingCollectionId] = React.useState<string | null>(null);
 
   const toggleCollection = useCallback(async (item: GetCardsResponseItem, flag: 'isOwned' | 'isWanted') => {
@@ -643,11 +645,23 @@ export function PokemonExclusivePromosTable({
     }
   }, [loadingCollectionId]);
 
-  const handlePanelSync = async (action: 'cardmarket' | 'psa') => {
+  const handlePanelSync = async (action: 'cardmarket' | 'psa' | 'sales') => {
     if (!displayedItem || panelSyncLoading) return;
     const id = displayedItem.id;
     setPanelSyncLoading(action);
     try {
+      if (action === 'sales') {
+        // Sale Sync returns run counters, not a card; refetch the card so the
+        // freshly scraped sales show up in the panel graph.
+        await syncCardSales(id);
+        if (activeItemRef.current?.id === id) {
+          const data = await getCard(id);
+          if (activeItemRef.current?.id === id) {
+            setDisplayedCard(data);
+          }
+        }
+        return;
+      }
       const updatedItem = action === 'cardmarket'
         ? await syncCardCardMarket(id)
         : await syncCardPsa(id);
@@ -663,6 +677,19 @@ export function PokemonExclusivePromosTable({
       console.error('Panel sync failed', err);
     } finally {
       setPanelSyncLoading(null);
+    }
+  };
+
+  const handleRemoveSale = async (saleId: string) => {
+    const id = displayedItem?.id;
+    if (!id) return;
+    await invalidateSale(saleId);
+    // Refetch so the invalidated sale drops off the graph.
+    if (activeItemRef.current?.id === id) {
+      const data = await getCard(id);
+      if (activeItemRef.current?.id === id) {
+        setDisplayedCard(data);
+      }
     }
   };
 
@@ -714,24 +741,35 @@ export function PokemonExclusivePromosTable({
             </SheetHeader>
 
             {!isMobile && (
-              <div className="flex gap-6 items-stretch px-4 lg:px-6">
-                {displayedItem.imageUrl && (
-                  <CardImage
-                    src={displayedItem.imageUrl}
-                    alt={displayedItem.name}
-                    spotlightOpen={spotlightOpen}
-                    onSpotlightOpenChange={setSpotlightOpen}
-                    foilPattern={displayedItem.foilPattern}
+              <>
+                <div className="flex gap-6 items-stretch px-4 lg:px-6">
+                  {displayedItem.imageUrl && (
+                    <CardImage
+                      src={displayedItem.imageUrl}
+                      alt={displayedItem.name}
+                      spotlightOpen={spotlightOpen}
+                      onSpotlightOpenChange={setSpotlightOpen}
+                      foilPattern={displayedItem.foilPattern}
+                    />
+                  )}
+                  <div className="flex-1 min-w-0 flex flex-col gap-6">
+                    <EbaySalesChart
+                    sales={displayedCard?.sales ?? []}
+                    cardId={displayedItem.id}
+                    onSyncEbay={displayedItem.ebayLink ? () => handlePanelSync('sales') : undefined}
+                    isSyncingEbay={panelSyncLoading === 'sales'}
+                    onRemoveSale={handleRemoveSale}
                   />
-                )}
-                <div className="flex-1 min-w-0">
+                  </div>
+                </div>
+                <div className="w-full px-4 lg:px-6">
                   <PsaGradePriceChart
                     psaGradePrices={displayedCard?.psaGradePrices ?? []}
                     onSyncCardMarket={() => handlePanelSync('cardmarket')}
                     isSyncingCardMarket={panelSyncLoading === 'cardmarket'}
                   />
                 </div>
-              </div>
+              </>
             )}
 
             {displayedCard && (
@@ -800,6 +838,12 @@ export function PokemonExclusivePromosTable({
                       <a href={displayedItem.psaLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
                         <ExternalLink className="w-5 h-5 text-primary" />
                         <span className="text-sm font-medium">PSA</span>
+                      </a>
+                    )}
+                    {displayedItem.ebayLink && (
+                      <a href={displayedItem.ebayLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
+                        <Gavel className="w-5 h-5 text-primary" />
+                        <span className="text-sm font-medium">eBay Sold</span>
                       </a>
                     )}
                   </div>
@@ -1112,7 +1156,7 @@ export function PokemonExclusivePromosTable({
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8 shrink-0"
+            className={`h-8 w-8 shrink-0${isSyncing ? ' transition-none' : ''}`}
             onClick={handleSyncAll}
             disabled={isSyncing}
           >

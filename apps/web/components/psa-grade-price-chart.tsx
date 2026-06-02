@@ -26,19 +26,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
-
-const GRADE_COLORS: Record<number, string> = {
-  1:  'hsl(220, 40%, 50%)',
-  2:  'hsl(200, 45%, 48%)',
-  3:  'hsl(175, 50%, 43%)',
-  4:  'hsl(155, 50%, 40%)',
-  5:  'hsl(135, 50%, 38%)',
-  6:  'hsl(100, 52%, 38%)',
-  7:  'hsl(75,  55%, 40%)',
-  8:  'hsl(55,  65%, 42%)',
-  9:  'hsl(42,  78%, 45%)',
-  10: 'hsl(45,  90%, 50%)',
-};
+import { GRADE_COLORS } from '@/lib/grade-colors';
 
 type Props = {
   psaGradePrices: PriceRecord[];

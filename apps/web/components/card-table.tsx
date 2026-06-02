@@ -71,10 +71,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { syncCardCardMarket, syncCardPsa } from '@/app/actions/syncCard';
+import { syncCardCardMarket, syncCardPsa, syncCardSales } from '@/app/actions/syncCard';
 import type { GetCardsResponseItem } from '@gather/api-contract';
 
-type SyncAction = 'cardmarket' | 'psa';
+type SyncAction = 'cardmarket' | 'psa' | 'sales';
 
 const CardSyncContext = React.createContext<{
   handleSyncCard: (id: string, action: SyncAction) => Promise<void>;
@@ -118,7 +118,8 @@ export function RowActionsCell({ row, extraItems }: { row: Row<GetCardsResponseI
   const { handleSyncCard, loadingRow } = useCardSync();
   const isLoadingCardMarket = loadingRow?.id === row.original.id && loadingRow.action === 'cardmarket';
   const isLoadingPsa = loadingRow?.id === row.original.id && loadingRow.action === 'psa';
-  const isAnySyncing = isLoadingCardMarket || isLoadingPsa;
+  const isLoadingSales = loadingRow?.id === row.original.id && loadingRow.action === 'sales';
+  const isAnySyncing = isLoadingCardMarket || isLoadingPsa || isLoadingSales;
 
   return (
     <DropdownMenu>
@@ -147,6 +148,15 @@ export function RowActionsCell({ row, extraItems }: { row: Row<GetCardsResponseI
           <RefreshCw className={`w-3.5 h-3.5${isLoadingPsa ? ' animate-spin' : ''}`} />
           Sync PSA
         </DropdownMenuItem>
+        {row.original.ebayLink && (
+          <DropdownMenuItem
+            disabled={isLoadingSales}
+            onSelect={() => handleSyncCard(row.original.id, 'sales')}
+          >
+            <RefreshCw className={`w-3.5 h-3.5${isLoadingSales ? ' animate-spin' : ''}`} />
+            Sync eBay
+          </DropdownMenuItem>
+        )}
         {extraItems && <><DropdownMenuSeparator />{extraItems}</>}
       </DropdownMenuContent>
     </DropdownMenu>
@@ -198,6 +208,12 @@ export function CardTable({
   const handleSyncCard = async (id: string, action: SyncAction) => {
     try {
       setLoadingRow({ id, action });
+      if (action === 'sales') {
+        // Sale Sync returns run counters, not a card — nothing to patch into
+        // the row (sales render in the side panel, not the table).
+        await syncCardSales(id);
+        return;
+      }
       const updatedCard = action === 'cardmarket'
         ? await syncCardCardMarket(id)
         : await syncCardPsa(id);

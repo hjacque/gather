@@ -2,6 +2,7 @@ import { CardRepositoryPort } from "../repository/ports/card.repository.port";
 import { PriceRepositoryPort } from "../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../repository/ports/psaPopReport.repository.port";
 import { CollectionRepositoryPort } from "../repository/ports/collection.repository.port";
+import { SaleRepositoryPort } from "../repository/ports/sale.repository.port";
 import { SyncUsecase } from "./sync/sync.usecase";
 import { GetCardsUsecase } from "./card/getCards.usecase";
 import { GetCardUsecase } from "./card/getCard.usecase";
@@ -11,7 +12,10 @@ import { DeleteCollectionEntryUsecase } from "./card/deleteCollectionEntry.useca
 import { SyncSingleCardCardMarketUsecase } from "./sync/syncSingleCardCardMarket.usecase";
 import { SyncSingleCardPsaUsecase } from "./sync/syncSingleCardPsa.usecase";
 import { SyncPsaPopReportsUsecase } from "./sync/syncPsaPopReports.usecase";
+import { SyncSalesUsecase } from "./sync/syncSales.usecase";
+import { InvalidateSaleUsecase } from "./sale/invalidateSale.usecase";
 import { CardMarketGradedSource } from "./sync/sources/cardmarketGraded.source";
+import { EbaySalesSource } from "./sync/sources/ebaySales.source";
 
 export type Usecases = {
   syncUsecase: SyncUsecase;
@@ -20,6 +24,8 @@ export type Usecases = {
   syncSingleCardCardMarketUsecase: SyncSingleCardCardMarketUsecase;
   syncSingleCardPsaUsecase: SyncSingleCardPsaUsecase;
   syncPsaPopReportsUsecase: SyncPsaPopReportsUsecase;
+  syncSalesUsecase: SyncSalesUsecase;
+  invalidateSaleUsecase: InvalidateSaleUsecase;
   updateCardNoteUsecase: UpdateCardNoteUsecase;
   upsertCollectionEntryUsecase: UpsertCollectionEntryUsecase;
   deleteCollectionEntryUsecase: DeleteCollectionEntryUsecase;
@@ -30,20 +36,28 @@ export const initApplication = ({
   priceRepository,
   psaPopReportRepository,
   collectionRepository,
+  saleRepository,
 }: {
   cardRepository: CardRepositoryPort;
   priceRepository: PriceRepositoryPort;
   psaPopReportRepository: PsaPopReportRepositoryPort;
   collectionRepository: CollectionRepositoryPort;
+  saleRepository: SaleRepositoryPort;
 }): Usecases => {
   const priceSources = [
     new CardMarketGradedSource(),
   ];
 
+  const syncSalesUsecase = new SyncSalesUsecase(
+    cardRepository,
+    saleRepository,
+    new EbaySalesSource()
+  );
   const syncUsecase = new SyncUsecase(
     cardRepository,
     priceRepository,
-    priceSources
+    priceSources,
+    syncSalesUsecase
   );
   const getCardsUsecase = new GetCardsUsecase(
     cardRepository,
@@ -55,7 +69,8 @@ export const initApplication = ({
     cardRepository,
     priceRepository,
     psaPopReportRepository,
-    collectionRepository
+    collectionRepository,
+    saleRepository
   );
   const cardmarketPriceSources = [
     new CardMarketGradedSource(),
@@ -79,6 +94,7 @@ export const initApplication = ({
     cardRepository,
     psaPopReportRepository
   );
+  const invalidateSaleUsecase = new InvalidateSaleUsecase(saleRepository);
   const updateCardNoteUsecase = new UpdateCardNoteUsecase(cardRepository);
   const upsertCollectionEntryUsecase = new UpsertCollectionEntryUsecase(collectionRepository);
   const deleteCollectionEntryUsecase = new DeleteCollectionEntryUsecase(collectionRepository);
@@ -90,6 +106,8 @@ export const initApplication = ({
     syncSingleCardCardMarketUsecase,
     syncSingleCardPsaUsecase,
     syncPsaPopReportsUsecase,
+    syncSalesUsecase,
+    invalidateSaleUsecase,
     updateCardNoteUsecase,
     upsertCollectionEntryUsecase,
     deleteCollectionEntryUsecase,

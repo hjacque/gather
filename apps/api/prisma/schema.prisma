@@ -44,6 +44,23 @@ enum PriceType {
   cardmarketPsa10
 }
 
+enum Platform {
+  ebay
+}
+
+enum SaleStatus {
+  pending
+  confirmed
+  cancelled
+  invalid
+}
+
+enum VerificationStage {
+  unverified
+  checked_7d
+  complete
+}
+
 model Card {
   id                        String        @id @default(uuid())
   name                      String
@@ -59,11 +76,13 @@ model Card {
 
   cardMarketLink            String?
   psaLink                   String?
+  ebayLink                  String?
   number                    String?
   regions                   Region[]
 
   prices                    Price[]       @relation("CardPrices")
   psaPopReport              PsaPopReport?
+  sales                     Sale[]
 
   collectionEntry           CollectionEntry?
 
@@ -110,6 +129,27 @@ model Price {
   updatedAt   DateTime  @updatedAt
 
   @@unique([cardId, date, type])
+}
+
+model Sale {
+  id                String            @id @default(uuid())
+  card              Card              @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  cardId            String
+  platform          Platform
+  itemId            String
+  psaGrade          Int
+  price             Float
+  currency          String
+  title             String
+  isBestOffer       Boolean           @default(false)
+  status            SaleStatus        @default(pending)
+  verificationStage VerificationStage @default(unverified)
+  soldAt            DateTime
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@unique([platform, itemId])
 }
 
 model PsaPopReport {

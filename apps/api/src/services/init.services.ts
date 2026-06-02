@@ -13,7 +13,10 @@ export const initServices = ({
   syncUsecase: SyncUsecase;
   syncPsaPopReportsUsecase: SyncPsaPopReportsUsecase;
 }): Services => {
-  const syncSchedulerService = new SyncSchedulerService(syncUsecase, syncPsaPopReportsUsecase);
+  const syncSchedulerService = new SyncSchedulerService(
+    syncUsecase,
+    syncPsaPopReportsUsecase
+  );
 
   return {
     syncSchedulerService,

@@ -6,6 +6,7 @@ import { PriceRepositoryPort } from "../../repository/ports/price.repository.por
 import { PriceSourcePort } from "./sources/priceSource.port";
 import { getEurToUsdRate } from "./helper";
 import { syncCard } from "./syncCard";
+import { SyncSalesUsecase, SaleSyncCounters } from "./syncSales.usecase";
 
 export type SyncUsecaseInputDto = {
   filter: {
@@ -21,13 +22,23 @@ export class SyncUsecase {
   constructor(
     private readonly cardRepository: CardRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
-    private readonly priceSources: PriceSourcePort[]
+    private readonly priceSources: PriceSourcePort[],
+    private readonly syncSalesUsecase: SyncSalesUsecase
   ) {}
 
   async execute({ filter, mode }: SyncUsecaseInputDto) {
     console.log("start");
 
     const usdToEur = await getEurToUsdRate();
+    const saleCounters: SaleSyncCounters = {
+      scraped: 0,
+      withinWindow: 0,
+      upserted: 0,
+      skipped: 0,
+      reverified: 0,
+      confirmed: 0,
+      cancelled: 0,
+    };
 
     let paginationPage = 1;
     const today = new Date();
@@ -70,6 +81,10 @@ export class SyncUsecase {
           this.priceSources,
           this.priceRepository
         );
+        // Fold the eBay Sale Sync into the same browser session — scrape +
+        // re-verify this Card's Sales right after its prices. No-ops for Cards
+        // without an ebayLink.
+        await this.syncSalesUsecase.syncCardOnPage(card, page, saleCounters);
         await new Promise((resolve) =>
           setTimeout(resolve, 4000 + Math.random() * 4000)
         );
@@ -79,6 +94,6 @@ export class SyncUsecase {
     await page.close();
     await browser.close();
 
-    console.log("end");
+    console.log("end", { sales: saleCounters });
   }
 }

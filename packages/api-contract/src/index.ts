@@ -3,6 +3,7 @@ import type {
   CardSetEntity,
   Region,
   PriceType,
+  SaleStatus,
 } from '@gather/types';
 
 export type { CardSetEntity };
@@ -32,6 +33,19 @@ export type PriceRecord = {
 export type DailyPrices = {
   cardmarketPsa9: number | null;
   cardmarketPsa10: number | null;
+};
+
+// A confirmed-or-pending Sale with its price converted to EUR at read time.
+// Cancelled, invalid, and unsupported-currency Sales are excluded by the API.
+export type SaleRecord = {
+  id: string;
+  psaGrade: number;
+  priceEur: number;
+  soldAt: Date;
+  status: SaleStatus;
+  isBestOffer: boolean;
+  // Link to the original marketplace listing (eBay item page).
+  url: string;
 };
 
 // ─── PSA Pop Report ───────────────────────────────────────────────────────────
@@ -75,6 +89,7 @@ export type GetCardsResponse = GetCardsResponseItem[];
 export type GetCardResponse = CardEntity & {
   cardSet: CardSetEntity;
   psaGradePrices: PriceRecord[];
+  sales: SaleRecord[];
   psaPopReport: PsaPopReportSummary | null;
   collectionEntry: CollectionEntry | null;
 };
@@ -83,6 +98,14 @@ export type GetCardResponse = CardEntity & {
 
 export type UpdateCardNoteRequest = {
   note: string | null;
+};
+
+// ─── PATCH /sales/:id ────────────────────────────────────────────────────────
+
+// User-driven Sale moderation. Currently only used to flag a Sale as invalid
+// (e.g. a mismatched listing) so it drops out of the read layer.
+export type UpdateSaleStatusRequest = {
+  status: 'invalid';
 };
 
 // ─── GET /sync/card/:id/cardmarket | GET /sync/card/:id/psa ─────────────────

@@ -46,6 +46,36 @@ const GRADE_COLUMNS: [number, keyof PsaGrades][] = [
   [16, "total"],
 ];
 
+// Read the count out of a single grade `<td>` cell: its first `<div>`'s text,
+// with PSA's "–"/"-"/empty placeholders and thousands separators handled.
+function parseGradeCell(cell: string | undefined): number | null {
+  if (!cell) return null;
+  const text = cell.match(/<div[^>]*>([^<]*)</i)?.[1]?.trim() ?? "";
+  if (text === "" || text === "–" || text === "-") return null;
+  const num = parseInt(text.replace(/,/g, ""), 10);
+  return Number.isNaN(num) ? null : num;
+}
+
+// Pure counterpart to the in-browser extraction in `scrapePsaPopReport`: given
+// the pop-report table HTML, read the grade counts from the first data row.
+// Shares `GRADE_COLUMNS` with the scraper so the column mapping lives in one
+// place. Returns all-null grades when the table / row is absent or malformed.
+export function parsePsaPopReportHtml(html: string): PsaGrades {
+  const tbody = html.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/i)?.[1];
+  if (!tbody) return { ...NULL_GRADES };
+
+  const firstRow = tbody.match(/<tr[\s\S]*?<\/tr>/i)?.[0];
+  if (!firstRow) return { ...NULL_GRADES };
+
+  const cells = firstRow.match(/<td[\s\S]*?<\/td>/gi) ?? [];
+
+  const grades: PsaGrades = { ...NULL_GRADES };
+  for (const [colIdx, key] of GRADE_COLUMNS) {
+    grades[key] = parseGradeCell(cells[colIdx]);
+  }
+  return grades;
+}
+
 export async function scrapePsaPopReport(
   psaLink: string,
   productName: string,

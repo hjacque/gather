@@ -2,23 +2,49 @@ import { CardRepositoryPort } from "../../repository/ports/card.repository.port"
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import { CollectionRepositoryPort } from "../../repository/ports/collection.repository.port";
-import type { GetCardResponse } from "@gather/api-contract";
+import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
+import { getEurToUsdRate } from "../sync/helper";
+import { convertToEur } from "../sale/eurConverter";
+import type { GetCardResponse, SaleRecord } from "@gather/api-contract";
 
 export class GetCardUsecase {
   constructor(
     private readonly cardRepository: CardRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
     private readonly psaPopReportRepository: PsaPopReportRepositoryPort,
-    private readonly collectionRepository: CollectionRepositoryPort
+    private readonly collectionRepository: CollectionRepositoryPort,
+    private readonly saleRepository: SaleRepositoryPort
   ) {}
 
   async execute(cardId: string): Promise<GetCardResponse> {
     const card = await this.cardRepository.getCard(cardId);
-    const [cardPrices, psaReport, collectionEntry] = await Promise.all([
-      this.priceRepository.getCardPrices(cardId),
-      this.psaPopReportRepository.findByCardId(cardId),
-      this.collectionRepository.findByCardId(cardId),
-    ]);
+    const [cardPrices, psaReport, collectionEntry, sales, usdToEur] =
+      await Promise.all([
+        this.priceRepository.getCardPrices(cardId),
+        this.psaPopReportRepository.findByCardId(cardId),
+        this.collectionRepository.findByCardId(cardId),
+        this.saleRepository.getCardSales(cardId),
+        getEurToUsdRate(),
+      ]);
+
+    // Convert each Sale to EUR at read time, dropping cancelled/invalid Sales
+    // and any whose currency we cannot yet convert.
+    const saleRecords: SaleRecord[] = sales.flatMap((sale) => {
+      if (sale.status === "cancelled" || sale.status === "invalid") return [];
+      const priceEur = convertToEur(sale.price, sale.currency, usdToEur);
+      if (priceEur === null) return [];
+      return [
+        {
+          id: sale.id,
+          psaGrade: sale.psaGrade,
+          priceEur,
+          soldAt: sale.soldAt,
+          status: sale.status,
+          isBestOffer: sale.isBestOffer,
+          url: `https://www.ebay.com/itm/${sale.itemId}`,
+        },
+      ];
+    });
 
     const psaPopReport = psaReport
       ? {
@@ -40,6 +66,7 @@ export class GetCardUsecase {
     return {
       ...card,
       ...cardPrices,
+      sales: saleRecords,
       psaPopReport,
       collectionEntry: collectionEntry ?? null,
     };
