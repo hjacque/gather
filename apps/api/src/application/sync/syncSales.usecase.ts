@@ -108,6 +108,19 @@ export class SyncSalesUsecase {
     return result;
   }
 
+  // Scrape + re-verify one Card's eBay Sales on a page the caller already owns
+  // (e.g. the full price Sync, which holds its own browser session). No-ops for
+  // Cards without an ebayLink. Counters accumulate into `into` when provided.
+  async syncCardOnPage(
+    card: CardEntity,
+    page: Page,
+    into: SaleSyncCounters = emptyCounters()
+  ): Promise<SaleSyncCounters> {
+    if (!this.ebaySalesSource.appliesTo(card)) return into;
+    await this.processCard(card, page, into);
+    return into;
+  }
+
   // Scrape pass + folded-in re-verification pass for one Card on a shared page.
   private async processCard(
     card: CardEntity,

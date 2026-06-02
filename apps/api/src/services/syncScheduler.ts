@@ -1,20 +1,17 @@
 import { SyncUsecase } from "application/sync/sync.usecase";
 import { SyncPsaPopReportsUsecase } from "application/sync/syncPsaPopReports.usecase";
-import { SyncSalesUsecase } from "application/sync/syncSales.usecase";
 import { Set } from "../entities/card.entity";
 import cron from "node-cron";
 
 export class SyncSchedulerService {
   constructor(
     private readonly syncUsecase: SyncUsecase,
-    private readonly syncPsaPopReportsUsecase: SyncPsaPopReportsUsecase,
-    private readonly syncSalesUsecase: SyncSalesUsecase
+    private readonly syncPsaPopReportsUsecase: SyncPsaPopReportsUsecase
   ) {}
 
   async execute() {
     await this.scheduleSingles();
     await this.schedulePsaPopReports();
-    await this.scheduleSales();
   }
 
   async sync(
@@ -65,25 +62,6 @@ export class SyncSchedulerService {
       }
     );
     console.log("PSA pop report scheduler started (runs daily at 03:00 UTC)");
-  }
-
-  async scheduleSales() {
-    cron.schedule(
-      "0 4 * * *",
-      async () => {
-        try {
-          console.log("[Sale Sync] Starting scheduled Sale Sync...");
-          await this.syncSalesUsecase.executeBatch();
-          console.log("[Sale Sync] Scheduled Sale Sync complete");
-        } catch (error) {
-          console.error("[Sale Sync] Error in scheduled Sale Sync:", error);
-        }
-      },
-      {
-        timezone: "UTC",
-      }
-    );
-    console.log("Sale Sync scheduler started (runs daily at 04:00 UTC)");
   }
 
 }

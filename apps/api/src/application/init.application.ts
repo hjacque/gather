@@ -48,10 +48,16 @@ export const initApplication = ({
     new CardMarketGradedSource(),
   ];
 
+  const syncSalesUsecase = new SyncSalesUsecase(
+    cardRepository,
+    saleRepository,
+    new EbaySalesSource()
+  );
   const syncUsecase = new SyncUsecase(
     cardRepository,
     priceRepository,
-    priceSources
+    priceSources,
+    syncSalesUsecase
   );
   const getCardsUsecase = new GetCardsUsecase(
     cardRepository,
@@ -87,11 +93,6 @@ export const initApplication = ({
   const syncPsaPopReportsUsecase = new SyncPsaPopReportsUsecase(
     cardRepository,
     psaPopReportRepository
-  );
-  const syncSalesUsecase = new SyncSalesUsecase(
-    cardRepository,
-    saleRepository,
-    new EbaySalesSource()
   );
   const invalidateSaleUsecase = new InvalidateSaleUsecase(saleRepository);
   const updateCardNoteUsecase = new UpdateCardNoteUsecase(cardRepository);
