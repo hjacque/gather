@@ -191,7 +191,7 @@ export function EbaySalesChart({ sales, onSyncEbay, isSyncingEbay, onRemoveSale 
           </div>
         ) : (
           <div className="relative" onClick={() => setPinned(null)}>
-          <ChartContainer config={chartConfig} className="w-full max-h-64">
+          <ChartContainer config={chartConfig} className="w-full max-h-64 [&_*]:outline-hidden [&_*:focus]:outline-none [&_*:focus-visible]:outline-none">
             <ScatterChart margin={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <CartesianGrid stroke="var(--grid-line)" />
               <XAxis
@@ -217,7 +217,7 @@ export function EbaySalesChart({ sales, onSyncEbay, isSyncingEbay, onRemoveSale 
                 tickFormatter={(v) => axisCurrencyFormatter.format(v as number)}
               />
               <Tooltip
-                cursor={{ stroke: 'var(--tooltip-cursor)', strokeWidth: 1 }}
+                cursor={false}
                 content={({ active, payload }) => {
                   // While a dot is pinned the persistent infobox takes over;
                   // suppress the hover tooltip so we don't stack two boxes.
@@ -269,7 +269,8 @@ export function EbaySalesChart({ sales, onSyncEbay, isSyncingEbay, onRemoveSale 
                     const isPinned = pinned?.point.id === props.payload.id;
                     return (
                       <g
-                        style={{ cursor: 'pointer' }}
+                        tabIndex={-1}
+                        style={{ cursor: 'pointer', outline: 'none' }}
                         onClick={(e) => {
                           e.stopPropagation();
                           setPinned({ cx: props.cx, cy: props.cy, point: props.payload });
