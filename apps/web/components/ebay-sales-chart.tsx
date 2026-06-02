@@ -34,6 +34,8 @@ import { GRADE_COLORS } from '@/lib/grade-colors';
 
 type Props = {
   sales: SaleRecord[];
+  // Identity of the card being shown; changing it closes any pinned infobox.
+  cardId?: string;
   onSyncEbay?: () => void;
   isSyncingEbay?: boolean;
   // Flag a sale as invalid; the parent should refetch so it drops off the graph.
@@ -50,12 +52,18 @@ type Point = {
 
 type PinnedPoint = Point & { grade: number };
 
-export function EbaySalesChart({ sales, onSyncEbay, isSyncingEbay, onRemoveSale }: Props) {
+export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRemoveSale }: Props) {
   const [timeRange, setTimeRange] = React.useState('90d');
   const [hiddenGrades, setHiddenGrades] = React.useState<Set<number>>(new Set());
   // The dot the user clicked: its pixel position in the chart + the sale data.
   const [pinned, setPinned] = React.useState<{ cx: number; cy: number; point: PinnedPoint } | null>(null);
   const [removingId, setRemovingId] = React.useState<string | null>(null);
+
+  // Switching cards reuses this component instance; drop a stale pinned infobox
+  // so it doesn't linger over another card's graph.
+  React.useEffect(() => {
+    setPinned(null);
+  }, [cardId]);
 
   const currencyFormatter = React.useMemo(
     () => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }),
@@ -99,8 +107,15 @@ export function EbaySalesChart({ sales, onSyncEbay, isSyncingEbay, onRemoveSale 
     };
   }, [sales, cutoff]);
 
+  // Both the time range and grade visibility reflow the chart, so any pinned
+  // infobox's pixel coordinates go stale — close it on either change.
+  const handleTimeRangeChange = (value: string) => {
+    setPinned(null);
+    setTimeRange(value);
+  };
+
   const toggleGrade = (grade: number) => {
-    setPinned((p) => (p && p.point.grade === grade ? null : p));
+    setPinned(null);
     setHiddenGrades((prev) => {
       const next = new Set(prev);
       if (next.has(grade)) next.delete(grade);
@@ -156,7 +171,7 @@ export function EbaySalesChart({ sales, onSyncEbay, isSyncingEbay, onRemoveSale 
                   <ToggleGroup
                     type="single"
                     value={timeRange}
-                    onValueChange={setTimeRange}
+                    onValueChange={handleTimeRangeChange}
                     variant="outline"
                     className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
                   >
@@ -164,7 +179,7 @@ export function EbaySalesChart({ sales, onSyncEbay, isSyncingEbay, onRemoveSale 
                     <ToggleGroupItem value="90d">Last 3 months</ToggleGroupItem>
                     <ToggleGroupItem value="30d">Last 30 days</ToggleGroupItem>
                   </ToggleGroup>
-                  <Select value={timeRange} onValueChange={setTimeRange}>
+                  <Select value={timeRange} onValueChange={handleTimeRangeChange}>
                     <SelectTrigger
                       className="flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
                       size="sm"
