@@ -52,6 +52,7 @@ enum SaleStatus {
   pending
   confirmed
   cancelled
+  invalid
 }
 
 enum VerificationStage {

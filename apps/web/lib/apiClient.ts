@@ -4,6 +4,7 @@ import type {
   GetCardResponse,
   SyncCardResponse,
   UpdateCardNoteRequest,
+  UpdateSaleStatusRequest,
   UpsertCollectionEntryRequest,
 } from '@gather/api-contract';
 
@@ -87,6 +88,10 @@ export async function syncCardSales(cardId: string): Promise<SyncSalesResponse> 
 
 export async function updateCardNote(cardId: string, note: string | null): Promise<void> {
   return apiPatch(`/cards/${cardId}`, { note } satisfies UpdateCardNoteRequest);
+}
+
+export async function invalidateSale(saleId: string): Promise<void> {
+  return apiPatch(`/sales/${saleId}`, { status: 'invalid' } satisfies UpdateSaleStatusRequest);
 }
 
 export async function syncAllPromos(): Promise<void> {

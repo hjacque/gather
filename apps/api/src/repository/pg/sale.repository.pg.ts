@@ -76,4 +76,11 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
       },
     });
   }
+
+  async markInvalid(saleId: string) {
+    await this.prisma.sale.update({
+      where: { id: saleId },
+      data: { status: "invalid", verificationStage: "complete" },
+    });
+  }
 }

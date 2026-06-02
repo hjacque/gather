@@ -36,7 +36,7 @@ export type DailyPrices = {
 };
 
 // A confirmed-or-pending Sale with its price converted to EUR at read time.
-// Cancelled Sales and Sales in unsupported currencies are excluded by the API.
+// Cancelled, invalid, and unsupported-currency Sales are excluded by the API.
 export type SaleRecord = {
   id: string;
   psaGrade: number;
@@ -44,6 +44,8 @@ export type SaleRecord = {
   soldAt: Date;
   status: SaleStatus;
   isBestOffer: boolean;
+  // Link to the original marketplace listing (eBay item page).
+  url: string;
 };
 
 // ─── PSA Pop Report ───────────────────────────────────────────────────────────
@@ -96,6 +98,14 @@ export type GetCardResponse = CardEntity & {
 
 export type UpdateCardNoteRequest = {
   note: string | null;
+};
+
+// ─── PATCH /sales/:id ────────────────────────────────────────────────────────
+
+// User-driven Sale moderation. Currently only used to flag a Sale as invalid
+// (e.g. a mismatched listing) so it drops out of the read layer.
+export type UpdateSaleStatusRequest = {
+  status: 'invalid';
 };
 
 // ─── GET /sync/card/:id/cardmarket | GET /sync/card/:id/psa ─────────────────

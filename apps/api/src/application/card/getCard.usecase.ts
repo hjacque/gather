@@ -27,10 +27,10 @@ export class GetCardUsecase {
         getEurToUsdRate(),
       ]);
 
-    // Convert each Sale to EUR at read time, dropping cancelled Sales and any
-    // whose currency we cannot yet convert.
+    // Convert each Sale to EUR at read time, dropping cancelled/invalid Sales
+    // and any whose currency we cannot yet convert.
     const saleRecords: SaleRecord[] = sales.flatMap((sale) => {
-      if (sale.status === "cancelled") return [];
+      if (sale.status === "cancelled" || sale.status === "invalid") return [];
       const priceEur = convertToEur(sale.price, sale.currency, usdToEur);
       if (priceEur === null) return [];
       return [
@@ -41,6 +41,7 @@ export class GetCardUsecase {
           soldAt: sale.soldAt,
           status: sale.status,
           isBestOffer: sale.isBestOffer,
+          url: `https://www.ebay.com/itm/${sale.itemId}`,
         },
       ];
     });

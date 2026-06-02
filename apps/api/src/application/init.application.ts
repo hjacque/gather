@@ -13,6 +13,7 @@ import { SyncSingleCardCardMarketUsecase } from "./sync/syncSingleCardCardMarket
 import { SyncSingleCardPsaUsecase } from "./sync/syncSingleCardPsa.usecase";
 import { SyncPsaPopReportsUsecase } from "./sync/syncPsaPopReports.usecase";
 import { SyncSalesUsecase } from "./sync/syncSales.usecase";
+import { InvalidateSaleUsecase } from "./sale/invalidateSale.usecase";
 import { CardMarketGradedSource } from "./sync/sources/cardmarketGraded.source";
 import { EbaySalesSource } from "./sync/sources/ebaySales.source";
 
@@ -24,6 +25,7 @@ export type Usecases = {
   syncSingleCardPsaUsecase: SyncSingleCardPsaUsecase;
   syncPsaPopReportsUsecase: SyncPsaPopReportsUsecase;
   syncSalesUsecase: SyncSalesUsecase;
+  invalidateSaleUsecase: InvalidateSaleUsecase;
   updateCardNoteUsecase: UpdateCardNoteUsecase;
   upsertCollectionEntryUsecase: UpsertCollectionEntryUsecase;
   deleteCollectionEntryUsecase: DeleteCollectionEntryUsecase;
@@ -91,6 +93,7 @@ export const initApplication = ({
     saleRepository,
     new EbaySalesSource()
   );
+  const invalidateSaleUsecase = new InvalidateSaleUsecase(saleRepository);
   const updateCardNoteUsecase = new UpdateCardNoteUsecase(cardRepository);
   const upsertCollectionEntryUsecase = new UpsertCollectionEntryUsecase(collectionRepository);
   const deleteCollectionEntryUsecase = new DeleteCollectionEntryUsecase(collectionRepository);
@@ -103,6 +106,7 @@ export const initApplication = ({
     syncSingleCardPsaUsecase,
     syncPsaPopReportsUsecase,
     syncSalesUsecase,
+    invalidateSaleUsecase,
     updateCardNoteUsecase,
     upsertCollectionEntryUsecase,
     deleteCollectionEntryUsecase,

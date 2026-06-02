@@ -29,24 +29,33 @@ import {
 } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, X, ExternalLink, Trash2 } from 'lucide-react';
 import { GRADE_COLORS } from '@/lib/grade-colors';
 
 type Props = {
   sales: SaleRecord[];
   onSyncEbay?: () => void;
   isSyncingEbay?: boolean;
+  // Flag a sale as invalid; the parent should refetch so it drops off the graph.
+  onRemoveSale?: (saleId: string) => Promise<void> | void;
 };
 
 type Point = {
+  id: string;
+  url: string;
   x: number; // soldAt epoch ms
   y: number; // price in EUR
   pending: boolean;
 };
 
-export function EbaySalesChart({ sales, onSyncEbay, isSyncingEbay }: Props) {
+type PinnedPoint = Point & { grade: number };
+
+export function EbaySalesChart({ sales, onSyncEbay, isSyncingEbay, onRemoveSale }: Props) {
   const [timeRange, setTimeRange] = React.useState('90d');
   const [hiddenGrades, setHiddenGrades] = React.useState<Set<number>>(new Set());
+  // The dot the user clicked: its pixel position in the chart + the sale data.
+  const [pinned, setPinned] = React.useState<{ cx: number; cy: number; point: PinnedPoint } | null>(null);
+  const [removingId, setRemovingId] = React.useState<string | null>(null);
 
   const currencyFormatter = React.useMemo(
     () => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }),
@@ -75,7 +84,13 @@ export function EbaySalesChart({ sales, onSyncEbay, isSyncingEbay }: Props) {
       const grade = sale.psaGrade;
       gradeSet.add(grade);
       if (!byGrade[grade]) byGrade[grade] = [];
-      byGrade[grade].push({ x, y: sale.priceEur, pending: sale.status === 'pending' });
+      byGrade[grade].push({
+        id: sale.id,
+        url: sale.url,
+        x,
+        y: sale.priceEur,
+        pending: sale.status === 'pending',
+      });
     }
 
     return {
@@ -85,12 +100,26 @@ export function EbaySalesChart({ sales, onSyncEbay, isSyncingEbay }: Props) {
   }, [sales, cutoff]);
 
   const toggleGrade = (grade: number) => {
+    setPinned((p) => (p && p.point.grade === grade ? null : p));
     setHiddenGrades((prev) => {
       const next = new Set(prev);
       if (next.has(grade)) next.delete(grade);
       else next.add(grade);
       return next;
     });
+  };
+
+  const handleRemove = async (saleId: string) => {
+    if (!onRemoveSale || removingId) return;
+    setRemovingId(saleId);
+    try {
+      await onRemoveSale(saleId);
+      setPinned(null);
+    } catch (err) {
+      console.error('Failed to invalidate sale', err);
+    } finally {
+      setRemovingId(null);
+    }
   };
 
   const chartConfig = Object.fromEntries(
@@ -161,6 +190,7 @@ export function EbaySalesChart({ sales, onSyncEbay, isSyncingEbay }: Props) {
             No sales data — sync this card to populate
           </div>
         ) : (
+          <div className="relative" onClick={() => setPinned(null)}>
           <ChartContainer config={chartConfig} className="w-full max-h-64">
             <ScatterChart margin={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <CartesianGrid stroke="var(--grid-line)" />
@@ -189,6 +219,9 @@ export function EbaySalesChart({ sales, onSyncEbay, isSyncingEbay }: Props) {
               <Tooltip
                 cursor={{ stroke: 'var(--tooltip-cursor)', strokeWidth: 1 }}
                 content={({ active, payload }) => {
+                  // While a dot is pinned the persistent infobox takes over;
+                  // suppress the hover tooltip so we don't stack two boxes.
+                  if (pinned) return null;
                   if (!active || !payload || payload.length === 0) return null;
                   const p = payload[0].payload as Point & { grade: number };
                   return (
@@ -232,22 +265,95 @@ export function EbaySalesChart({ sales, onSyncEbay, isSyncingEbay }: Props) {
                   data={pointsByGrade[grade].map((p) => ({ ...p, grade }))}
                   fill={GRADE_COLORS[grade]}
                   hide={hiddenGrades.has(grade)}
-                  shape={(props: any) => (
-                    <circle
-                      cx={props.cx}
-                      cy={props.cy}
-                      r={4}
-                      fill={GRADE_COLORS[grade]}
-                      fillOpacity={props.payload.pending ? 0.3 : 1}
-                      stroke={GRADE_COLORS[grade]}
-                      strokeOpacity={props.payload.pending ? 0.6 : 1}
-                      strokeWidth={props.payload.pending ? 1 : 0}
-                    />
-                  )}
+                  shape={(props: any) => {
+                    const isPinned = pinned?.point.id === props.payload.id;
+                    return (
+                      <g
+                        style={{ cursor: 'pointer' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPinned({ cx: props.cx, cy: props.cy, point: props.payload });
+                        }}
+                      >
+                        {/* Enlarged transparent hit target for easier clicking. */}
+                        <circle cx={props.cx} cy={props.cy} r={10} fill="transparent" />
+                        {isPinned && (
+                          <circle
+                            cx={props.cx}
+                            cy={props.cy}
+                            r={7}
+                            fill="none"
+                            stroke={GRADE_COLORS[grade]}
+                            strokeWidth={1.5}
+                            strokeOpacity={0.5}
+                          />
+                        )}
+                        <circle
+                          cx={props.cx}
+                          cy={props.cy}
+                          r={4}
+                          fill={GRADE_COLORS[grade]}
+                          fillOpacity={props.payload.pending ? 0.3 : 1}
+                          stroke={GRADE_COLORS[grade]}
+                          strokeOpacity={props.payload.pending ? 0.6 : 1}
+                          strokeWidth={props.payload.pending ? 1 : 0}
+                        />
+                      </g>
+                    );
+                  }}
                 />
               ))}
             </ScatterChart>
           </ChartContainer>
+          {pinned && (
+            <div
+              className="absolute z-20 w-48 rounded-lg border bg-background px-3 py-2 text-xs shadow-md"
+              style={{
+                left: pinned.cx,
+                top: pinned.cy + (pinned.cy < 120 ? 12 : -12),
+                transform: pinned.cy < 120 ? 'translate(-50%, 0)' : 'translate(-50%, -100%)',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="font-medium">PSA {pinned.point.grade}</div>
+                <button
+                  onClick={() => setPinned(null)}
+                  className="-mr-1 -mt-0.5 text-muted-foreground hover:text-foreground"
+                  aria-label="Close"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <div>{currencyFormatter.format(pinned.point.y)}</div>
+              <div className="text-muted-foreground">
+                {new Date(pinned.point.x).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                {pinned.point.pending ? ' · pending' : ''}
+              </div>
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <a
+                  href={pinned.point.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-primary hover:underline"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  View on eBay
+                </a>
+                {onRemoveSale && (
+                  <button
+                    onClick={() => handleRemove(pinned.point.id)}
+                    disabled={removingId === pinned.point.id}
+                    className="inline-flex items-center gap-1 text-destructive hover:underline disabled:opacity-50"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    {removingId === pinned.point.id ? 'Removing…' : 'Remove'}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+          </div>
         )}
       </CardContent>
     </Card>

@@ -3,7 +3,7 @@ import { Usecases } from "../../application/init.application";
 import { z } from "zod";
 import { errorHandler } from "./middlewares/http.errors";
 import { SyncUsecaseInputDto } from "application/sync/sync.usecase";
-import type { UpdateCardNoteRequest, UpsertCollectionEntryRequest } from "@gather/api-contract";
+import type { UpdateCardNoteRequest, UpdateSaleStatusRequest, UpsertCollectionEntryRequest } from "@gather/api-contract";
 import { REGIONS } from "@gather/types";
 require("express-async-errors");
 
@@ -18,6 +18,7 @@ export const http = async ({
   syncSingleCardPsaUsecase,
   syncPsaPopReportsUsecase,
   syncSalesUsecase,
+  invalidateSaleUsecase,
   updateCardNoteUsecase,
   upsertCollectionEntryUsecase,
   deleteCollectionEntryUsecase,
@@ -89,6 +90,16 @@ export const http = async ({
 
     res.status(200);
     res.json(result);
+  });
+
+  app.patch("/sales/:saleid", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    const bodySchema = z.object({ status: z.literal("invalid") });
+    const { status } = bodySchema.parse(req.body) as UpdateSaleStatusRequest;
+    if (status === "invalid") {
+      await invalidateSaleUsecase.execute(req.params.saleid);
+    }
+    res.status(204).end();
   });
 
   app.get("/cards", async (req, res) => {

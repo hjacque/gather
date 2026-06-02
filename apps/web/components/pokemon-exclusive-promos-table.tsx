@@ -19,6 +19,7 @@ import {
 } from './ui/sheet';
 import { getCard } from '@/app/actions/getCard';
 import { syncAllPromos, syncCardCardMarket, syncCardPsa, syncCardSales } from '@/app/actions/syncCard';
+import { invalidateSale } from '@/app/actions/invalidateSale';
 import { CardNoteSection } from '@/components/card-note-section';
 import { CardImage } from '@/components/card-image';
 import { upsertCollectionEntry, deleteCollectionEntry } from '@/app/actions/collectionEntry';
@@ -679,6 +680,19 @@ export function PokemonExclusivePromosTable({
     }
   };
 
+  const handleRemoveSale = async (saleId: string) => {
+    const id = displayedItem?.id;
+    if (!id) return;
+    await invalidateSale(saleId);
+    // Refetch so the invalidated sale drops off the graph.
+    if (activeItemRef.current?.id === id) {
+      const data = await getCard(id);
+      if (activeItemRef.current?.id === id) {
+        setDisplayedCard(data);
+      }
+    }
+  };
+
   const psaReport = displayedCard?.psaPopReport ?? null;
   const grades = psaReport
     ? [
@@ -743,6 +757,7 @@ export function PokemonExclusivePromosTable({
                     sales={displayedCard?.sales ?? []}
                     onSyncEbay={displayedItem.ebayLink ? () => handlePanelSync('sales') : undefined}
                     isSyncingEbay={panelSyncLoading === 'sales'}
+                    onRemoveSale={handleRemoveSale}
                   />
                   </div>
                 </div>

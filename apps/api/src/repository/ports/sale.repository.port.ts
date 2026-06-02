@@ -25,4 +25,8 @@ export abstract class SaleRepositoryPort {
     saleId: string,
     verification: SaleVerification
   ): Promise<void>;
+
+  // Flag a Sale as user-invalidated. Terminal: the verification stage is moved
+  // to complete so the re-verification pass never revisits it.
+  abstract markInvalid(saleId: string): Promise<void>;
 }
