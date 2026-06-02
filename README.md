@@ -1,12 +1,13 @@
 # Gather
 
-A price aggregation tool for Pokémon exclusive promo cards (Japanese, Korean, and Taiwan/HK releases). Gather fetches Raw Prices from CardMarket across PSA grades, stores them, and surfaces derived data alongside PSA population counts and collection tracking.
+A price aggregation tool for Pokémon exclusive promo cards (Japanese, Korean, and Taiwan/HK releases). Gather fetches Raw Prices from CardMarket across PSA grades, derives a Market Sale Price from eBay sold history, and surfaces it alongside PSA population counts and collection tracking.
 
 ---
 
 ## What it does
 
 - **Syncs** CardMarket prices across PSA grades 1–10 for each card, on a rolling schedule
+- **Prices eBay sold history** — scrapes completed listings into Sales and derives a per-grade **Market Sale Price** (what a card actually sells for), flagging listings priced below it
 - **Tracks PSA population** — graded card counts per grade via PSA pop reports
 - **Manages a collection** — mark cards as owned or on the wantlist
 
@@ -94,14 +95,17 @@ npm run build
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/cards` | List all cards with today's prices and PSA pop data |
-| `GET` | `/cards/:cardid` | Single card with full price history |
+| `GET` | `/cards` | List all cards with today's prices, PSA 10 Market Sale Price, and PSA pop data |
+| `GET` | `/cards/:cardid` | Single card with full price history and per-grade Market Sale Prices |
 | `PATCH` | `/cards/:cardid` | Update a card's note |
 | `GET` | `/sync` | Trigger a full CardMarket sync (filter by set / tags) |
 | `GET` | `/sync/card/:cardid/cardmarket` | Trigger a CardMarket sync for a single card |
 | `GET` | `/sync/card/:cardid/psa` | Trigger a PSA pop report sync for a single card |
 | `GET` | `/sync/set/:set` | Trigger a CardMarket sync for an entire Card Set |
 | `GET` | `/sync/psa` | Trigger a full PSA pop report sync |
+| `GET` | `/sync/sales/card/:cardid` | Scrape a single card's eBay sold listings into Sales |
+| `GET` | `/sync/sales` | Trigger an eBay Sale Sync (filter by set / tags) |
+| `PATCH` | `/sales/:saleid` | Flag a Sale invalid (manual moderation) |
 | `PUT` | `/collection/:cardid` | Upsert a collection entry (owned / wanted flags) |
 | `DELETE` | `/collection/:cardid` | Remove a card from the collection |
 
@@ -127,9 +131,10 @@ Repositories are injected into use cases via port interfaces — concrete Prisma
 | Source | Type |
 |---|---|
 | CardMarket | PSA grade sell listings (grades 1–10) |
+| eBay | Completed (sold) listings per PSA grade → Sales → Market Sale Price |
 | PSA | Pop report (graded card counts per grade) |
 
-All Raw Prices are stored in EUR.
+All Raw Prices are stored in EUR. eBay Sales are stored in their original currency and converted to EUR on read.
 
 ---
 
@@ -147,6 +152,7 @@ Each card stores up to ten Raw Prices, one per PSA grade:
 |---|---|---|
 | All cards (CardMarket) | Every 2 hours | :00 on even hours (0:00, 2:00 … 22:00) |
 | PSA pop reports | Daily | 03:00 |
+| eBay Sales | Daily | 04:00 (defined, ships disabled) |
 
 ---
 
@@ -162,6 +168,8 @@ Each card stores up to ten Raw Prices, one per PSA grade:
 | **Foil Pattern** | The card's foil treatment — `rareHolo`, `reverse`, or `regularHolo` |
 | **Price Source** | An external marketplace providing Raw Prices |
 | **Raw Price** | A price fetched directly from a Price Source, in EUR |
+| **Sale** | A recorded eBay sold transaction for a card at a PSA grade, in its original currency, converted to EUR on read |
+| **Market Sale Price** | Per-grade recency-weighted median of a card's eBay Sales — what it actually sells for today, distinct from listing prices |
 | **PSA Pop** | PSA population report data — graded card counts per grade for a card |
 | **Collection Entry** | A record marking a card as owned and/or on the wantlist |
 | **Sync** | The process of fetching Raw Prices from CardMarket and persisting them |

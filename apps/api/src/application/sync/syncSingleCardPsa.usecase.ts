@@ -3,7 +3,10 @@ import { CardRepositoryPort } from "../../repository/ports/card.repository.port"
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import { CollectionRepositoryPort } from "../../repository/ports/collection.repository.port";
+import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
 import { scrapePsaPopReport } from "./sources/psa.source";
+import { getEurToUsdRate } from "./helper";
+import { psa10MarketPriceWithPrior } from "../sale/cardMarketPrice";
 import type { SyncCardResponse } from "@gather/api-contract";
 
 export class SyncSingleCardPsaUsecase {
@@ -11,7 +14,8 @@ export class SyncSingleCardPsaUsecase {
     private readonly cardRepository: CardRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
     private readonly psaPopReportRepository: PsaPopReportRepositoryPort,
-    private readonly collectionRepository: CollectionRepositoryPort
+    private readonly collectionRepository: CollectionRepositoryPort,
+    private readonly saleRepository: SaleRepositoryPort
   ) {}
 
   async execute(cardId: string): Promise<SyncCardResponse> {
@@ -47,18 +51,23 @@ export class SyncSingleCardPsaUsecase {
     await page.close();
     await browser.close();
 
-    const [pricesByCard, psaReport, collectionEntry] = await Promise.all([
+    const [pricesByCard, psaReport, collectionEntry, cardSales, usdToEur] = await Promise.all([
       this.priceRepository.getCardsPricesByDate([card.id], today),
       this.psaPopReportRepository.findByCardId(card.id),
       this.collectionRepository.findByCardId(card.id),
+      this.saleRepository.getCardSales(card.id),
+      getEurToUsdRate(),
     ]);
     const currentPrices = pricesByCard.get(card.id)!;
+    const market = psa10MarketPriceWithPrior(cardSales, usdToEur);
 
     return {
       ...card,
       ...currentPrices,
       cardmarketPsa9Yesterday: null,
       cardmarketPsa10Yesterday: null,
+      marketPsa10: market.today,
+      marketPsa10Prior7d: market.prior,
       psaTotal: psaReport?.total ?? null,
       psaGrade10Pop: psaReport?.grade10 ?? null,
       collectionEntry: collectionEntry ?? null,

@@ -167,6 +167,18 @@ _Avoid_: eBay sync, sold listings sync, comp sync
 The lifecycle state of a Sale: `pending`, `confirmed`, or `cancelled`. Re-verification navigates (via Puppeteer) to the Sale's item URL at two checkpoints — 7 days and 30 days after the Sale was first scraped — and reads the rendered page. A 404 (listing removed) or a live active listing (item relisted) both mean `cancelled`. An ended/sold item page means the sale still looks valid. Crucially, a still-valid sale is **not** confirmed at the 7-day checkpoint — it stays `pending`; the 7-day check exists only to catch early cancellations. A Sale becomes `confirmed` only if it still looks valid at the 30-day checkpoint, because cancellations can occur throughout the 30-day window. Once a Sale reaches a terminal state (`confirmed` or `cancelled`) it is no longer re-verified. A separate `verificationStage` enum (`unverified` → `checked_7d` → `complete`) tracks which checkpoints have run so the daily job re-renders each Sale at most twice, never daily.
 _Avoid_: sale state, verification status
 
+**Market Sale Price**:
+The price a Card actually sells for today at a specific PSA Grade: a recency-weighted median of that grade's eBay Sales (pending or confirmed; cancelled/invalid excluded) in EUR, each Sale weighted by exponential age decay (30-day half-life). Distinct from **Market Price** (lowest live listing) — it reflects realized eBay transactions, not asking prices. Computed on read in `marketPrice.ts`; unconvertible currencies are excluded and no automatic outlier rejection is applied (manual `invalid` moderation handles bad listings). Grades with no usable Sales have none. The PSA 10 figure carries a 7-day Performance delta, comparing it against the same median recomputed as of a week earlier.
+_Avoid_: market price, sold price, average sale price
+
+**Listing Deal**:
+The percentage gap between a Card's lowest PSA 10 listing (its PSA Grade Price) and its PSA 10 Market Sale Price: `(listing − marketSale) / marketSale`. Negative means the listing sits below realized market value — a buying opportunity. Surfaced as a sortable table column so under-priced cards float to the top. A lightweight precursor to the full Opportunity Score.
+_Avoid_: spread, deal score, opportunity
+
+**Sale Frequency**:
+How often a Card trades at a given PSA Grade — its Sales per day over the span from the oldest Sale to now, rendered in the largest readable unit (/day for liquid grades down to /yr for rarely-traded ones). Shown beside each grade's Market Sale Price as a liquidity cue. A simple precursor to Grade Liquidity Share.
+_Avoid_: sale rate, volume, liquidity
+
 ## Relationships
 
 - A **Product** belongs to exactly one **Product Set**
@@ -178,6 +190,8 @@ _Avoid_: sale state, verification status
 - A **Product** has at most one **PSA Pop Report** (latest snapshot); a PSA Sync updates it via `/sync/psa`
 - A **Card** has zero or more **Sales**, one per platform item ID; each Sale carries a PSA Grade and a Sale Status
 - A **Sale** with status `confirmed` and `isBestOffer = false` is a **Sold Comp** usable in Base Range computation
+- A **Card**'s **Market Sale Price** at a PSA Grade is the recency-weighted median of that grade's non-cancelled/invalid **Sales**; absent when the grade has no Sales
+- A **Listing Deal** pairs a Card's PSA 10 **Market Sale Price** with its PSA 10 **PSA Grade Price** to flag under-priced listings
 
 ## Example dialogue
 
@@ -343,4 +357,5 @@ Each opportunity card shows: card image, card name + Product Set, highest-scorin
 ## Flagged ambiguities
 
 - "price" alone is ambiguous — always qualify as Raw Price, Derived Price, Market Price, Buylist Price, or a specific source name (e.g. "the CardMarket price").
+- **Market Price** (lowest live listing — `min(cardmarket)`) and **Market Sale Price** (recency-weighted median of eBay Sold Comps) are different concepts: the first is an asking price, the second a realized one. Never conflate them.
 - "liquidity" without qualification is ambiguous — use Grade Liquidity Share (relative, per grade) or specify absolute sold count.

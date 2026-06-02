@@ -3,9 +3,11 @@ import { CardRepositoryPort } from "../../repository/ports/card.repository.port"
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import { CollectionRepositoryPort } from "../../repository/ports/collection.repository.port";
+import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
 import { PriceSourcePort, RawPrices } from "./sources/priceSource.port";
 import { aggregatePrices } from "./priceAggregator";
 import { getEurToUsdRate } from "./helper";
+import { psa10MarketPriceWithPrior } from "../sale/cardMarketPrice";
 import type { SyncCardResponse } from "@gather/api-contract";
 
 export class SyncSingleCardCardMarketUsecase {
@@ -14,7 +16,8 @@ export class SyncSingleCardCardMarketUsecase {
     private readonly priceRepository: PriceRepositoryPort,
     private readonly cardmarketPriceSources: PriceSourcePort[],
     private readonly psaPopReportRepository: PsaPopReportRepositoryPort,
-    private readonly collectionRepository: CollectionRepositoryPort
+    private readonly collectionRepository: CollectionRepositoryPort,
+    private readonly saleRepository: SaleRepositoryPort
   ) {}
 
   async execute(cardId: string): Promise<SyncCardResponse> {
@@ -61,20 +64,24 @@ export class SyncSingleCardCardMarketUsecase {
     const yesterday = new Date(today);
     yesterday.setUTCDate(yesterday.getUTCDate() - 1);
 
-    const [pricesByCard, yesterdayPricesByCard, psaReport, collectionEntry] = await Promise.all([
+    const [pricesByCard, yesterdayPricesByCard, psaReport, collectionEntry, cardSales] = await Promise.all([
       this.priceRepository.getCardsPricesByDate([card.id], today),
       this.priceRepository.getCardsPricesByDate([card.id], yesterday),
       this.psaPopReportRepository.findByCardId(card.id),
       this.collectionRepository.findByCardId(card.id),
+      this.saleRepository.getCardSales(card.id),
     ]);
     const currentPrices = pricesByCard.get(card.id)!;
     const yesterdayPrices = yesterdayPricesByCard.get(card.id);
+    const market = psa10MarketPriceWithPrior(cardSales, usdToEur);
 
     return {
       ...card,
       ...currentPrices,
       cardmarketPsa9Yesterday: yesterdayPrices?.cardmarketPsa9 ?? null,
       cardmarketPsa10Yesterday: yesterdayPrices?.cardmarketPsa10 ?? null,
+      marketPsa10: market.today,
+      marketPsa10Prior7d: market.prior,
       psaTotal: psaReport?.total ?? null,
       psaGrade10Pop: psaReport?.grade10 ?? null,
       collectionEntry: collectionEntry ?? null,

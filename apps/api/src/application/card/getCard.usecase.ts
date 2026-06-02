@@ -5,6 +5,7 @@ import { CollectionRepositoryPort } from "../../repository/ports/collection.repo
 import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
 import { getEurToUsdRate } from "../sync/helper";
 import { convertToEur } from "../sale/eurConverter";
+import { computeMarketPrices } from "../sale/marketPrice";
 import type { GetCardResponse, SaleRecord } from "@gather/api-contract";
 
 export class GetCardUsecase {
@@ -46,6 +47,15 @@ export class GetCardUsecase {
       ];
     });
 
+    // Per-grade market price from the same EUR-converted, moderated sales.
+    const marketPrices = computeMarketPrices(
+      saleRecords.map((s) => ({
+        psaGrade: s.psaGrade,
+        priceEur: s.priceEur,
+        soldAt: s.soldAt,
+      }))
+    );
+
     const psaPopReport = psaReport
       ? {
           grade1: psaReport.grade1,
@@ -67,6 +77,7 @@ export class GetCardUsecase {
       ...card,
       ...cardPrices,
       sales: saleRecords,
+      marketPrices,
       psaPopReport,
       collectionEntry: collectionEntry ?? null,
     };

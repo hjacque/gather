@@ -48,6 +48,25 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
     return sales.map((s) => this.saleMapper.toEntity(s));
   }
 
+  async getCardsSales(cardIds: string[]) {
+    const byCard = new Map<string, ReturnType<SaleMapper["toEntity"]>[]>();
+    if (cardIds.length === 0) return byCard;
+
+    const sales = await this.prisma.sale.findMany({
+      where: { cardId: { in: cardIds } },
+      orderBy: { soldAt: "asc" },
+    });
+
+    for (const s of sales) {
+      const entity = this.saleMapper.toEntity(s);
+      const list = byCard.get(s.cardId);
+      if (list) list.push(entity);
+      else byCard.set(s.cardId, [entity]);
+    }
+
+    return byCard;
+  }
+
   async getSalesDueForVerification(now: Date, cardId?: string) {
     const sevenDaysAgo = new Date(now.getTime() - 7 * DAY_MS);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * DAY_MS);

@@ -10,6 +10,10 @@ export abstract class SaleRepositoryPort {
   // read layer decides what to surface.
   abstract getCardSales(cardId: string): Promise<SaleEntity[]>;
 
+  // All Sales for many Cards in one query, grouped by cardId. Same inclusivity
+  // as getCardSales — used by the list view to derive per-card market prices.
+  abstract getCardsSales(cardIds: string[]): Promise<Map<string, SaleEntity[]>>;
+
   // Sales due for a re-verification checkpoint, relative to `now`:
   //   - pending + unverified, first scraped ≥ 7 days ago  (7-day check)
   //   - pending + checked_7d, first scraped ≥ 30 days ago (30-day check)

@@ -48,6 +48,21 @@ export type SaleRecord = {
   url: string;
 };
 
+// ─── Market Price ─────────────────────────────────────────────────────────────
+
+// Per-grade market price: the recency-weighted median of that grade's eBay sale
+// prices, in EUR. Only grades with at least one sale appear.
+export type MarketPriceRecord = {
+  psaGrade: number;
+  priceEur: number;
+  // Number of sales behind the estimate.
+  sampleSize: number;
+  // soldAt of the most recent sale in the set.
+  newestSoldAt: Date;
+  // Sales per day, rendered in a readable unit (/day…/yr).
+  salesPerDay: number;
+};
+
 // ─── PSA Pop Report ───────────────────────────────────────────────────────────
 
 export type PsaPopReportSummary = {
@@ -79,6 +94,11 @@ export type GetCardsResponseItem = CardEntity & DailyPrices & {
   psaGrade10Pop: number | null;
   cardmarketPsa9Yesterday: number | null;
   cardmarketPsa10Yesterday: number | null;
+  // PSA 10 market price in EUR; null when the card has no PSA 10 sales. Paired
+  // with cardmarketPsa10 (lowest PSA 10 listing) to surface under-priced cards.
+  marketPsa10: number | null;
+  // Same market price as of 7 days ago, for the column's trend delta.
+  marketPsa10Prior7d: number | null;
   collectionEntry: CollectionEntry | null;
 };
 
@@ -90,6 +110,7 @@ export type GetCardResponse = CardEntity & {
   cardSet: CardSetEntity;
   psaGradePrices: PriceRecord[];
   sales: SaleRecord[];
+  marketPrices: MarketPriceRecord[];
   psaPopReport: PsaPopReportSummary | null;
   collectionEntry: CollectionEntry | null;
 };
@@ -116,5 +137,7 @@ export type SyncCardResponse = CardEntity & DailyPrices & {
   psaGrade10Pop: number | null;
   cardmarketPsa9Yesterday: number | null;
   cardmarketPsa10Yesterday: number | null;
+  marketPsa10: number | null;
+  marketPsa10Prior7d: number | null;
   collectionEntry: CollectionEntry | null;
 };

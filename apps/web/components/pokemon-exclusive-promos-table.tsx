@@ -42,6 +42,30 @@ import { Input } from '@/components/ui/input';
 import type { GetCardsResponseItem } from '@gather/api-contract';
 import { CardTable, RowActionsCell, type CardTableHandle } from './card-table';
 
+const marketPriceFormatter = new Intl.NumberFormat('fr-FR', {
+  style: 'currency',
+  currency: 'EUR',
+  maximumFractionDigits: 0,
+});
+
+// Render a sales-per-day rate in the largest unit that still reads as ≥1 sale
+// per unit (e.g. 0.5/day → "3.5/wk", 1/400 days → "0.9/yr").
+const FREQUENCY_UNITS: { perDay: number; label: string }[] = [
+  { perDay: 1, label: '/day' },
+  { perDay: 7, label: '/wk' },
+  { perDay: 30.44, label: '/mo' },
+  { perDay: 365.25, label: '/yr' },
+];
+
+const formatSalesFrequency = (salesPerDay: number): string => {
+  const unit =
+    FREQUENCY_UNITS.find((u) => salesPerDay * u.perDay >= 1) ??
+    FREQUENCY_UNITS[FREQUENCY_UNITS.length - 1];
+  const value = salesPerDay * unit.perDay;
+  const rounded = value >= 10 ? Math.round(value) : Math.round(value * 10) / 10;
+  return `${rounded}${unit.label}`;
+};
+
 const CardPanelContext = React.createContext<{
   openPanel: (item: GetCardsResponseItem) => void;
 } | null>(null);
@@ -206,49 +230,14 @@ const columns: ColumnDef<GetCardsResponseItem>[] = [
     ),
   },
   {
-    id: 'cardmarketPsa9',
+    id: 'marketPsa10',
     size: 110,
-    accessorFn: (row) => row.cardmarketPsa9 ?? undefined,
-    sortUndefined: 'last',
-    header: ({ column }) => (
-      <div className="flex justify-center">
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          PSA 9 <ArrowUpDown />
-        </Button>
-      </div>
-    ),
-    cell: ({ row }) => {
-      const today = row.original.cardmarketPsa9;
-      const yesterday = row.original.cardmarketPsa9Yesterday;
-      const pct = today != null && yesterday != null && yesterday !== 0
-        ? ((today - yesterday) / yesterday) * 100
-        : null;
-      const isNew = today != null && yesterday == null;
-      const isGone = today == null && yesterday != null;
-      return (
-        <div className="text-center tabular-nums text-sm">
-          {today != null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(today) : ''}
-          {pct != null && pct !== 0 && (
-            <sup className={`ml-1 text-xs ${pct > 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
-            </sup>
-          )}
-          {isNew && <sup className="ml-1 text-xs text-red-500">new</sup>}
-          {isGone && <sup className="ml-1 text-xs text-green-500">gone</sup>}
-        </div>
-      );
-    },
-    enableSorting: true,
-  },
-  {
-    id: 'cardmarketPsa10',
-    size: 110,
-    accessorFn: (row) => row.cardmarketPsa10 ?? undefined,
+    accessorFn: (row) => row.marketPsa10 ?? undefined,
     sortUndefined: 'last',
     filterFn: (row, _columnId, filterValue: [number | null, number | null]) => {
       const [min, max] = filterValue;
       if (min == null && max == null) return true;
-      const val = row.original.cardmarketPsa10;
+      const val = row.original.marketPsa10;
       if (val == null) return false;
       if (min != null && val < min) return false;
       if (max != null && val > max) return false;
@@ -262,23 +251,56 @@ const columns: ColumnDef<GetCardsResponseItem>[] = [
       </div>
     ),
     cell: ({ row }) => {
-      const today = row.original.cardmarketPsa10;
-      const yesterday = row.original.cardmarketPsa10Yesterday;
-      const pct = today != null && yesterday != null && yesterday !== 0
-        ? ((today - yesterday) / yesterday) * 100
+      // Market price, with its 7-day move as a superscript.
+      const market = row.original.marketPsa10;
+      const prior = row.original.marketPsa10Prior7d;
+      const pct = market != null && prior != null && prior !== 0
+        ? ((market - prior) / prior) * 100
         : null;
-      const isNew = today != null && yesterday == null;
-      const isGone = today == null && yesterday != null;
       return (
         <div className="text-center tabular-nums text-sm">
-          {today != null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(today) : ''}
+          {market != null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(market) : '—'}
           {pct != null && pct !== 0 && (
             <sup className={`ml-1 text-xs ${pct > 0 ? 'text-green-500' : 'text-red-500'}`}>
               {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
             </sup>
           )}
-          {isNew && <sup className="ml-1 text-xs text-red-500">new</sup>}
-          {isGone && <sup className="ml-1 text-xs text-green-500">gone</sup>}
+        </div>
+      );
+    },
+    enableSorting: true,
+  },
+  {
+    id: 'listingDeal',
+    size: 100,
+    // PSA 10 listing vs market: (lowest listing − market) / market. Negative
+    // means the listing sits below market — an opportunity. Sortable ascending
+    // to float the best deals to the top.
+    accessorFn: (row) => {
+      const market = row.marketPsa10;
+      const listing = row.cardmarketPsa10;
+      if (market == null || market === 0 || listing == null) return undefined;
+      return ((listing - market) / market) * 100;
+    },
+    sortUndefined: 'last',
+    header: ({ column }) => (
+      <div className="flex justify-center">
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          Deal <ArrowUpDown />
+        </Button>
+      </div>
+    ),
+    cell: ({ row }) => {
+      const market = row.original.marketPsa10;
+      const listing = row.original.cardmarketPsa10;
+      if (market == null || market === 0 || listing == null) {
+        return <div className="text-center text-muted-foreground">—</div>;
+      }
+      const pct = ((listing - market) / market) * 100;
+      const color = pct < 0 ? 'text-green-500' : pct > 0 ? 'text-red-500' : '';
+      return (
+        <div className={`text-center tabular-nums text-sm ${color}`}>
+          {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
         </div>
       );
     },
@@ -709,6 +731,11 @@ export function PokemonExclusivePromosTable({
       ]
     : null;
 
+  const marketPriceByGrade = new Map(
+    (displayedCard?.marketPrices ?? []).map((r) => [r.psaGrade, r])
+  );
+  const hasMarketPrices = marketPriceByGrade.size > 0;
+
   const handlePanelOpenChange = (next: boolean) => {
     setPanelOpen(next);
     if (!next) {
@@ -770,6 +797,39 @@ export function PokemonExclusivePromosTable({
                   />
                 </div>
               </>
+            )}
+
+            {displayedCard && (
+              <div className="w-full px-4 lg:px-6">
+                <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
+                  <CardHeader>
+                    <CardTitle>Market Sale Prices</CardTitle>
+                    <CardDescription>
+                      Recency-weighted median of eBay sold prices per grade
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {hasMarketPrices ? (
+                      <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+                        {Array.from({ length: 10 }, (_, i) => i + 1).map((grade) => {
+                          const record = marketPriceByGrade.get(grade);
+                          return (
+                            <div key={grade} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-muted">
+                              <span className="text-xs text-muted-foreground font-medium">PSA {grade}</span>
+                              <span className="text-sm font-semibold">{record ? marketPriceFormatter.format(record.priceEur) : '—'}</span>
+                              <span className="text-[10px] text-muted-foreground">{record ? formatSalesFrequency(record.salesPerDay) : ''}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-16 text-sm text-muted-foreground">
+                        No sale data — sync eBay sales to populate
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             )}
 
             {displayedCard && (
@@ -926,18 +986,18 @@ export function PokemonExclusivePromosTable({
           }
         };
 
-        const psa10Prices = data.map((d) => d.cardmarketPsa10).filter((v): v is number => v != null);
+        const psa10Prices = data.map((d) => d.marketPsa10).filter((v): v is number => v != null);
         const psa10DataMin = psa10Prices.length ? Math.min(...psa10Prices) : 0;
         const psa10DataMax = psa10Prices.length ? Math.max(...psa10Prices) : 0;
 
-        const psa10PriceFilter = (table.getColumn('cardmarketPsa10')?.getFilterValue() as [number | null, number | null]) ?? [null, null];
+        const psa10PriceFilter = (table.getColumn('marketPsa10')?.getFilterValue() as [number | null, number | null]) ?? [null, null];
         const psa10Committed: [number, number] = [psa10PriceFilter[0] ?? psa10DataMin, psa10PriceFilter[1] ?? psa10DataMax];
         const onPsa10Commit = (values: [number, number]) => {
           const [lo, hi] = values;
           if (lo === psa10DataMin && hi === psa10DataMax) {
-            table.getColumn('cardmarketPsa10')?.setFilterValue(undefined);
+            table.getColumn('marketPsa10')?.setFilterValue(undefined);
           } else {
-            table.getColumn('cardmarketPsa10')?.setFilterValue([lo, hi]);
+            table.getColumn('marketPsa10')?.setFilterValue([lo, hi]);
           }
         };
 
@@ -995,7 +1055,7 @@ export function PokemonExclusivePromosTable({
           table.getColumn('regions')?.setFilterValue(undefined);
           table.getColumn('collectionStatus')?.setFilterValue(undefined);
           table.getColumn('psaTotal')?.setFilterValue(undefined);
-          table.getColumn('cardmarketPsa10')?.setFilterValue(undefined);
+          table.getColumn('marketPsa10')?.setFilterValue(undefined);
           table.getColumn('gemRate')?.setFilterValue(undefined);
         };
 
