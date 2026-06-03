@@ -2,9 +2,11 @@ import type {
   GetCardsQuery,
   GetCardsResponse,
   GetCardResponse,
+  GetUnreviewedSalesResponse,
+  GetUnreviewedCountResponse,
+  ReviewSaleRequest,
   SyncCardResponse,
   UpdateCardNoteRequest,
-  UpdateSaleStatusRequest,
   UpsertCollectionEntryRequest,
 } from '@gather/api-contract';
 
@@ -77,6 +79,7 @@ export type SyncSalesResponse = {
   withinWindow: number;
   upserted: number;
   skipped: number;
+  autoValidated: number;
   reverified: number;
   confirmed: number;
   cancelled: number;
@@ -91,7 +94,30 @@ export async function updateCardNote(cardId: string, note: string | null): Promi
 }
 
 export async function invalidateSale(saleId: string): Promise<void> {
-  return apiPatch(`/sales/${saleId}`, { status: 'invalid' } satisfies UpdateSaleStatusRequest);
+  return apiPatch(`/sales/${saleId}`, {
+    action: 'invalidate',
+  } satisfies ReviewSaleRequest);
+}
+
+export async function getUnreviewedSales(
+  page: number,
+  pageSize: number,
+): Promise<GetUnreviewedSalesResponse> {
+  return apiFetch(`/sales/unreviewed${toParams({ page, pageSize })}`);
+}
+
+export async function getUnreviewedCount(): Promise<GetUnreviewedCountResponse> {
+  return apiFetch(`/sales/unreviewed/count`);
+}
+
+export async function approveSale(
+  saleId: string,
+  edits: { psaGrade?: number; price?: number } = {},
+): Promise<void> {
+  return apiPatch(`/sales/${saleId}`, {
+    action: 'approve',
+    ...edits,
+  } satisfies ReviewSaleRequest);
 }
 
 export async function syncAllPromos(): Promise<void> {

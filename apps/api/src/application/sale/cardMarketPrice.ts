@@ -15,7 +15,15 @@ export const psa10MarketPriceFromSales = (
     if (sale.status === "cancelled" || sale.status === "invalid") return [];
     const priceEur = convertToEur(sale.price, sale.currency, usdToEur);
     if (priceEur === null) return [];
-    return [{ psaGrade: sale.psaGrade, priceEur, soldAt: sale.soldAt }];
+    return [
+      {
+        psaGrade: sale.psaGrade,
+        priceEur,
+        soldAt: sale.soldAt,
+        isBestOffer: sale.isBestOffer,
+        reviewedAt: sale.reviewedAt,
+      },
+    ];
   });
 
   const psa10 = computeMarketPrices(forPricing, now).find(

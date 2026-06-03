@@ -90,8 +90,14 @@ export type SaleEntity = {
   currency: string;
   title: string;
   isBestOffer: boolean;
+  // eBay store slug of the seller, when the listing came from a store
+  // (e.g. "psa"); null otherwise. Drives trusted-seller auto-validation.
+  seller: string | null;
   status: SaleStatus;
   verificationStage: VerificationStage;
+  // Manual adjudication marker: null = unreviewed. Orthogonal to status and
+  // verificationStage. See Sale Review in CONTEXT.md.
+  reviewedAt: Date | null;
   soldAt: Date;
   createdAt: Date;
   updatedAt: Date;

@@ -10,6 +10,7 @@ import {
 import {
   SidebarGroup,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -30,6 +31,7 @@ export function NavMain({
     items?: {
       title: string;
       url: string;
+      badge?: number;
     }[];
   }[];
 }) {
@@ -79,6 +81,9 @@ export function NavMain({
                           >
                             <Link href={subItem.url}>{subItem.title}</Link>
                           </SidebarMenuSubButton>
+                          {subItem.badge ? (
+                            <SidebarMenuBadge>{subItem.badge}</SidebarMenuBadge>
+                          ) : null}
                         </SidebarMenuSubItem>
                       ))}
                     </SidebarMenuSub>

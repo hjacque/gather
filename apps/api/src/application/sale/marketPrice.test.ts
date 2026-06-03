@@ -109,4 +109,64 @@ describe("computeMarketPrices", () => {
     ];
     expect(computeMarketPrices(sales, now)[0].priceEur).toBe(420);
   });
+
+  describe("Best-Offer / review gating", () => {
+    it("excludes an unreviewed Best-Offer (inflated ask, not a realized price)", () => {
+      const sales: SaleForPricing[] = [
+        { psaGrade: 10, priceEur: 500, soldAt: now },
+        {
+          psaGrade: 10,
+          priceEur: 9999,
+          soldAt: now,
+          isBestOffer: true,
+          reviewedAt: null,
+        },
+      ];
+      const record = computeMarketPrices(sales, now)[0];
+      // The 9999 Best-Offer ask is ignored; only the 500 realized sale counts.
+      expect(record.priceEur).toBe(500);
+      expect(record.sampleSize).toBe(1);
+    });
+
+    it("includes a reviewed Best-Offer (true price entered)", () => {
+      const sales: SaleForPricing[] = [
+        {
+          psaGrade: 10,
+          priceEur: 480,
+          soldAt: now,
+          isBestOffer: true,
+          reviewedAt: now,
+        },
+      ];
+      const record = computeMarketPrices(sales, now)[0];
+      expect(record.priceEur).toBe(480);
+      expect(record.sampleSize).toBe(1);
+    });
+
+    it("includes non-Best-Offer sales regardless of review state", () => {
+      const sales: SaleForPricing[] = [
+        {
+          psaGrade: 10,
+          priceEur: 300,
+          soldAt: now,
+          isBestOffer: false,
+          reviewedAt: null,
+        },
+      ];
+      expect(computeMarketPrices(sales, now)[0].sampleSize).toBe(1);
+    });
+
+    it("yields no estimate for a grade whose only sale is an unreviewed Best-Offer", () => {
+      const sales: SaleForPricing[] = [
+        {
+          psaGrade: 9,
+          priceEur: 250,
+          soldAt: now,
+          isBestOffer: true,
+          reviewedAt: null,
+        },
+      ];
+      expect(computeMarketPrices(sales, now)).toEqual([]);
+    });
+  });
 });

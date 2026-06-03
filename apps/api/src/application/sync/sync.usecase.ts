@@ -35,6 +35,7 @@ export class SyncUsecase {
       withinWindow: 0,
       upserted: 0,
       skipped: 0,
+      autoValidated: 0,
       reverified: 0,
       confirmed: 0,
       cancelled: 0,

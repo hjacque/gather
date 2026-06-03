@@ -149,6 +149,10 @@ export class EbaySalesSource {
           priceText: text(".s-card__price"),
           soldText: text(".s-card__caption"),
           isBestOffer: /best offer/i.test(row.textContent ?? ""),
+          sellerHref:
+            row
+              .querySelector(".s-card__seller-logo")
+              ?.getAttribute("href") ?? null,
         };
       })
     );

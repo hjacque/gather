@@ -1,9 +1,24 @@
 import { SaleEntity, NewSale, SaleVerification } from "../../entities/sale.entity";
 
+// One Card with its unreviewed Sales, for the Sale Review queue. Carries just
+// the Card summary fields the review page renders.
+export type UnreviewedSalesCard = {
+  card: {
+    id: string;
+    name: string;
+    number: string | null;
+    imageUrl: string | null;
+    setName: string;
+  };
+  sales: SaleEntity[];
+};
+
 export abstract class SaleRepositoryPort {
   // Upsert a scraped Sale keyed on (platform, itemId). On conflict the mutable
   // scraped fields are refreshed; status and verificationStage are left intact
-  // because they are owned by the re-verification pass.
+  // because they are owned by the re-verification pass. Reviewed Sales
+  // (reviewedAt set) are frozen — their scraped fields are not touched, so an
+  // admin's grade/price corrections survive the daily re-scrape.
   abstract upsert(sale: NewSale): Promise<void>;
 
   // All Sales for a Card, oldest first. Includes pending and cancelled; the
@@ -33,4 +48,25 @@ export abstract class SaleRepositoryPort {
   // Flag a Sale as user-invalidated. Terminal: the verification stage is moved
   // to complete so the re-verification pass never revisits it.
   abstract markInvalid(saleId: string): Promise<void>;
+
+  // The Sale Review queue: Cards that still have unreviewed Sales
+  // (reviewedAt IS NULL AND status NOT IN ('cancelled','invalid')), ordered by
+  // each Card's oldest unreviewed Sale, paginated by Card (1-based `page`).
+  // Each Card bundles only its unreviewed Sales.
+  abstract getUnreviewedSalesByCard(
+    page: number,
+    pageSize: number
+  ): Promise<{ cards: UnreviewedSalesCard[]; totalCards: number }>;
+
+  // Record a Sale Review: stamp reviewedAt and apply any admin corrections
+  // (a misparsed grade, a Best-Offer's true price). Edits left undefined are
+  // untouched.
+  abstract markReviewed(
+    saleId: string,
+    edits: { psaGrade?: number; price?: number }
+  ): Promise<void>;
+
+  // Count of Sales still awaiting review, under the same filter as the queue.
+  // Drives the sidebar badge.
+  abstract getUnreviewedCount(): Promise<number>;
 }

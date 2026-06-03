@@ -6,6 +6,7 @@ const row = (over: Partial<RawSaleRow> = {}): RawSaleRow => ({
   priceText: "$1,009.00",
   soldText: "Sold May 31, 2026",
   isBestOffer: false,
+  sellerHref: null,
   ...over,
 });
 
@@ -19,7 +20,21 @@ describe("extractSaleRow", () => {
       currency: "USD",
       soldAt: new Date("2026-05-31T00:00:00Z"),
       isBestOffer: false,
+      seller: null,
     });
+  });
+
+  it("parses the store seller slug from the seller-logo href", () => {
+    expect(
+      extractSaleRow(row({ sellerHref: "http://stores.ebay.com/psa" }))?.seller,
+    ).toBe("psa");
+    expect(
+      extractSaleRow(row({ sellerHref: "https://www.ebay.com/str/PSA" }))?.seller,
+    ).toBe("psa");
+  });
+
+  it("has a null seller when the row carries no store link", () => {
+    expect(extractSaleRow(row({ sellerHref: null }))?.seller).toBeNull();
   });
 
   it("strips thousands separators from the price", () => {

@@ -47,13 +47,24 @@ export class GetCardUsecase {
       ];
     });
 
-    // Per-grade market price from the same EUR-converted, moderated sales.
+    // Per-grade market price from the EUR-converted sales. Re-derived from the
+    // Sale entities (not saleRecords) so the Best-Offer/review gate can see each
+    // sale's isBestOffer and reviewedAt.
     const marketPrices = computeMarketPrices(
-      saleRecords.map((s) => ({
-        psaGrade: s.psaGrade,
-        priceEur: s.priceEur,
-        soldAt: s.soldAt,
-      }))
+      sales.flatMap((sale) => {
+        if (sale.status === "cancelled" || sale.status === "invalid") return [];
+        const priceEur = convertToEur(sale.price, sale.currency, usdToEur);
+        if (priceEur === null) return [];
+        return [
+          {
+            psaGrade: sale.psaGrade,
+            priceEur,
+            soldAt: sale.soldAt,
+            isBestOffer: sale.isBestOffer,
+            reviewedAt: sale.reviewedAt,
+          },
+        ];
+      })
     );
 
     const psaPopReport = psaReport

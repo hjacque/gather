@@ -6,6 +6,7 @@ import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port"
 import { EbaySalesSource } from "./sources/ebaySales.source";
 import { parseListingTitle } from "./sources/listingTitleParser";
 import { classifyReverification } from "./sources/reverificationClassifier";
+import { isTrustedSeller } from "./sources/trustedSeller";
 
 // Trailing window re-fetched on every run; sales older than this are ignored so
 // re-running is idempotent over a fixed recent window (see #84).
@@ -17,6 +18,7 @@ export type SaleSyncCounters = {
   withinWindow: number; // candidates inside the trailing 30-day window
   upserted: number; // candidates accepted by the parser and persisted
   skipped: number; // candidates rejected by the parser (bundle / foreign / etc.)
+  autoValidated: number; // upserted Sales auto-validated by trusted seller
   reverified: number; // pending Sales revisited at a checkpoint this run
   confirmed: number; // reverified Sales that survived to 30 days
   cancelled: number; // reverified Sales found gone / relisted
@@ -34,6 +36,7 @@ const emptyCounters = (): SaleSyncCounters => ({
   withinWindow: 0,
   upserted: 0,
   skipped: 0,
+  autoValidated: 0,
   reverified: 0,
   confirmed: 0,
   cancelled: 0,
@@ -145,6 +148,11 @@ export class SyncSalesUsecase {
         continue;
       }
 
+      // Sales from trusted seller stores (e.g. PSA's own eBay store) are
+      // auto-validated: persisted already reviewed and confirmed, so they skip
+      // both the manual Sale Review queue and the re-verification pass.
+      const trusted = isTrustedSeller(candidate.seller);
+
       await this.saleRepository.upsert({
         cardId: card.id,
         platform: "ebay",
@@ -154,9 +162,14 @@ export class SyncSalesUsecase {
         currency: candidate.currency,
         title: candidate.title,
         isBestOffer: candidate.isBestOffer,
+        seller: candidate.seller,
         soldAt: candidate.soldAt,
+        reviewedAt: trusted ? new Date() : null,
+        status: trusted ? "confirmed" : undefined,
+        verificationStage: trusted ? "complete" : undefined,
       });
       counters.upserted++;
+      if (trusted) counters.autoValidated++;
     }
 
     // Re-verification pass: revisit this Card's due pending Sales at their

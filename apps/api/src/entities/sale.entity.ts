@@ -19,5 +19,15 @@ export type NewSale = {
   currency: string;
   title: string;
   isBestOffer: boolean;
+  // eBay store slug of the seller, or null for non-store listings.
+  seller: string | null;
+  // Trusted-seller auto-validation: when the seller is trusted the Sale is
+  // persisted already reviewed (reviewedAt) and confirmed (status +
+  // verificationStage), bypassing both the manual queue and re-verification.
+  // For untrusted sellers reviewedAt is null and status/verificationStage are
+  // omitted so the repository applies its pending/unverified defaults.
+  reviewedAt: Date | null;
+  status?: SaleStatus;
+  verificationStage?: VerificationStage;
   soldAt: Date;
 };

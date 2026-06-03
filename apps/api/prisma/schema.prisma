@@ -142,8 +142,10 @@ model Sale {
   currency          String
   title             String
   isBestOffer       Boolean           @default(false)
+  seller            String?
   status            SaleStatus        @default(pending)
   verificationStage VerificationStage @default(unverified)
+  reviewedAt        DateTime?
   soldAt            DateTime
 
   createdAt         DateTime          @default(now())

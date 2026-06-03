@@ -129,6 +129,55 @@ export type UpdateSaleStatusRequest = {
   status: 'invalid';
 };
 
+// Sale Review action from the backoffice page. `approve` stamps the Sale reviewed
+// and applies any corrections (a misparsed grade, a Best-Offer's true price);
+// `invalidate` flags it invalid (which also counts as reviewed).
+export type ReviewSaleRequest =
+  | { action: 'approve'; psaGrade?: number; price?: number }
+  | { action: 'invalidate' };
+
+// ─── GET /sales/unreviewed ────────────────────────────────────────────────────
+
+// One unreviewed Sale as shown on the Sale Review page. Unlike SaleRecord this
+// carries the raw `title` (the primary signal for judging grade/card) and the
+// original price + currency alongside the EUR conversion (null when the currency
+// is not yet convertible).
+export type ReviewSaleRecord = {
+  id: string;
+  title: string;
+  psaGrade: number;
+  price: number;
+  currency: string;
+  priceEur: number | null;
+  soldAt: Date;
+  isBestOffer: boolean;
+  status: SaleStatus;
+  url: string;
+};
+
+export type UnreviewedSalesCard = {
+  id: string;
+  name: string;
+  number: string | null;
+  set: string;
+  imageUrl: string | null;
+  sales: ReviewSaleRecord[];
+};
+
+export type GetUnreviewedSalesResponse = {
+  cards: UnreviewedSalesCard[];
+  // Total number of Cards with unreviewed Sales, for pagination.
+  totalCards: number;
+  page: number;
+  pageSize: number;
+};
+
+// ─── GET /sales/unreviewed/count ──────────────────────────────────────────────
+
+export type GetUnreviewedCountResponse = {
+  count: number;
+};
+
 // ─── GET /sync/card/:id/cardmarket | GET /sync/card/:id/psa ─────────────────
 
 export type SyncCardResponse = CardEntity & DailyPrices & {

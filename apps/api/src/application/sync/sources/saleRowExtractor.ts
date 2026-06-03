@@ -9,6 +9,8 @@
  * Listing Title Parser's job, run by the use case over `title`.
  */
 
+import { parseSellerSlug } from "./trustedSeller";
+
 // Raw, untyped strings as read straight off a result row's DOM.
 export type RawSaleRow = {
   listingId: string | null; // data-listingid
@@ -16,6 +18,7 @@ export type RawSaleRow = {
   priceText: string; // e.g. "$1,009.00", "US $1,009.00", "€850,00"
   soldText: string; // e.g. "Sold May 31, 2026"
   isBestOffer: boolean;
+  sellerHref: string | null; // href of the store seller link, when present
 };
 
 // A single sold transaction candidate, before card/grade classification.
@@ -26,6 +29,7 @@ export type SaleCandidate = {
   currency: string;
   soldAt: Date;
   isBestOffer: boolean;
+  seller: string | null; // parsed store slug, e.g. "psa"; null for non-stores
 };
 
 // eBay's carousel ad rows reuse this placeholder title.
@@ -61,7 +65,7 @@ function parseSoldAt(soldText: string): Date | null {
 }
 
 export function extractSaleRow(raw: RawSaleRow): SaleCandidate | null {
-  const title = raw.title.trim();
+  const title = raw.title.replace(/Opens in a new window or tab\s*$/i, "").trim();
   if (!title || title === AD_TITLE) return null;
   if (!raw.listingId) return null;
 
@@ -77,5 +81,6 @@ export function extractSaleRow(raw: RawSaleRow): SaleCandidate | null {
     currency,
     soldAt,
     isBestOffer: raw.isBestOffer,
+    seller: parseSellerSlug(raw.sellerHref),
   };
 }

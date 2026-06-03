@@ -3,7 +3,7 @@ import { Usecases } from "../../application/init.application";
 import { z } from "zod";
 import { errorHandler } from "./middlewares/http.errors";
 import { SyncUsecaseInputDto } from "application/sync/sync.usecase";
-import type { UpdateCardNoteRequest, UpdateSaleStatusRequest, UpsertCollectionEntryRequest } from "@gather/api-contract";
+import type { UpdateCardNoteRequest, UpsertCollectionEntryRequest } from "@gather/api-contract";
 import { REGIONS } from "@gather/types";
 require("express-async-errors");
 
@@ -19,6 +19,8 @@ export const http = async ({
   syncPsaPopReportsUsecase,
   syncSalesUsecase,
   invalidateSaleUsecase,
+  reviewSaleUsecase,
+  getUnreviewedSalesUsecase,
   updateCardNoteUsecase,
   upsertCollectionEntryUsecase,
   deleteCollectionEntryUsecase,
@@ -92,12 +94,47 @@ export const http = async ({
     res.json(result);
   });
 
+  app.get("/sales/unreviewed/count", async (_req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    const result = await getUnreviewedSalesUsecase.count();
+
+    res.status(200);
+    res.json(result);
+  });
+
+  app.get("/sales/unreviewed", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    const querySchema = z.object({
+      page: z.coerce.number().int().min(1).default(1),
+      pageSize: z.coerce.number().int().min(1).max(200).default(20),
+    });
+    const { page, pageSize } = querySchema.parse(req.query);
+    const result = await getUnreviewedSalesUsecase.execute(page, pageSize);
+
+    res.status(200);
+    res.json(result);
+  });
+
   app.patch("/sales/:saleid", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
-    const bodySchema = z.object({ status: z.literal("invalid") });
-    const { status } = bodySchema.parse(req.body) as UpdateSaleStatusRequest;
-    if (status === "invalid") {
+    // Sale Review action: approve (stamp reviewed + apply corrections) or
+    // invalidate (flag invalid, which also counts as reviewed).
+    const bodySchema = z.discriminatedUnion("action", [
+      z.object({
+        action: z.literal("approve"),
+        psaGrade: z.number().int().min(1).max(10).optional(),
+        price: z.number().positive().optional(),
+      }),
+      z.object({ action: z.literal("invalidate") }),
+    ]);
+    const body = bodySchema.parse(req.body);
+    if (body.action === "invalidate") {
       await invalidateSaleUsecase.execute(req.params.saleid);
+    } else {
+      await reviewSaleUsecase.approve(req.params.saleid, {
+        psaGrade: body.psaGrade,
+        price: body.price,
+      });
     }
     res.status(204).end();
   });
