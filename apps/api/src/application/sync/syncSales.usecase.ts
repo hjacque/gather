@@ -21,7 +21,7 @@ export type SaleSyncCounters = {
   autoValidated: number; // upserted Sales auto-validated by trusted seller
   reverified: number; // pending Sales revisited at a checkpoint this run
   confirmed: number; // reverified Sales that survived to 30 days
-  cancelled: number; // reverified Sales found gone / relisted
+  invalidated: number; // reverified Sales found gone / relisted
 };
 
 export type SyncSalesResult = SaleSyncCounters & { cardId: string };
@@ -39,7 +39,7 @@ const emptyCounters = (): SaleSyncCounters => ({
   autoValidated: 0,
   reverified: 0,
   confirmed: 0,
-  cancelled: 0,
+  invalidated: 0,
 });
 
 export class SyncSalesUsecase {
@@ -186,7 +186,7 @@ export class SyncSalesUsecase {
 
       counters.reverified++;
       if (outcome.status === "confirmed") counters.confirmed++;
-      if (outcome.status === "cancelled") counters.cancelled++;
+      if (outcome.status === "invalid") counters.invalidated++;
 
       await new Promise((resolve) =>
         setTimeout(resolve, 2000 + Math.random() * 2000)

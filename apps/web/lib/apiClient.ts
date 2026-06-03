@@ -82,7 +82,7 @@ export type SyncSalesResponse = {
   autoValidated: number;
   reverified: number;
   confirmed: number;
-  cancelled: number;
+  invalidated: number;
 };
 
 export async function syncCardSales(cardId: string): Promise<SyncSalesResponse> {

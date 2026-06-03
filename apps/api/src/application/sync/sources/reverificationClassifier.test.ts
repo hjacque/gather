@@ -11,9 +11,9 @@ describe("classifyReverification", () => {
       ["not-found", "30d"],
       ["active", "7d"],
       ["active", "30d"],
-    ])("cancels a %s page at the %s check (terminal)", (state, checkpoint) => {
+    ])("invalidates a %s page at the %s check (terminal)", (state, checkpoint) => {
       expect(classifyReverification(state, checkpoint)).toEqual({
-        status: "cancelled",
+        status: "invalid",
         verificationStage: "complete",
       });
     });
@@ -47,7 +47,8 @@ describe("classifyReverification", () => {
     it("the 7-day check can never confirm", () => {
       const outcomes: ItemPageState[] = ["sold", "active", "not-found"];
       for (const state of outcomes) {
-        expect(classifyReverification(state, "7d").status).not.toBe("confirmed");
+        const { status } = classifyReverification(state, "7d");
+        expect(status).not.toBe("confirmed");
       }
     });
   });

@@ -38,7 +38,7 @@ export class SyncUsecase {
       autoValidated: 0,
       reverified: 0,
       confirmed: 0,
-      cancelled: 0,
+      invalidated: 0,
     };
 
     let paginationPage = 1;

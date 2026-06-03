@@ -8,8 +8,8 @@ import { SaleStatus, VerificationStage } from "@gather/types";
  *
  * The only state that keeps a Sale alive is a still-visible *sold* page. A page
  * that is gone (404 / removed) or back to a live/relisted listing means the
- * recorded sale did not stick → cancelled. So detection only has to recognise
- * the positive "sold" signal; everything else collapses to cancelled.
+ * recorded sale did not stick → invalid. So detection only has to recognise
+ * the positive "sold" signal; everything else collapses to invalid.
  *
  * Lifecycle: a sold Sale at the 7-day check only advances to `checked_7d`
  * (never confirms — the 7-day check exists to catch early cancellations); it is
@@ -37,7 +37,7 @@ export function classifyReverification(
 ): ReverificationOutcome {
   // Sale didn't stick: gone, or relisted/active again.
   if (state !== "sold") {
-    return { status: "cancelled", verificationStage: "complete" };
+    return { status: "invalid", verificationStage: "complete" };
   }
 
   // Still sold at 7 days — survived early-cancellation window, but not yet

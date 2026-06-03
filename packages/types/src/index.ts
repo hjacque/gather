@@ -37,7 +37,7 @@ export type FoilPattern = typeof FOIL_PATTERNS[number];
 export const PLATFORMS = ['ebay'] as const;
 export type Platform = typeof PLATFORMS[number];
 
-export const SALE_STATUSES = ['pending', 'confirmed', 'cancelled', 'invalid'] as const;
+export const SALE_STATUSES = ['pending', 'confirmed', 'invalid'] as const;
 export type SaleStatus = typeof SALE_STATUSES[number];
 
 export const VERIFICATION_STAGES = ['unverified', 'checked_7d', 'complete'] as const;

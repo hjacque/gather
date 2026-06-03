@@ -21,7 +21,7 @@ export abstract class SaleRepositoryPort {
   // admin's grade/price corrections survive the daily re-scrape.
   abstract upsert(sale: NewSale): Promise<void>;
 
-  // All Sales for a Card, oldest first. Includes pending and cancelled; the
+  // All Sales for a Card, oldest first. Includes pending and invalid; the
   // read layer decides what to surface.
   abstract getCardSales(cardId: string): Promise<SaleEntity[]>;
 
@@ -33,7 +33,7 @@ export abstract class SaleRepositoryPort {
   //   - pending + unverified, first scraped ≥ 7 days ago  (7-day check)
   //   - pending + checked_7d, first scraped ≥ 30 days ago (30-day check)
   // Age keys off createdAt (when first scraped), not soldAt. Terminal Sales
-  // (confirmed/cancelled) are never returned. Optionally scoped to one Card.
+  // (confirmed/invalid) are never returned. Optionally scoped to one Card.
   abstract getSalesDueForVerification(
     now: Date,
     cardId?: string
@@ -50,7 +50,7 @@ export abstract class SaleRepositoryPort {
   abstract markInvalid(saleId: string): Promise<void>;
 
   // The Sale Review queue: Cards that still have unreviewed Sales
-  // (reviewedAt IS NULL AND status NOT IN ('cancelled','invalid')), ordered by
+  // (reviewedAt IS NULL AND status = 'pending'), ordered by
   // each Card's oldest unreviewed Sale, paginated by Card (1-based `page`).
   // Each Card bundles only its unreviewed Sales.
   abstract getUnreviewedSalesByCard(

@@ -28,10 +28,10 @@ export class GetCardUsecase {
         getEurToUsdRate(),
       ]);
 
-    // Convert each Sale to EUR at read time, dropping cancelled/invalid Sales
-    // and any whose currency we cannot yet convert.
+    // Convert each Sale to EUR at read time, dropping invalid Sales and any
+    // whose currency we cannot yet convert.
     const saleRecords: SaleRecord[] = sales.flatMap((sale) => {
-      if (sale.status === "cancelled" || sale.status === "invalid") return [];
+      if (sale.status === "invalid") return [];
       const priceEur = convertToEur(sale.price, sale.currency, usdToEur);
       if (priceEur === null) return [];
       return [
@@ -52,7 +52,7 @@ export class GetCardUsecase {
     // sale's isBestOffer and reviewedAt.
     const marketPrices = computeMarketPrices(
       sales.flatMap((sale) => {
-        if (sale.status === "cancelled" || sale.status === "invalid") return [];
+        if (sale.status === "invalid") return [];
         const priceEur = convertToEur(sale.price, sale.currency, usdToEur);
         if (priceEur === null) return [];
         return [

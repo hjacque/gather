@@ -153,8 +153,8 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
   ): Promise<{ cards: UnreviewedSalesCard[]; totalCards: number }> {
     // Page over Cards, ordered by each Card's oldest unreviewed Sale, so nothing
     // rots at the bottom of the queue. The filter mirrors the read layer:
-    // already-reviewed, cancelled, and invalid Sales never appear.
-    const filter = Prisma.sql`"reviewedAt" IS NULL AND "status" NOT IN ('cancelled', 'invalid')`;
+    // already-reviewed and invalid Sales never appear.
+    const filter = Prisma.sql`"reviewedAt" IS NULL AND "status" = 'pending'`;
 
     const [pageRows, totalRows] = await Promise.all([
       this.prisma.$queryRaw<{ cardId: string }[]>`
@@ -185,7 +185,7 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
         where: {
           cardId: { in: cardIds },
           reviewedAt: null,
-          status: { notIn: ["cancelled", "invalid"] },
+          status: "pending",
         },
         // Best-Offers last (they need manual price entry) so the easy
         // pricing-relevant sales clear first.
@@ -228,7 +228,7 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
     return this.prisma.sale.count({
       where: {
         reviewedAt: null,
-        status: { notIn: ["cancelled", "invalid"] },
+        status: "pending",
       },
     });
   }

@@ -2,8 +2,8 @@ import { SaleEntity } from "../../entities/sale.entity";
 import { convertToEur } from "./eurConverter";
 import { computeMarketPrices } from "./marketPrice";
 
-// Reduce a card's raw sales to its PSA 10 market price in EUR: drop
-// cancelled/invalid sales and unconvertible currencies, convert to EUR, then
+// Reduce a card's raw sales to its PSA 10 market price in EUR: drop invalid
+// sales and unconvertible currencies, convert to EUR, then
 // take the recency-weighted median of the PSA 10 grade. Null when no usable
 // PSA 10 sales.
 export const psa10MarketPriceFromSales = (
@@ -12,7 +12,7 @@ export const psa10MarketPriceFromSales = (
   now: Date = new Date()
 ): number | null => {
   const forPricing = sales.flatMap((sale) => {
-    if (sale.status === "cancelled" || sale.status === "invalid") return [];
+    if (sale.status === "invalid") return [];
     const priceEur = convertToEur(sale.price, sale.currency, usdToEur);
     if (priceEur === null) return [];
     return [
