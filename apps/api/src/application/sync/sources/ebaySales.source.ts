@@ -140,20 +140,28 @@ export class EbaySalesSource {
 
   private async readRows(page: Page): Promise<RawSaleRow[]> {
     return page.$$eval("li.s-card[data-listingid]", (rows) =>
-      rows.map((row) => {
+      rows.flatMap((row) => {
+        // Skip rows where eBay signals the transaction was cancelled ("Ended").
+        const signal = row.querySelector(
+          '[data-testid="ux-hotness-signal-text"]'
+        )?.textContent?.trim();
+        if (signal === "Ended") return [];
+
         const text = (sel: string) =>
           row.querySelector(sel)?.textContent?.trim() ?? "";
-        return {
-          listingId: row.getAttribute("data-listingid"),
-          title: text(".s-card__title"),
-          priceText: text(".s-card__price"),
-          soldText: text(".s-card__caption"),
-          isBestOffer: /best offer/i.test(row.textContent ?? ""),
-          sellerHref:
-            row
-              .querySelector(".s-card__seller-logo")
-              ?.getAttribute("href") ?? null,
-        };
+        return [
+          {
+            listingId: row.getAttribute("data-listingid"),
+            title: text(".s-card__title"),
+            priceText: text(".s-card__price"),
+            soldText: text(".s-card__caption"),
+            isBestOffer: /best offer/i.test(row.textContent ?? ""),
+            sellerHref:
+              row
+                .querySelector(".s-card__seller-logo")
+                ?.getAttribute("href") ?? null,
+          },
+        ];
       })
     );
   }
