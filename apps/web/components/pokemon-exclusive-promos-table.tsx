@@ -437,13 +437,14 @@ function NameSearchInput({
   );
 }
 
-function PsaPopSlider({
+function RangeSliderFilter({
   label,
   color = 'default',
   dataMin,
   dataMax,
   committed,
   onCommit,
+  decimals = 0,
 }: {
   label?: string;
   color?: 'default' | 'blue' | 'orange' | 'purple';
@@ -451,16 +452,20 @@ function PsaPopSlider({
   dataMax: number;
   committed: [number, number];
   onCommit: (values: [number, number]) => void;
+  decimals?: number;
 }) {
+  const fmt = (v: number) => decimals > 0 ? v.toFixed(decimals) : String(v);
+  const round = (v: number) => decimals > 0 ? Math.round(v * 10 ** decimals) / 10 ** decimals : Math.round(v);
+
   const [local, setLocal] = React.useState<[number, number]>(committed);
-  const [minText, setMinText] = React.useState(String(committed[0]));
-  const [maxText, setMaxText] = React.useState(String(committed[1]));
+  const [minText, setMinText] = React.useState(fmt(committed[0]));
+  const [maxText, setMaxText] = React.useState(fmt(committed[1]));
   const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   React.useEffect(() => {
     setLocal(committed);
-    setMinText(String(committed[0]));
-    setMaxText(String(committed[1]));
+    setMinText(fmt(committed[0]));
+    setMaxText(fmt(committed[1]));
   }, [committed[0], committed[1]]);
 
   const schedule = (next: [number, number]) => {
@@ -471,16 +476,18 @@ function PsaPopSlider({
   const handleSlider = (values: number[]) => {
     const next: [number, number] = [values[0], values[1]];
     setLocal(next);
-    setMinText(String(next[0]));
-    setMaxText(String(next[1]));
+    setMinText(fmt(next[0]));
+    setMaxText(fmt(next[1]));
     schedule(next);
   };
 
   const handleMinInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMinText(e.target.value);
-    const parsed = parseInt(e.target.value, 10);
+    const raw = e.target.value;
+    setMinText(raw);
+    const parsed = parseFloat(raw);
     if (!isNaN(parsed)) {
-      const clamped = Math.max(dataMin, Math.min(parsed, local[1]));
+      const rounded = round(parsed);
+      const clamped = Math.max(dataMin, Math.min(rounded, local[1]));
       const next: [number, number] = [clamped, local[1]];
       setLocal(next);
       schedule(next);
@@ -488,34 +495,39 @@ function PsaPopSlider({
   };
 
   const handleMaxInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMaxText(e.target.value);
-    const parsed = parseInt(e.target.value, 10);
+    const raw = e.target.value;
+    setMaxText(raw);
+    const parsed = parseFloat(raw);
     if (!isNaN(parsed)) {
-      const clamped = Math.min(dataMax, Math.max(parsed, local[0]));
+      const rounded = round(parsed);
+      const clamped = Math.min(dataMax, Math.max(rounded, local[0]));
       const next: [number, number] = [local[0], clamped];
       setLocal(next);
       schedule(next);
     }
   };
 
-  const fieldWidth = `calc(${Math.max(String(dataMax).length, 2)}ch + 0.5rem)`;
+  const handleMinBlur = () => setMinText(fmt(local[0]));
+  const handleMaxBlur = () => setMaxText(fmt(local[1]));
+
+  const fieldWidth = `calc(${Math.max(String(Math.round(dataMax)).length, 2) + (decimals > 0 ? decimals + 1 : 0)}ch + 0.5rem)`;
 
   return (
     <div className="flex items-center gap-2 border rounded-md px-1 h-8">
       {label && <span className="text-xs text-muted-foreground shrink-0 pl-1">{label}</span>}
       <Input
         type="text"
-        inputMode="numeric"
+        inputMode="decimal"
         value={minText}
         onChange={handleMinInput}
-        onBlur={() => setMinText(String(local[0]))}
+        onBlur={handleMinBlur}
         style={{ width: fieldWidth }}
         className="h-6 shrink-0 border-0 shadow-none px-1 py-0 text-xs tabular-nums text-right focus-visible:ring-0"
       />
       <Slider
         min={dataMin}
         max={dataMax}
-        step={1}
+        step={decimals > 0 ? 10 ** -decimals : 1}
         value={local}
         onValueChange={handleSlider}
         className={`w-40${
@@ -527,10 +539,10 @@ function PsaPopSlider({
       />
       <Input
         type="text"
-        inputMode="numeric"
+        inputMode="decimal"
         value={maxText}
         onChange={handleMaxInput}
-        onBlur={() => setMaxText(String(local[1]))}
+        onBlur={handleMaxBlur}
         style={{ width: fieldWidth }}
         className="h-6 shrink-0 border-0 shadow-none px-1 py-0 text-xs tabular-nums focus-visible:ring-0"
       />
@@ -1177,7 +1189,7 @@ export function PokemonExclusivePromosTable({
               </PopoverContent>
             </Popover>
             {psaDataMax > psaDataMin && (
-              <PsaPopSlider
+              <RangeSliderFilter
                 label="Pop"
                 color="purple"
                 dataMin={psaDataMin}
@@ -1187,17 +1199,18 @@ export function PokemonExclusivePromosTable({
               />
             )}
             {psa10DataMax > psa10DataMin && (
-              <PsaPopSlider
+              <RangeSliderFilter
                 label="PSA 10 €"
                 color="orange"
                 dataMin={psa10DataMin}
                 dataMax={psa10DataMax}
                 committed={psa10Committed}
                 onCommit={onPsa10Commit}
+                decimals={2}
               />
             )}
             {gemRateDataMax > gemRateDataMin && (
-              <PsaPopSlider
+              <RangeSliderFilter
                 label="Gem %"
                 color="blue"
                 dataMin={gemRateDataMin}
