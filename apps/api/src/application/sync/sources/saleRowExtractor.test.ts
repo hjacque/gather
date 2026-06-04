@@ -21,6 +21,7 @@ describe("extractSaleRow", () => {
       soldAt: new Date("2026-05-31T00:00:00Z"),
       isBestOffer: false,
       seller: null,
+      trustedSeller: false,
     });
   });
 

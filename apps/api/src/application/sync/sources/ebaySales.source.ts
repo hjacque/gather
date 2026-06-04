@@ -2,6 +2,7 @@ import type { Page } from "rebrowser-puppeteer-core";
 import { CardEntity } from "../../../entities/card.entity";
 import { RawSaleRow, SaleCandidate, extractSaleRow } from "./saleRowExtractor";
 import { ItemPageState } from "./reverificationClassifier";
+import { SellerRepositoryPort } from "../../../repository/ports/seller.repository.port";
 
 // Visible text that marks an item page as still showing a completed sale.
 const SOLD_SIGNAL = /item sold on|already sold|this listing sold/i;
@@ -9,10 +10,12 @@ const SOLD_SIGNAL = /item sold on|already sold|this listing sold/i;
 const NOT_FOUND_SIGNAL =
   /the listing you'?re looking for|no longer available|isn'?t available|page not found/i;
 
-// Cap on completed-listings pages walked per Card. A single card's trailing
-// 30-day sold window is rarely more than a few pages; this bounds a runaway
-// scrape if the date filtering below never trips.
+// Cap on completed-listings pages walked per Card.
 const MAX_PAGES = 10;
+
+// Thresholds for live trusted-seller qualification.
+const MIN_FEEDBACK_SCORE = 5_000;
+const MIN_POSITIVE_PCT = 99.5;
 
 /**
  * eBay scraping source (gather-gj4.2). A thin Puppeteer shell over the curated
@@ -27,6 +30,12 @@ const MAX_PAGES = 10;
  * dropped by the extractor.
  */
 export class EbaySalesSource {
+  // In-process cache so we don't hit the DB on every candidate within a single
+  // sync run. The DB itself is the durable cache across restarts.
+  private readonly sellerCache = new Map<string, boolean>();
+
+  constructor(private readonly sellerRepository: SellerRepositoryPort) {}
+
   appliesTo(card: CardEntity): boolean {
     return !!card.ebayLink;
   }
@@ -46,8 +55,6 @@ export class EbaySalesSource {
         break;
       }
 
-      // Let any post-load client-side redirect settle before touching the page,
-      // otherwise evaluate() races the navigation ("execution context destroyed").
       await this.sleep(2500);
       await this.handleInterstitials(page);
 
@@ -62,8 +69,25 @@ export class EbaySalesSource {
         candidates.push(candidate);
         newOnPage++;
       }
-      // No fresh items on a full page means we've reached the end of results.
       if (newOnPage === 0) break;
+    }
+
+    // Resolve trusted-seller status for each unique seller slug seen in this
+    // batch. Uses the instance cache so each slug is only fetched once per
+    // process lifetime across all cards.
+    const uniqueSlugs = [...new Set(candidates.map((c) => c.seller).filter((s): s is string => s !== null))];
+    for (const slug of uniqueSlugs) {
+      if (!this.sellerCache.has(slug)) {
+        const trusted = await this.checkSellerTrusted(slug, page);
+        this.sellerCache.set(slug, trusted);
+        console.log(`[EbaySales] seller ${slug}: trusted=${trusted}`);
+      }
+    }
+
+    for (const candidate of candidates) {
+      candidate.trustedSeller = candidate.seller !== null
+        ? (this.sellerCache.get(candidate.seller) ?? false)
+        : false;
     }
 
     console.log(`[EbaySales] ${card.name}: ${candidates.length} sale candidate(s)`);
@@ -97,6 +121,102 @@ export class EbaySalesSource {
     }
     if (SOLD_SIGNAL.test(body)) return "sold";
     return "active";
+  }
+
+  // Resolve whether a seller is trusted: DB cache first, eBay store page on
+  // first encounter. Persists the result so subsequent syncs skip the scrape.
+  private async checkSellerTrusted(slug: string, page: Page): Promise<boolean> {
+    const dbRecord = await this.sellerRepository.findBySlug(slug);
+    if (dbRecord) {
+      console.log(`[EbaySales] seller ${slug}: trusted=${dbRecord.trusted} (cached)`);
+      return dbRecord.trusted;
+    }
+
+    const trusted = await this.fetchSellerTrustedFromEbay(slug, page);
+    await this.sellerRepository.upsert({ slug, trusted, checkedAt: new Date() });
+    return trusted;
+  }
+
+  private async fetchSellerTrustedFromEbay(slug: string, page: Page): Promise<boolean> {
+    const url = `https://www.ebay.com/str/${encodeURIComponent(slug)}`;
+    try {
+      await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
+    } catch {
+      console.log(`[EbaySales] seller store page navigation failed for ${slug}`);
+      return false;
+    }
+    console.log(`[EbaySales] seller ${slug}: fetching store page stats`);
+    await this.sleep(2500);
+    await this.handleInterstitials(page);
+
+    const stats = await page
+      .evaluate(() => {
+        const bodyText = document.body.innerText ?? "";
+
+        // Feedback score — try selector first, then body-text patterns.
+        // The store header renders "Name (586564)" where the parenthetical is
+        // the raw score, or "Name (586,564)" with a thousands separator.
+        let feedbackScore: number | null = null;
+        const scoreEl =
+          document.querySelector('[data-testid="str-feedback-score"]') ??
+          document.querySelector(".str-seller-card__feedback-cnt") ??
+          document.querySelector('[class*="feedback-score"]') ??
+          document.querySelector('[aria-label*="Feedback score"]') ??
+          null;
+        if (scoreEl) {
+          feedbackScore = parseEbayNumber(scoreEl.textContent?.trim() ?? "");
+        }
+        if (feedbackScore === null) {
+          // "12,345 Feedback score" or "Feedback score: 12,345" or "12.3K Feedback score"
+          const m =
+            bodyText.match(/([\d.,]+[Kk]?)[\s\xa0]+[Ff]eedback[\s\xa0]+[Ss]core/) ??
+            bodyText.match(/[Ff]eedback[\s\xa0]+[Ss]core[:\s\xa0]*([\d.,]+[Kk]?)/);
+          if (m) feedbackScore = parseEbayNumber(m[1]);
+        }
+        if (feedbackScore === null) {
+          // "(586564)" or "(586,564)" parenthetical in the store header
+          const m = bodyText.match(/\((\d[\d,]*)\)/);
+          if (m) feedbackScore = parseEbayNumber(m[1]);
+        }
+
+        // Positive feedback percentage
+        // eBay uses a non-breaking space (\xa0) between the % and "positive".
+        let positivePct: number | null = null;
+        const pctEl =
+          document.querySelector('[data-testid="str-positive-feedback"]') ??
+          document.querySelector('[class*="positive-feedback"]') ??
+          null;
+        if (pctEl) {
+          const m = pctEl.textContent?.match(/([\d.]+)[\s\xa0]*%/);
+          if (m) positivePct = parseFloat(m[1]);
+        }
+        if (positivePct === null) {
+          const m = bodyText.match(/([\d.]+)%[\s\xa0]+[Pp]ositive[\s\xa0]+[Ff]eedback/);
+          if (m) positivePct = parseFloat(m[1]);
+        }
+
+        function parseEbayNumber(raw: string): number | null {
+          const cleaned = raw.replace(/,/g, "").trim();
+          if (/[Kk]$/.test(cleaned)) {
+            const n = parseFloat(cleaned);
+            return Number.isFinite(n) ? Math.round(n * 1000) : null;
+          }
+          const n = parseInt(cleaned, 10);
+          return Number.isFinite(n) && n > 0 ? n : null;
+        }
+
+        return { feedbackScore, positivePct };
+      })
+      .catch(() => ({ feedbackScore: null, positivePct: null }));
+
+    const { feedbackScore, positivePct } = stats;
+    if (feedbackScore === null || positivePct === null) {
+      console.log(`[EbaySales] seller ${slug}: could not parse store page stats (score=${feedbackScore} pct=${positivePct})`);
+      return false;
+    }
+    const trusted = feedbackScore >= MIN_FEEDBACK_SCORE && positivePct >= MIN_POSITIVE_PCT;
+    console.log(`[EbaySales] seller ${slug}: score=${feedbackScore} pct=${positivePct}% trusted=${trusted}`);
+    return trusted;
   }
 
   private withPage(ebayLink: string, pageNum: number): string {

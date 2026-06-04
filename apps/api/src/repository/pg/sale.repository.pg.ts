@@ -22,8 +22,9 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
       select: { id: true, reviewedAt: true },
     });
 
-    // Trusted-seller auto-validation: persist already reviewed + confirmed so
-    // the Sale skips both the manual queue and re-verification.
+    // Trusted-seller auto-validation: when reviewedAt is set the Sale is
+    // persisted already reviewed + confirmed, bypassing the manual queue and
+    // re-verification.
     const trustedFields = sale.reviewedAt
       ? {
           reviewedAt: sale.reviewedAt,
@@ -70,8 +71,6 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
         isBestOffer: sale.isBestOffer,
         seller: sale.seller,
         soldAt: sale.soldAt,
-        // Only trusted sellers override status/verificationStage here; for
-        // everyone else those stay owned by the re-verification pass.
         ...trustedFields,
       },
     });

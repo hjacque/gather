@@ -91,7 +91,7 @@ export type SaleEntity = {
   title: string;
   isBestOffer: boolean;
   // eBay store slug of the seller, when the listing came from a store
-  // (e.g. "psa"); null otherwise. Drives trusted-seller auto-validation.
+  // (e.g. "psa"); null otherwise.
   seller: string | null;
   status: SaleStatus;
   verificationStage: VerificationStage;

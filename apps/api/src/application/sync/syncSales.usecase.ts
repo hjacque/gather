@@ -6,7 +6,6 @@ import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port"
 import { EbaySalesSource } from "./sources/ebaySales.source";
 import { parseListingTitle } from "./sources/listingTitleParser";
 import { classifyReverification } from "./sources/reverificationClassifier";
-import { isTrustedSeller } from "./sources/trustedSeller";
 
 // Trailing window re-fetched on every run; sales older than this are ignored so
 // re-running is idempotent over a fixed recent window (see #84).
@@ -148,10 +147,10 @@ export class SyncSalesUsecase {
         continue;
       }
 
-      // Sales from trusted seller stores (e.g. PSA's own eBay store) are
-      // auto-validated: persisted already reviewed and confirmed, so they skip
-      // both the manual Sale Review queue and the re-verification pass.
-      const trusted = isTrustedSeller(candidate.seller);
+      // Only PSA's own store is auto-confirmed — they're the grading authority
+      // so no manual review is needed. Other reputable sellers (trusted in the
+      // Seller table) still go through the normal review queue.
+      const autoConfirm = candidate.seller === "psa";
 
       await this.saleRepository.upsert({
         cardId: card.id,
@@ -164,12 +163,12 @@ export class SyncSalesUsecase {
         isBestOffer: candidate.isBestOffer,
         seller: candidate.seller,
         soldAt: candidate.soldAt,
-        reviewedAt: trusted ? new Date() : null,
-        status: trusted ? "confirmed" : undefined,
-        verificationStage: trusted ? "complete" : undefined,
+        reviewedAt: autoConfirm ? new Date() : null,
+        status: autoConfirm ? "confirmed" : undefined,
+        verificationStage: autoConfirm ? "complete" : undefined,
       });
       counters.upserted++;
-      if (trusted) counters.autoValidated++;
+      if (autoConfirm) counters.autoValidated++;
     }
 
     // Re-verification pass: revisit this Card's due pending Sales at their

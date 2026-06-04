@@ -30,6 +30,7 @@ export type SaleCandidate = {
   soldAt: Date;
   isBestOffer: boolean;
   seller: string | null; // parsed store slug, e.g. "psa"; null for non-stores
+  trustedSeller: boolean; // resolved against live eBay profile by EbaySalesSource
 };
 
 // eBay's carousel ad rows reuse this placeholder title.
@@ -82,5 +83,6 @@ export function extractSaleRow(raw: RawSaleRow): SaleCandidate | null {
     soldAt,
     isBestOffer: raw.isBestOffer,
     seller: parseSellerSlug(raw.sellerHref),
+    trustedSeller: false, // resolved by EbaySalesSource after scraping
   };
 }

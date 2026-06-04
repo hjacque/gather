@@ -153,6 +153,19 @@ model Sale {
   @@unique([platform, itemId])
 }
 
+// eBay seller trust cache. Keyed by store slug (e.g. "psa").
+// Populated on first encounter during a sale sync; avoids re-visiting the
+// store page on every run. Re-check by deleting the row.
+model Seller {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  trusted   Boolean
+  checkedAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model PsaPopReport {
   id          String   @id @default(uuid())
   card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
