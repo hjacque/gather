@@ -8,7 +8,7 @@ import { REGIONS } from "@gather/types";
 require("express-async-errors");
 
 const app = express();
-const port = 3000;
+const port = 4200;
 
 export const http = async ({
   syncUsecase,
@@ -42,7 +42,7 @@ export const http = async ({
   });
 
   app.get("/sync/card/:cardid/cardmarket", async (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
     const result = await syncSingleCardCardMarketUsecase.execute(req.params.cardid);
 
     res.status(200);
@@ -50,7 +50,7 @@ export const http = async ({
   });
 
   app.get("/sync/card/:cardid/psa", async (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
     const result = await syncSingleCardPsaUsecase.execute(req.params.cardid);
 
     res.status(200);
@@ -76,7 +76,7 @@ export const http = async ({
   });
 
   app.get("/sync/sales/card/:cardid", async (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
     const result = await syncSalesUsecase.execute(req.params.cardid);
 
     res.status(200);
@@ -95,7 +95,7 @@ export const http = async ({
   });
 
   app.get("/sales/unreviewed/count", async (_req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
     const result = await getUnreviewedSalesUsecase.count();
 
     res.status(200);
@@ -103,7 +103,7 @@ export const http = async ({
   });
 
   app.get("/sales/unreviewed", async (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
     const querySchema = z.object({
       page: z.coerce.number().int().min(1).default(1),
       pageSize: z.coerce.number().int().min(1).max(200).default(20),
@@ -116,7 +116,7 @@ export const http = async ({
   });
 
   app.patch("/sales/:saleid", async (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
     // Sale Review action: approve (stamp reviewed + apply corrections) or
     // invalidate (flag invalid, which also counts as reviewed).
     const bodySchema = z.discriminatedUnion("action", [
@@ -140,7 +140,7 @@ export const http = async ({
   });
 
   app.get("/cards", async (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
 
     const dtoSchema = z.object({
       set: z.string().optional(),
@@ -158,7 +158,7 @@ export const http = async ({
   });
 
   app.get("/cards/:cardid", async (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
     const result = await getCardUsecase.execute(req.params.cardid);
 
     res.status(200);
@@ -166,7 +166,7 @@ export const http = async ({
   });
 
   app.patch("/cards/:cardid", async (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
     const bodySchema = z.object({
       note: z.string().max(1000).nullable(),
     });
@@ -176,7 +176,7 @@ export const http = async ({
   });
 
   app.put("/collection/:cardid", async (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
     const bodySchema = z.object({
       isOwned: z.boolean(),
       isWanted: z.boolean(),
@@ -190,7 +190,7 @@ export const http = async ({
   });
 
   app.delete("/collection/:cardid", async (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
     await deleteCollectionEntryUsecase.execute(req.params.cardid);
     res.status(204).end();
   });
