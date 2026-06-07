@@ -18,13 +18,18 @@ import {
   SheetTitle,
 } from './ui/sheet';
 import { getCard } from '@/app/actions/getCard';
-import { syncAllPromos, syncCardCardMarket, syncCardPsa, syncCardSales } from '@/app/actions/syncCard';
+import { syncAllPromos, syncAllListings, syncAllSales, syncAllPop, syncCardCardMarket, syncCardPsa, syncCardSales } from '@/app/actions/syncCard';
 import { invalidateSale } from '@/app/actions/invalidateSale';
 import { CardNoteSection } from '@/components/card-note-section';
 import { CardImage } from '@/components/card-image';
 import { upsertCollectionEntry, deleteCollectionEntry } from '@/app/actions/collectionEntry';
 import type { CollectionEntry, UpsertCollectionEntryRequest } from '@gather/api-contract';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import type { GetCardResponse } from '@gather/api-contract';
 import {
   Card,
@@ -558,7 +563,8 @@ export function PokemonExclusivePromosTable({
   pageSize?: number;
 }) {
   const isMobile = useIsMobile();
-  const [isSyncing, setIsSyncing] = React.useState(false);
+  const [syncingMode, setSyncingMode] = React.useState<'all' | 'listings' | 'sales' | 'pop' | null>(null);
+  const isSyncing = syncingMode !== null;
   const tableRef = useRef<CardTableHandle | null>(null);
 
   const [panelOpen, setPanelOpen] = useState(false);
@@ -636,15 +642,18 @@ export function PokemonExclusivePromosTable({
     return () => window.removeEventListener('keydown', handler, true);
   }, [panelOpen, spotlightOpen, navigateBy]);
 
-  const handleSyncAll = async () => {
+  const handleSync = async (mode: 'all' | 'listings' | 'sales' | 'pop') => {
     if (isSyncing) return;
-    setIsSyncing(true);
+    setSyncingMode(mode);
     try {
-      await syncAllPromos();
+      if (mode === 'all') await syncAllPromos();
+      else if (mode === 'listings') await syncAllListings();
+      else if (mode === 'sales') await syncAllSales();
+      else await syncAllPop();
     } catch (err) {
       console.error('Sync failed', err);
     } finally {
-      setIsSyncing(false);
+      setSyncingMode(null);
     }
   };
 
@@ -1226,16 +1235,33 @@ export function PokemonExclusivePromosTable({
               </Button>
             )}
           </div>
-          <Button
-            variant="outline"
-            size="icon"
-            className={`h-8 w-8 shrink-0${isSyncing ? ' transition-none' : ''}`}
-            onClick={handleSyncAll}
-            disabled={isSyncing}
-          >
-            <RefreshCw className={`h-4 w-4${isSyncing ? ' animate-spin' : ''}`} />
-            <span className="sr-only">Sync all promos</span>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className={`h-8 gap-1.5 shrink-0${isSyncing ? ' transition-none' : ''}`}
+                disabled={isSyncing}
+              >
+                <RefreshCw className={`h-3.5 w-3.5${isSyncing ? ' animate-spin' : ''}`} />
+                {syncingMode === 'all' ? 'Syncing all…' : syncingMode === 'listings' ? 'Syncing listings…' : syncingMode === 'sales' ? 'Syncing sales…' : syncingMode === 'pop' ? 'Syncing pop…' : 'Sync'}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => handleSync('all')}>
+                Sync all
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => handleSync('listings')}>
+                Sync listings
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => handleSync('sales')}>
+                Sync sales
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => handleSync('pop')}>
+                Sync pop
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           </div>
         );
       }}

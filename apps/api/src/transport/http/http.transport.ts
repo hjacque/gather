@@ -68,6 +68,18 @@ export const http = async ({
     res.json(result);
   });
 
+  app.get("/sync/listings", async (req, res) => {
+    const { set, tags } = req.query;
+    const result = await syncUsecase.execute({
+      filter: { set, tags },
+      mode: { headless: true },
+      skipSales: true,
+    } as SyncUsecaseInputDto);
+
+    res.status(200);
+    res.json(result);
+  });
+
   app.get("/sync/psa", async (req, res) => {
     await syncPsaPopReportsUsecase.execute();
 

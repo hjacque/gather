@@ -5,6 +5,9 @@ import {
   syncCardPsa as _syncCardPsa,
   syncCardSales as _syncCardSales,
   syncAllPromos as _syncAllPromos,
+  syncAllListings as _syncAllListings,
+  syncAllSales as _syncAllSales,
+  syncAllPop as _syncAllPop,
 } from '@/lib/apiClient';
 
 export async function syncCardCardMarket(cardId: string) {
@@ -21,4 +24,16 @@ export async function syncCardSales(cardId: string) {
 
 export async function syncAllPromos() {
   return _syncAllPromos();
+}
+
+export async function syncAllListings() {
+  return _syncAllListings();
+}
+
+export async function syncAllSales() {
+  return _syncAllSales();
+}
+
+export async function syncAllPop() {
+  return _syncAllPop();
 }

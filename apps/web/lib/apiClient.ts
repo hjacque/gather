@@ -124,6 +124,18 @@ export async function syncAllPromos(): Promise<void> {
   await apiFetch('/sync');
 }
 
+export async function syncAllListings(): Promise<void> {
+  await apiFetch('/sync/listings');
+}
+
+export async function syncAllSales(): Promise<void> {
+  await apiFetch('/sync/sales');
+}
+
+export async function syncAllPop(): Promise<void> {
+  await apiFetch('/sync/psa');
+}
+
 export async function upsertCollectionEntry(
   cardId: string,
   entry: UpsertCollectionEntryRequest,

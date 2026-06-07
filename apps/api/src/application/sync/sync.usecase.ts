@@ -16,6 +16,7 @@ export type SyncUsecaseInputDto = {
   mode: {
     headless: boolean;
   };
+  skipSales?: boolean;
 };
 
 export class SyncUsecase {
@@ -26,7 +27,7 @@ export class SyncUsecase {
     private readonly syncSalesUsecase: SyncSalesUsecase
   ) {}
 
-  async execute({ filter, mode }: SyncUsecaseInputDto) {
+  async execute({ filter, mode, skipSales = false }: SyncUsecaseInputDto) {
     console.log("start");
 
     const usdToEur = await getEurToUsdRate();
@@ -82,10 +83,12 @@ export class SyncUsecase {
           this.priceSources,
           this.priceRepository
         );
-        // Fold the eBay Sale Sync into the same browser session — scrape +
-        // re-verify this Card's Sales right after its prices. No-ops for Cards
-        // without an ebayLink.
-        await this.syncSalesUsecase.syncCardOnPage(card, page, saleCounters);
+        if (!skipSales) {
+          // Fold the eBay Sale Sync into the same browser session — scrape +
+          // re-verify this Card's Sales right after its prices. No-ops for Cards
+          // without an ebayLink.
+          await this.syncSalesUsecase.syncCardOnPage(card, page, saleCounters);
+        }
         await new Promise((resolve) =>
           setTimeout(resolve, 4000 + Math.random() * 4000)
         );
