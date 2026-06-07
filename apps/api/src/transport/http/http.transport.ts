@@ -24,6 +24,7 @@ export const http = async ({
   updateCardNoteUsecase,
   upsertCollectionEntryUsecase,
   deleteCollectionEntryUsecase,
+  getOpportunitiesUsecase,
 }: Usecases) => {
   // middlewares
   app.use(express.json());
@@ -149,6 +150,12 @@ export const http = async ({
       });
     }
     res.status(204).end();
+  });
+
+  app.get("/opportunities", async (_req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
+    const result = await getOpportunitiesUsecase.execute();
+    res.status(200).json(result);
   });
 
   app.get("/cards", async (req, res) => {

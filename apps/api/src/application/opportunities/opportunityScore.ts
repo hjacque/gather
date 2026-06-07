@@ -1,0 +1,129 @@
+import type { SignalLevel } from "@gather/api-contract";
+import type { PsaPopReportEntity } from "../../repository/ports/psaPopReport.repository.port";
+
+export const SCORE_FLOOR = 40;
+export const MIN_OPPORTUNITIES = 5;
+export const MAX_OPPORTUNITIES = 10;
+
+export function computeListingSignal(
+  marketSale: number,
+  listing: number | null
+): number {
+  if (listing === null) return 0;
+  const linear = Math.max(0, Math.min(1, (marketSale - listing) / marketSale));
+  // sqrt amplifies small discounts: 1% below → 0.10, 5% → 0.22, 20% → 0.45
+  return Math.sqrt(linear);
+}
+
+export function computeYearSignal(
+  marketSale: number,
+  range: { min: number; max: number } | null | undefined
+): number {
+  if (!range) return 0;
+  const { min, max } = range;
+  if (max === min) return 0;
+  return Math.max(0, Math.min(1, 1 - (marketSale - min) / (max - min)));
+}
+
+export function computePopsAtOrAbove(
+  report: PsaPopReportEntity,
+  grade: number
+): number {
+  let sum = 0;
+  for (let g = grade; g <= 10; g++) {
+    sum += (report[`grade${g}` as keyof PsaPopReportEntity] as number | null) ?? 0;
+  }
+  return sum;
+}
+
+export function computeGradeSignal(
+  report: PsaPopReportEntity,
+  grade: number
+): number {
+  const total = report.total;
+  if (!total) return 0;
+  const popsAtOrAbove = computePopsAtOrAbove(report, grade);
+  return 1 - popsAtOrAbove / total;
+}
+
+// Normalize values to [0,1] where smaller original value → higher output (invert).
+// Null values → 0. When all valid values are equal → 0.5.
+export function normalizeInverted(rawValues: (number | null)[]): number[] {
+  const valid = rawValues.filter((v): v is number => v !== null);
+  if (valid.length === 0) return rawValues.map(() => 0);
+  const min = Math.min(...valid);
+  const max = Math.max(...valid);
+  return rawValues.map((v) => {
+    if (v === null) return 0;
+    if (min === max) return 0.5;
+    return 1 - (v - min) / (max - min);
+  });
+}
+
+// ── Signal level functions ────────────────────────────────────────────────────
+// Each function encodes the agreed threshold rules so the frontend only renders.
+
+export function computeDiscountLevel(marketSale: number, listing: number | null): SignalLevel {
+  if (listing === null) return 'yellow-light';
+  const pct = ((listing - marketSale) / marketSale) * 100;
+  if (pct <= -10) return 'green-strong';
+  if (pct <=   5) return 'yellow-light';
+  if (pct <=  15) return 'orange-light';
+  return 'red-strong';
+}
+
+export function computeYearLevel(yearSignal: number): SignalLevel {
+  if (yearSignal >= 0.70) return 'green-strong';
+  if (yearSignal >= 0.45) return 'yellow-light';
+  if (yearSignal >= 0.20) return 'orange-light';
+  return 'red-strong';
+}
+
+// populationSignal is normalized across the collection (higher = scarcer = better).
+// Quartile boundaries: Q1 ≥0.75, Q2 ≥0.50, Q3 ≥0.25, Q4 <0.25.
+export function computePopulationLevel(populationSignal: number): SignalLevel {
+  if (populationSignal >= 0.75) return 'green-strong';
+  if (populationSignal >= 0.50) return 'yellow-light';
+  if (populationSignal >= 0.25) return 'orange-light';
+  return 'red-strong';
+}
+
+// gradeSignal normalized across collection (higher = rarer grade = better).
+// Top 10% → strong, 10–25% → light, 25–50% → orange, bottom 50% → strong bad.
+export function computeGradeLevel(gradeSignal: number): SignalLevel {
+  if (gradeSignal >= 0.90) return 'green-strong';
+  if (gradeSignal >= 0.75) return 'yellow-light';
+  if (gradeSignal >= 0.50) return 'orange-light';
+  return 'red-strong';
+}
+
+// ageSignal normalized across collection (higher = older = better).
+// Quartile boundaries match population.
+export function computeAgeLevel(ageSignal: number): SignalLevel {
+  if (ageSignal >= 0.75) return 'green-strong';
+  if (ageSignal >= 0.50) return 'yellow-light';
+  if (ageSignal >= 0.25) return 'orange-light';
+  return 'red-strong';
+}
+
+export function computeScoreLevel(score: number): SignalLevel {
+  if (score >= 75) return 'green-strong';
+  if (score >= 55) return 'yellow-light';
+  return 'orange-light';
+}
+
+export function computeScore(
+  listingSignal: number,
+  yearSignal: number,
+  ageSignal: number,
+  populationSignal: number,
+  gradeSignal: number
+): number {
+  return (
+    listingSignal    * 0.25 +
+    yearSignal       * 0.05 +
+    populationSignal * 0.25 +
+    gradeSignal      * 0.20 +
+    ageSignal        * 0.25
+  ) * 100;
+}

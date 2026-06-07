@@ -18,7 +18,7 @@ export class CardRepositoryPg implements CardRepositoryPort {
   }
 
   async getCards(
-    filters: GetCardsFilter,
+    filters?: GetCardsFilter,
     pagination?: {
       take?: number;
       page?: number;
@@ -30,11 +30,9 @@ export class CardRepositoryPg implements CardRepositoryPort {
     const include = { cardSet: true } as const;
     const cards = await this.prisma.card.findMany({
         where: {
-          cardSet: {
-            name: filters.set,
-          },
-          tags: filters.tags ? (typeof filters.tags === "string" ? { has: filters.tags } : { hasSome: filters.tags }) : undefined,
-          regions: filters.region ? (typeof filters.region === "string" ? { has: filters.region } : { hasSome: filters.region }) : undefined,
+          cardSet: filters?.set ? { name: filters.set } : undefined,
+          tags: filters?.tags ? (typeof filters.tags === "string" ? { has: filters.tags } : { hasSome: filters.tags }) : undefined,
+          regions: filters?.region ? (typeof filters.region === "string" ? { has: filters.region } : { hasSome: filters.region }) : undefined,
         },
         orderBy: [
           { cardSet: { releaseDate: 'desc' } },

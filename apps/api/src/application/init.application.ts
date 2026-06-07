@@ -20,6 +20,7 @@ import { GetUnreviewedSalesUsecase } from "./sale/getUnreviewedSales.usecase";
 import { CardMarketGradedSource } from "./sync/sources/cardmarketGraded.source";
 import { EbaySalesSource } from "./sync/sources/ebaySales.source";
 import { MarketSalePriceSnapshotService } from "./sale/marketSalePriceSnapshot";
+import { GetOpportunitiesUsecase } from "./opportunities/getOpportunities.usecase";
 
 export type Usecases = {
   syncUsecase: SyncUsecase;
@@ -35,6 +36,7 @@ export type Usecases = {
   updateCardNoteUsecase: UpdateCardNoteUsecase;
   upsertCollectionEntryUsecase: UpsertCollectionEntryUsecase;
   deleteCollectionEntryUsecase: DeleteCollectionEntryUsecase;
+  getOpportunitiesUsecase: GetOpportunitiesUsecase;
 };
 
 export const initApplication = ({
@@ -118,6 +120,13 @@ export const initApplication = ({
   const upsertCollectionEntryUsecase = new UpsertCollectionEntryUsecase(collectionRepository);
   const deleteCollectionEntryUsecase = new DeleteCollectionEntryUsecase(collectionRepository);
 
+  const getOpportunitiesUsecase = new GetOpportunitiesUsecase(
+    cardRepository,
+    priceRepository,
+    psaPopReportRepository,
+    saleRepository
+  );
+
   return {
     syncUsecase,
     getCardsUsecase,
@@ -132,5 +141,6 @@ export const initApplication = ({
     updateCardNoteUsecase,
     upsertCollectionEntryUsecase,
     deleteCollectionEntryUsecase,
+    getOpportunitiesUsecase,
   };
 };

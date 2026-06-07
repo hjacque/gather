@@ -43,6 +43,7 @@ Repositories are injected into use cases via port interfaces — concrete Prisma
 | GET | `/sales/unreviewed` | List unreviewed Sales (grouped by Card, paginated) |
 | GET | `/sales/unreviewed/count` | Count of unreviewed Sales (for sidebar badge) |
 | PATCH | `/sales/:id` | Review a Sale (`action: 'approve' \| 'invalidate'`, optional `psaGrade`/`price`) |
+| GET | `/opportunities` | Top buying opportunities (scored, ranked, one grade per Card) |
 
 ## Tech stack
 
@@ -97,6 +98,10 @@ _Avoid_: Delta, change, trend, gain/loss
 **Sync**:
 The process of fetching data from external sources for one or more Products and persisting the results. Comes in two targeted forms at the single-Product level: a **CardMarket Sync** (fetches Raw Prices from the applicable CardMarket Price Source only) and a **PSA Sync** (refreshes the PSA Pop Report only).
 _Avoid_: Scrape, update, refresh, import
+
+**Grade Spread**:
+A dimensionless ratio between the Market Sale Prices of two adjacent PSA Grades for the same Card on a given date (e.g. `marketSalePrice(10) / marketSalePrice(9)`). Stored as its own entity (not a Raw Price — it carries no currency). Computed in the Fair Value Sync from already-stored eBay sold history; absent when either grade has no usable Market Sale Price. Used as an input signal (`gradeSpreadSignal`) in the Opportunity Score to validate cross-grade coherence of Fair Value Ranges.
+_Avoid_: grade premium, grade ratio, price spread
 
 **PSA Grade Price**:
 The lowest CardMarket listing price for a Product at a specific PSA Grade, scraped by parsing the description field of every listing on the Product's CardMarket page (all conditions, no filter). Stored as a Raw Price with type `cardmarketPsa1`…`cardmarketPsa10`. Only tracked for Products that have a `psaLink`.
@@ -235,8 +240,28 @@ The fraction of a Product's total eBay sold volume at a specific PSA Grade over 
 _Avoid_: grade volume, grade activity
 
 **Opportunity Score**:
-A numeric score (0–100) per Product per PSA Grade combining all fair value signals to surface buying opportunities. Higher = stronger opportunity. Recomputed on each Sync.
+A numeric score (0–100) per Card per PSA Grade surfacing buying opportunities. Computed on the fly at read time (no stored table). Five signals with fixed weights: Listing Signal (25%), Year Signal (5%), Population Signal (25%), Grade Signal (20%), Age Signal (25%). A CardMarket listing below Market Sale Price is required — grades without one are excluded. Floor: 40/100 to appear on the Opportunities page, with a guaranteed minimum of 5 entries (top-scoring regardless of floor). Per card, only the best-scoring grade is surfaced. Each signal and the overall score are returned as both a raw numeric value and a `SignalLevel` (`'green-strong' | 'yellow-light' | 'orange-light' | 'red-strong'`) computed by the backend so threshold logic lives in one place.
 _Avoid_: deal score, buy score, opportunity index
+
+**Listing Signal**:
+`sqrt(clamp((marketSale − listing) / marketSale, 0, 1))`. Square root amplifies small discounts: a 1% listing discount scores ~10% rather than ~1% on a linear scale. A CardMarket listing is required and must be strictly below Market Sale Price — grades with no listing or with listing ≥ market are excluded entirely.
+_Avoid_: listing deal signal, price gap signal
+
+**Year Signal**:
+`1 − (marketSale − yearLow) / (yearHigh − yearLow)`. 1 at 52-week low (maximum opportunity), 0 at 52-week high. Zero when insufficient price history exists or yearHigh = yearLow. Derived from stored `marketSalePsa{grade}` Price history.
+_Avoid_: 52-week signal, trend signal
+
+**Age Signal**:
+Normalized release date across the **full card collection** (not only candidates with a qualifying listing that day), older → higher (0–1). Pre-computed before the listing gate so the scale is stable regardless of which cards have a listing today.
+_Avoid_: vintage signal, release signal
+
+**Population Signal**:
+Normalized inverse of `log(psaReport.grade{N} + 1)` across the **full card collection** (all card-grade PSA pairs), lower absolute count → higher (0–1). Log scale compresses extreme outliers (4 vs 25000). Pre-computed before the listing gate for the same stability reason as Age Signal. Zero when PSA Pop Report is absent.
+_Avoid_: rarity signal, scarcity signal
+
+**Grade Signal**:
+`1 − (popsAtOrAbove / total)` where `popsAtOrAbove` = sum of PSA pop counts at the scored grade and all grades above it. Encodes both grade quality (higher grade = fewer popsAtOrAbove) and card-level mint difficulty without a separate multiplier. A card with 3 copies at PSA 7 or above out of 10 total scores 0.70. Zero when PSA Pop Report is absent.
+_Avoid_: gem rate signal, grade rarity signal
 
 **Relative Pop Velocity**:
 How fast a card's PSA population at a given grade is growing compared to cards from the same era (±3 years from release date). High relative velocity = above-average supply pressure = compresses Opportunity Score. Always ≥ 0 (PSA populations can only grow).
@@ -361,9 +386,9 @@ Adjacent issues (enabled by the same foundation, not blocking #91):
 
 ## Opportunities page
 
-A dedicated page surfacing the top buying opportunities across all tracked Products for the day. Shows at most N cards with Opportunity Score above a minimum floor (both N and floor are tunable constants). Cards are ranked by Opportunity Score descending. An empty page on a slow day is valid and intentional — it means no real opportunities exist.
+A dedicated page surfacing the top buying opportunities across all tracked Cards for the day. Shows 5–10 Cards ranked by Opportunity Score descending: up to 10 entries with score ≥ 40/100, but always at least 5 (top-scoring regardless of floor). One entry per Card (best-scoring grade only).
 
-Each opportunity card shows: card image, card name + Product Set, highest-scoring PSA Grade + its score, current Market Price vs Fair Value Range, and the dominant signal driving the score.
+Each opportunity row shows: card image, card name + Product Set + PSA Grade, overall score badge, and five signal cells (Discount, 52-Week, Pop, Grade, Age). Each cell is coloured by its `SignalLevel` (`green-strong` → `yellow-light` → `orange-light` → `red-strong`). Clicking a row opens a side panel with the full card detail (chart, PSA pop breakdown, CardMarket link, card note). Arrow-key navigation moves between rows while the panel is open.
 
 ## Flagged ambiguities
 

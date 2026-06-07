@@ -31,4 +31,18 @@ export abstract class PriceRepositoryPort {
       }
     >
   >;
+
+  // All cardmarketPsa1–10 listing prices for each card on a given date.
+  abstract getCardsListingGradePricesByDate(
+    cardIds: string[],
+    date: Date
+  ): Promise<Map<string, Record<number, number | null>>>;
+
+  // Min/max of stored marketSalePsa1–10 snapshots per card per grade over the
+  // given date range. Used to compute the 52-week high/low year signal.
+  abstract getCardsMarketSaleYearRange(
+    cardIds: string[],
+    fromDate: Date,
+    toDate: Date
+  ): Promise<Map<string, Record<number, { min: number; max: number } | null>>>;
 }

@@ -2,6 +2,7 @@ import type {
   GetCardsQuery,
   GetCardsResponse,
   GetCardResponse,
+  GetOpportunitiesResponse,
   GetUnreviewedSalesResponse,
   GetUnreviewedCountResponse,
   ReviewSaleRequest,
@@ -130,6 +131,10 @@ export async function syncAllListings(): Promise<void> {
 
 export async function syncAllSales(): Promise<void> {
   await apiFetch('/sync/sales');
+}
+
+export async function getOpportunities(): Promise<GetOpportunitiesResponse> {
+  return apiFetch('/opportunities');
 }
 
 export async function syncAllPop(): Promise<void> {

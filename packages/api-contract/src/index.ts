@@ -178,6 +178,49 @@ export type GetUnreviewedCountResponse = {
   count: number;
 };
 
+// ─── GET /opportunities ───────────────────────────────────────────────────────
+
+// Four-level evaluation scale returned by the backend for each signal and the
+// overall score. The frontend maps these to colours; the thresholds live in the
+// backend so they are easy to tune without touching UI code.
+export type SignalLevel = 'green-strong' | 'yellow-light' | 'orange-light' | 'red-strong';
+
+export type GradeOpportunity = {
+  psaGrade: number;
+  score: number;
+  scoreLevel: SignalLevel;
+  // Listing signal: sqrt discount of listing vs Market Sale Price (0–1).
+  listingSignal: number;
+  listingPrice: number | null;
+  marketSalePrice: number;
+  listingLevel: SignalLevel;
+  // Year signal: where Market Sale Price sits in its 52-week range (0=high, 1=low).
+  yearSignal: number;
+  yearLow: number | null;
+  yearHigh: number | null;
+  yearLevel: SignalLevel;
+  // Collectability signals (normalized across the collection, 0–1 each).
+  ageSignal: number;
+  ageLevel: SignalLevel;
+  populationSignal: number;
+  populationLevel: SignalLevel;
+  gradeSignal: number;
+  gradeLevel: SignalLevel;
+  popsAtOrAbove: number | null;
+  psaTotal: number | null;
+};
+
+export type OpportunityEntry = {
+  id: string;
+  name: string;
+  imageUrl: string | null;
+  cardSetName: string;
+  releaseDate: Date | null;
+  bestGrade: GradeOpportunity;
+};
+
+export type GetOpportunitiesResponse = OpportunityEntry[];
+
 // ─── GET /sync/card/:id/cardmarket | GET /sync/card/:id/psa ─────────────────
 
 export type SyncCardResponse = CardEntity & DailyPrices & {
