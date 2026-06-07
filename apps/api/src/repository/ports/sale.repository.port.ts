@@ -21,6 +21,8 @@ export abstract class SaleRepositoryPort {
   // admin's grade/price corrections survive the daily re-scrape.
   abstract upsert(sale: NewSale): Promise<void>;
 
+  abstract getSaleById(saleId: string): Promise<SaleEntity>;
+
   // All Sales for a Card, oldest first. Includes pending and invalid; the
   // read layer decides what to surface.
   abstract getCardSales(cardId: string): Promise<SaleEntity[]>;

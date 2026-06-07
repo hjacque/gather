@@ -19,6 +19,7 @@ import { ReviewSaleUsecase } from "./sale/reviewSale.usecase";
 import { GetUnreviewedSalesUsecase } from "./sale/getUnreviewedSales.usecase";
 import { CardMarketGradedSource } from "./sync/sources/cardmarketGraded.source";
 import { EbaySalesSource } from "./sync/sources/ebaySales.source";
+import { MarketSalePriceSnapshotService } from "./sale/marketSalePriceSnapshot";
 
 export type Usecases = {
   syncUsecase: SyncUsecase;
@@ -55,10 +56,16 @@ export const initApplication = ({
     new CardMarketGradedSource(),
   ];
 
+  const snapshotService = new MarketSalePriceSnapshotService(
+    saleRepository,
+    priceRepository
+  );
+
   const syncSalesUsecase = new SyncSalesUsecase(
     cardRepository,
     saleRepository,
-    new EbaySalesSource(sellerRepository)
+    new EbaySalesSource(sellerRepository),
+    snapshotService
   );
   const syncUsecase = new SyncUsecase(
     cardRepository,
@@ -104,8 +111,8 @@ export const initApplication = ({
     cardRepository,
     psaPopReportRepository
   );
-  const invalidateSaleUsecase = new InvalidateSaleUsecase(saleRepository);
-  const reviewSaleUsecase = new ReviewSaleUsecase(saleRepository);
+  const invalidateSaleUsecase = new InvalidateSaleUsecase(saleRepository, snapshotService);
+  const reviewSaleUsecase = new ReviewSaleUsecase(saleRepository, snapshotService);
   const getUnreviewedSalesUsecase = new GetUnreviewedSalesUsecase(saleRepository);
   const updateCardNoteUsecase = new UpdateCardNoteUsecase(cardRepository);
   const upsertCollectionEntryUsecase = new UpsertCollectionEntryUsecase(collectionRepository);

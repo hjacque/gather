@@ -24,6 +24,16 @@ export const PRICE_TYPES = [
   'cardmarketPsa8',
   'cardmarketPsa9',
   'cardmarketPsa10',
+  'marketSalePsa1',
+  'marketSalePsa2',
+  'marketSalePsa3',
+  'marketSalePsa4',
+  'marketSalePsa5',
+  'marketSalePsa6',
+  'marketSalePsa7',
+  'marketSalePsa8',
+  'marketSalePsa9',
+  'marketSalePsa10',
 ] as const;
 export type PriceType = typeof PRICE_TYPES[number];
 

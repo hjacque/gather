@@ -76,6 +76,13 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
     });
   }
 
+  async getSaleById(saleId: string) {
+    const sale = await this.prisma.sale.findUniqueOrThrow({
+      where: { id: saleId },
+    });
+    return this.saleMapper.toEntity(sale);
+  }
+
   async getCardSales(cardId: string) {
     const sales = await this.prisma.sale.findMany({
       where: { cardId },

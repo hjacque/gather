@@ -1,11 +1,31 @@
 import { ReviewSaleUsecase } from "./reviewSale.usecase";
 import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
+import { MarketSalePriceSnapshotService } from "./marketSalePriceSnapshot";
 
-// Minimal fake recording the markReviewed calls the use case makes.
+const fakeSale = {
+  id: "sale-1",
+  cardId: "card-1",
+  soldAt: new Date("2025-01-01"),
+  platform: "ebay" as const,
+  itemId: "item-1",
+  psaGrade: 10,
+  price: 100,
+  currency: "EUR",
+  title: "",
+  isBestOffer: false,
+  seller: null,
+  status: "pending" as const,
+  verificationStage: "unverified" as const,
+  reviewedAt: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
+
 function makeFakeRepo() {
   const calls: { saleId: string; edits: { psaGrade?: number; price?: number } }[] =
     [];
   const repo = {
+    getSaleById: jest.fn(async () => fakeSale),
     markReviewed: jest.fn(async (saleId: string, edits) => {
       calls.push({ saleId, edits });
     }),
@@ -13,10 +33,14 @@ function makeFakeRepo() {
   return { repo, calls };
 }
 
+const noopSnapshot = {
+  recompute: jest.fn(async () => {}),
+} as unknown as MarketSalePriceSnapshotService;
+
 describe("ReviewSaleUsecase", () => {
   it("approve with no edits stamps the Sale reviewed and changes no field", async () => {
     const { repo, calls } = makeFakeRepo();
-    const usecase = new ReviewSaleUsecase(repo);
+    const usecase = new ReviewSaleUsecase(repo, noopSnapshot);
 
     await usecase.approve("sale-1");
 
@@ -26,7 +50,7 @@ describe("ReviewSaleUsecase", () => {
 
   it("applies a corrected grade on approve", async () => {
     const { repo, calls } = makeFakeRepo();
-    const usecase = new ReviewSaleUsecase(repo);
+    const usecase = new ReviewSaleUsecase(repo, noopSnapshot);
 
     await usecase.approve("sale-1", { psaGrade: 9 });
 
@@ -35,7 +59,7 @@ describe("ReviewSaleUsecase", () => {
 
   it("applies a Best-Offer's true price on approve", async () => {
     const { repo, calls } = makeFakeRepo();
-    const usecase = new ReviewSaleUsecase(repo);
+    const usecase = new ReviewSaleUsecase(repo, noopSnapshot);
 
     await usecase.approve("sale-1", { price: 480.5 });
 
@@ -46,7 +70,7 @@ describe("ReviewSaleUsecase", () => {
     "rejects a non-positive price (%p) without touching the repo",
     async (price) => {
       const { repo } = makeFakeRepo();
-      const usecase = new ReviewSaleUsecase(repo);
+      const usecase = new ReviewSaleUsecase(repo, noopSnapshot);
 
       await expect(usecase.approve("sale-1", { price })).rejects.toThrow();
       expect(repo.markReviewed).not.toHaveBeenCalled();
@@ -57,7 +81,7 @@ describe("ReviewSaleUsecase", () => {
     "rejects an out-of-range grade (%p) without touching the repo",
     async (psaGrade) => {
       const { repo } = makeFakeRepo();
-      const usecase = new ReviewSaleUsecase(repo);
+      const usecase = new ReviewSaleUsecase(repo, noopSnapshot);
 
       await expect(usecase.approve("sale-1", { psaGrade })).rejects.toThrow();
       expect(repo.markReviewed).not.toHaveBeenCalled();

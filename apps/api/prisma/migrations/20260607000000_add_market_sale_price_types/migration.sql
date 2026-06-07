@@ -1,0 +1,10 @@
+ALTER TYPE "PriceType" ADD VALUE 'marketSalePsa1';
+ALTER TYPE "PriceType" ADD VALUE 'marketSalePsa2';
+ALTER TYPE "PriceType" ADD VALUE 'marketSalePsa3';
+ALTER TYPE "PriceType" ADD VALUE 'marketSalePsa4';
+ALTER TYPE "PriceType" ADD VALUE 'marketSalePsa5';
+ALTER TYPE "PriceType" ADD VALUE 'marketSalePsa6';
+ALTER TYPE "PriceType" ADD VALUE 'marketSalePsa7';
+ALTER TYPE "PriceType" ADD VALUE 'marketSalePsa8';
+ALTER TYPE "PriceType" ADD VALUE 'marketSalePsa9';
+ALTER TYPE "PriceType" ADD VALUE 'marketSalePsa10';

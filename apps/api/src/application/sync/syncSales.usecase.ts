@@ -6,6 +6,7 @@ import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port"
 import { EbaySalesSource } from "./sources/ebaySales.source";
 import { parseListingTitle } from "./sources/listingTitleParser";
 import { classifyReverification } from "./sources/reverificationClassifier";
+import { MarketSalePriceSnapshotService } from "../sale/marketSalePriceSnapshot";
 
 // Trailing window re-fetched on every run; sales older than this are ignored so
 // re-running is idempotent over a fixed recent window (see #84).
@@ -45,7 +46,8 @@ export class SyncSalesUsecase {
   constructor(
     private readonly cardRepository: CardRepositoryPort,
     private readonly saleRepository: SaleRepositoryPort,
-    private readonly ebaySalesSource: EbaySalesSource
+    private readonly ebaySalesSource: EbaySalesSource,
+    private readonly snapshotService: MarketSalePriceSnapshotService
   ) {}
 
   // Single Card on demand.
@@ -191,6 +193,10 @@ export class SyncSalesUsecase {
         setTimeout(resolve, 2000 + Math.random() * 2000)
       );
     }
+
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    await this.snapshotService.recompute(card.id, today, today);
   }
 
   private async openBrowser() {

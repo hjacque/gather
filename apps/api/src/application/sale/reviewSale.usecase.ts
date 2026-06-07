@@ -1,10 +1,14 @@
 import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
+import { MarketSalePriceSnapshotService } from "./marketSalePriceSnapshot";
 
 // Records a Sale Review (the "approve" path): stamps reviewedAt and applies any
 // admin corrections. Flagging a Sale invalid is the separate InvalidateSale
 // use case. See Sale Review in CONTEXT.md.
 export class ReviewSaleUsecase {
-  constructor(private readonly saleRepository: SaleRepositoryPort) {}
+  constructor(
+    private readonly saleRepository: SaleRepositoryPort,
+    private readonly snapshotService: MarketSalePriceSnapshotService
+  ) {}
 
   async approve(
     saleId: string,
@@ -19,6 +23,8 @@ export class ReviewSaleUsecase {
     if (edits.price !== undefined && !(edits.price > 0)) {
       throw new Error("price must be a positive number");
     }
+    const sale = await this.saleRepository.getSaleById(saleId);
     await this.saleRepository.markReviewed(saleId, edits);
+    await this.snapshotService.recompute(sale.cardId, sale.soldAt);
   }
 }
