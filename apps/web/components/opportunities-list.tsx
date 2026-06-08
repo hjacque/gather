@@ -337,12 +337,13 @@ function OpportunityCard({
         </div>
 
         {/* Signal breakdown */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-x-4 gap-y-2 pt-0.5">
+        <div className="grid grid-cols-2 sm:grid-cols-6 gap-x-4 gap-y-2 pt-0.5">
           <DiscountCell g={g} />
           <WeekCell g={g} />
           <PopCell g={g} />
           <GradeCell g={g} />
           <AgeCell g={g} releaseDate={opportunity.releaseDate} />
+          <PremiumCell g={g} />
         </div>
       </div>
     </div>
@@ -483,6 +484,17 @@ function AgeCell({ g, releaseDate }: { g: GradeOpportunity; releaseDate: Date | 
       value={age != null ? `${age} years old` : 'Unknown'}
       sub={year ? `Released ${year}` : 'release date missing'}
       highlight={g.ageLevel}
+    />
+  );
+}
+
+function PremiumCell({ g }: { g: GradeOpportunity }) {
+  return (
+    <SignalCell
+      label="PSA 10"
+      value={g.psaGrade === 10 ? 'PSA 10' : `PSA ${g.psaGrade}`}
+      sub={g.psaGrade === 10 ? 'gem mint premium' : 'no gem mint premium'}
+      highlight={g.premiumLevel}
     />
   );
 }

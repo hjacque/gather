@@ -206,6 +206,8 @@ export type GradeOpportunity = {
   populationLevel: SignalLevel;
   gradeSignal: number;
   gradeLevel: SignalLevel;
+  premiumSignal: number;
+  premiumLevel: SignalLevel;
   popsAtOrAbove: number | null;
   psaTotal: number | null;
 };

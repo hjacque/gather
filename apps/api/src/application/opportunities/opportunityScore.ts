@@ -1,10 +1,6 @@
 import type { SignalLevel } from "@gather/api-contract";
 import type { PsaPopReportEntity } from "../../repository/ports/psaPopReport.repository.port";
 
-export const SCORE_FLOOR = 40;
-export const MIN_OPPORTUNITIES = 5;
-export const MAX_OPPORTUNITIES = 10;
-
 export function computeListingSignal(
   marketSale: number,
   listing: number | null
@@ -106,6 +102,14 @@ export function computeAgeLevel(ageSignal: number): SignalLevel {
   return 'red-strong';
 }
 
+export function computePremiumSignal(grade: number): number {
+  return grade === 10 ? 1 : 0;
+}
+
+export function computePremiumLevel(grade: number): SignalLevel {
+  return grade === 10 ? 'green-strong' : 'yellow-light';
+}
+
 export function computeScoreLevel(score: number): SignalLevel {
   if (score >= 75) return 'green-strong';
   if (score >= 55) return 'yellow-light';
@@ -117,13 +121,15 @@ export function computeScore(
   yearSignal: number,
   ageSignal: number,
   populationSignal: number,
-  gradeSignal: number
+  gradeSignal: number,
+  premiumSignal: number
 ): number {
   return (
-    listingSignal    * 0.25 +
-    yearSignal       * 0.05 +
-    populationSignal * 0.25 +
-    gradeSignal      * 0.20 +
-    ageSignal        * 0.25
+    listingSignal    * 0.80 +
+    yearSignal       * 0.01 +
+    populationSignal * 0.06 +
+    gradeSignal      * 0.06 +
+    ageSignal        * 0.05 +
+    premiumSignal    * 0.02
   ) * 100;
 }

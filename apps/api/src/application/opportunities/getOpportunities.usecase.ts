@@ -7,9 +7,6 @@ import { convertToEur } from "../sale/eurConverter";
 import { getEurToUsdRate } from "../sync/helper";
 import { computeMarketPrices } from "../sale/marketPrice";
 import {
-  SCORE_FLOOR,
-  MIN_OPPORTUNITIES,
-  MAX_OPPORTUNITIES,
   computeListingSignal,
   computeYearSignal,
   computeGradeSignal,
@@ -22,6 +19,8 @@ import {
   computeGradeLevel,
   computeAgeLevel,
   computeScoreLevel,
+  computePremiumSignal,
+  computePremiumLevel,
 } from "./opportunityScore";
 
 const YEAR_DAYS = 365;
@@ -67,20 +66,17 @@ export class GetOpportunitiesUsecase {
     // Age: one value per card, older → higher signal.
     const allCardAgeSignals = normalizeInverted(cards.map(c => c.releaseDate?.getTime() ?? null));
 
-    // Population: one value per (card, grade) pair across all PSA reports.
-    // log-scale the count so a jump from 10→100 matters less than 1→10.
-    const allPopEntries: { cardId: string; grade: number; rawPop: number }[] = [];
+    // Population: one value per card — total PSA graded across all grades.
+    // Fewer total graded → scarcer card → higher signal.
+    // log-scale so a jump from 10→100 matters less than 1→10.
+    const allPopEntries: { cardId: string; rawPop: number }[] = [];
     for (const card of cards) {
-      const psaReport = psaReports.get(card.id);
-      if (!psaReport) continue;
-      for (let grade = 1; grade <= 10; grade++) {
-        const count = (psaReport[`grade${grade}` as keyof typeof psaReport] as number | null) ?? 0;
-        allPopEntries.push({ cardId: card.id, grade, rawPop: Math.log(count + 1) });
-      }
+      const total = psaReports.get(card.id)?.total ?? 0;
+      allPopEntries.push({ cardId: card.id, rawPop: Math.log(total + 1) });
     }
     const allPopSignals = normalizeInverted(allPopEntries.map(e => e.rawPop));
     const popSignalMap = new Map(
-      allPopEntries.map((e, i) => [`${e.cardId}-${e.grade}`, allPopSignals[i]])
+      allPopEntries.map((e, i) => [e.cardId, allPopSignals[i]])
     );
 
     // Collect per-(card, grade) raw inputs for all grades with a Market Sale Price.
@@ -126,7 +122,7 @@ export class GetOpportunitiesUsecase {
 
       for (const { psaGrade, priceEur: marketSalePrice } of marketPrices) {
         const listingPrice = listings[psaGrade] ?? null;
-        if (listingPrice === null || listingPrice >= marketSalePrice) continue;
+        if (listingPrice === null) continue;
 
         const yearRange = cardYearRanges[psaGrade] ?? null;
 
@@ -153,7 +149,7 @@ export class GetOpportunitiesUsecase {
           psaTotal,
           hasPsaReport: psaReport !== null,
           ageSignal: allCardAgeSignals[cardIdx],
-          populationSignal: popSignalMap.get(`${card.id}-${psaGrade}`) ?? 0,
+          populationSignal: popSignalMap.get(card.id) ?? 0,
         });
       }
     }
@@ -176,6 +172,8 @@ export class GetOpportunitiesUsecase {
       populationLevel: ReturnType<typeof computePopulationLevel>;
       gradeSignal: number;
       gradeLevel: ReturnType<typeof computeGradeLevel>;
+      premiumSignal: number;
+      premiumLevel: ReturnType<typeof computePremiumLevel>;
       popsAtOrAbove: number | null;
       psaTotal: number | null;
     }>();
@@ -184,7 +182,8 @@ export class GetOpportunitiesUsecase {
       const e = rawEntries[i];
       const ageSignal = e.ageSignal;
       const populationSignal = e.populationSignal;
-      const score = computeScore(e.listingSignal, e.yearSignal, ageSignal, populationSignal, e.gradeSignal);
+      const premiumSignal = computePremiumSignal(e.grade);
+      const score = computeScore(e.listingSignal, e.yearSignal, ageSignal, populationSignal, e.gradeSignal, premiumSignal);
       const roundedScore = Math.round(score * 10) / 10;
 
       const existing = bestPerCard.get(e.cardIdx);
@@ -206,6 +205,8 @@ export class GetOpportunitiesUsecase {
           populationLevel: computePopulationLevel(populationSignal),
           gradeSignal: e.gradeSignal,
           gradeLevel: computeGradeLevel(e.gradeSignal),
+          premiumSignal,
+          premiumLevel: computePremiumLevel(e.grade),
           popsAtOrAbove: e.popsAtOrAbove,
           psaTotal: e.psaTotal,
         });
@@ -213,9 +214,7 @@ export class GetOpportunitiesUsecase {
     }
 
     const ranked = [...bestPerCard.entries()].sort((a, b) => b[1].score - a[1].score);
-    const aboveFloor = ranked.filter(([, g]) => g.score >= SCORE_FLOOR).length;
-    const count = Math.min(MAX_OPPORTUNITIES, Math.max(MIN_OPPORTUNITIES, aboveFloor));
-    const top = ranked.slice(0, count);
+    const top = ranked.slice(0, 10);
 
     return top.map(([cardIdx, g]) => {
       const card = cards[cardIdx];
@@ -243,6 +242,8 @@ export class GetOpportunitiesUsecase {
           populationLevel: g.populationLevel,
           gradeSignal: g.gradeSignal,
           gradeLevel: g.gradeLevel,
+          premiumSignal: g.premiumSignal,
+          premiumLevel: g.premiumLevel,
           popsAtOrAbove: g.popsAtOrAbove,
           psaTotal: g.psaTotal,
         },
