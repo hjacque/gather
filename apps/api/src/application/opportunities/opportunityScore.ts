@@ -6,9 +6,11 @@ export function computeListingSignal(
   listing: number | null
 ): number {
   if (listing === null) return 0;
-  const linear = Math.max(0, Math.min(1, (marketSale - listing) / marketSale));
-  // sqrt amplifies small discounts: 1% below → 0.10, 5% → 0.22, 20% → 0.45
-  return Math.sqrt(linear);
+  const linear = (marketSale - listing) / marketSale;
+  // positive side: sqrt amplifies small discounts (1% → 0.10, 5% → 0.22, 20% → 0.45)
+  // negative side: linear penalty, clamped at -1 (listing 2× market)
+  if (linear >= 0) return Math.sqrt(Math.min(1, linear));
+  return Math.max(-1, linear);
 }
 
 export function computeYearSignal(
@@ -113,7 +115,8 @@ export function computePremiumLevel(grade: number): SignalLevel {
 export function computeScoreLevel(score: number): SignalLevel {
   if (score >= 75) return 'green-strong';
   if (score >= 55) return 'yellow-light';
-  return 'orange-light';
+  if (score >= 0)  return 'orange-light';
+  return 'red-strong';
 }
 
 export function computeScore(
