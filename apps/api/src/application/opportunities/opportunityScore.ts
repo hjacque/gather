@@ -107,7 +107,7 @@ export function computePremiumSignal(grade: number): number {
 }
 
 export function computePremiumLevel(grade: number): SignalLevel {
-  return grade === 10 ? 'green-strong' : 'yellow-light';
+  return grade === 10 ? 'green-strong' : 'red-strong';
 }
 
 export function computeScoreLevel(score: number): SignalLevel {
