@@ -66,18 +66,30 @@ export class GetOpportunitiesUsecase {
     // Age: one value per card, older → higher signal.
     const allCardAgeSignals = normalizeInverted(cards.map(c => c.releaseDate?.getTime() ?? null));
 
-    // Population: one value per card — total PSA graded across all grades.
-    // Fewer total graded → scarcer card → higher signal.
-    // log-scale so a jump from 10→100 matters less than 1→10.
-    const allPopEntries: { cardId: string; rawPop: number }[] = [];
+    // Population: percentile rank across the collection — 1 = lowest pop (best), 0 = highest pop (worst).
+    // Ties share the average percentile of their group so the quartile thresholds in
+    // computePopulationLevel (0.75 / 0.50 / 0.25) map to actual population quartiles.
+    const allPopEntries: { cardId: string; total: number }[] = [];
     for (const card of cards) {
       const total = psaReports.get(card.id)?.total ?? 0;
-      allPopEntries.push({ cardId: card.id, rawPop: Math.log(total + 1) });
+      allPopEntries.push({ cardId: card.id, total });
     }
-    const allPopSignals = normalizeInverted(allPopEntries.map(e => e.rawPop));
-    const popSignalMap = new Map(
-      allPopEntries.map((e, i) => [e.cardId, allPopSignals[i]])
-    );
+    const popSignals = new Array(allPopEntries.length).fill(0);
+    const n = allPopEntries.length;
+    if (n > 1) {
+      const sortedIdx = allPopEntries.map((_, i) => i).sort((a, b) => allPopEntries[a].total - allPopEntries[b].total);
+      let i = 0;
+      while (i < n) {
+        let j = i;
+        while (j < n && allPopEntries[sortedIdx[j]].total === allPopEntries[sortedIdx[i]].total) j++;
+        const avgPercentile = 1 - (i + j - 1) / 2 / (n - 1);
+        for (let k = i; k < j; k++) popSignals[sortedIdx[k]] = avgPercentile;
+        i = j;
+      }
+    } else if (n === 1) {
+      popSignals[0] = 0.5;
+    }
+    const popSignalMap = new Map(allPopEntries.map((e, i) => [e.cardId, popSignals[i]]));
 
     // Collect per-(card, grade) raw inputs for all grades with a Market Sale Price.
     type RawEntry = {
