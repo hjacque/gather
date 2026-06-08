@@ -339,11 +339,11 @@ function OpportunityCard({
         {/* Signal breakdown */}
         <div className="grid grid-cols-2 sm:grid-cols-6 gap-x-4 gap-y-2 pt-0.5">
           <DiscountCell g={g} />
-          <WeekCell g={g} />
           <PopCell g={g} />
           <GradeCell g={g} />
           <AgeCell g={g} releaseDate={opportunity.releaseDate} />
           <PremiumCell g={g} />
+          <WeekCell g={g} />
         </div>
       </div>
     </div>
