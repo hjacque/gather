@@ -14,8 +14,11 @@ export type UnreviewedSalesCard = {
 };
 
 export abstract class SaleRepositoryPort {
-  // Upsert a scraped Sale keyed on (platform, itemId). On conflict the mutable
-  // scraped fields are refreshed; status and verificationStage are left intact
+  // Upsert a scraped Sale keyed on (platform, itemId, cardId): one row per
+  // (listing, card) attribution, so the same eBay listing matched to two Cards
+  // is two independently-reviewable Sales (invalidate the wrong-card one, keep
+  // the right one). On conflict the mutable scraped fields are refreshed;
+  // status and verificationStage are left intact
   // because they are owned by the re-verification pass. Reviewed Sales
   // (reviewedAt set) are frozen — their scraped fields are not touched, so an
   // admin's grade/price corrections survive the daily re-scrape.

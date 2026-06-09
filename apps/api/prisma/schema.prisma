@@ -160,7 +160,7 @@ model Sale {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  @@unique([platform, itemId])
+  @@unique([platform, itemId, cardId])
 }
 
 // eBay seller trust cache. Keyed by store slug (e.g. "psa").

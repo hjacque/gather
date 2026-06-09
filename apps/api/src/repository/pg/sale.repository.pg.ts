@@ -16,9 +16,9 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
   }
 
   async upsert(sale: NewSale): Promise<void> {
-    const { platform, itemId } = sale;
+    const { platform, itemId, cardId } = sale;
     const existing = await this.prisma.sale.findUnique({
-      where: { platform_itemId: { platform, itemId } },
+      where: { platform_itemId_cardId: { platform, itemId, cardId } },
       select: { id: true, reviewedAt: true },
     });
 
@@ -63,7 +63,6 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
     await this.prisma.sale.update({
       where: { id: existing.id },
       data: {
-        cardId: sale.cardId,
         psaGrade: sale.psaGrade,
         price: sale.price,
         currency: sale.currency,
