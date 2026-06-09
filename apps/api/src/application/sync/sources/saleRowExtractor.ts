@@ -9,7 +9,7 @@
  * Listing Title Parser's job, run by the use case over `title`.
  */
 
-import { parseSellerSlug } from "./trustedSeller";
+import { parseSellerSlug, qualifiesAsTrusted } from "./trustedSeller";
 
 // Raw, untyped strings as read straight off a result row's DOM.
 export type RawSaleRow = {
@@ -19,6 +19,9 @@ export type RawSaleRow = {
   soldText: string; // e.g. "Sold May 31, 2026"
   isBestOffer: boolean;
   sellerHref: string | null; // href of the store seller link, when present
+  // Text of the row's seller line, e.g. "dxbdxb 99.3% positive (460)". Present
+  // for store and non-store sellers alike; null when no seller line was found.
+  sellerInfoText: string | null;
 };
 
 // A single sold transaction candidate, before card/grade classification.
@@ -30,7 +33,12 @@ export type SaleCandidate = {
   soldAt: Date;
   isBestOffer: boolean;
   seller: string | null; // parsed store slug, e.g. "psa"; null for non-stores
-  trustedSeller: boolean; // resolved against live eBay profile by EbaySalesSource
+  // True when the row's seller line clears the reputation bar (feedback volume
+  // at a high positive rate). Derived from the row for all sellers.
+  trustedSeller: boolean;
+  // False when the row's seller line shows zero feedback — a fake-listing
+  // signal. Derived from the row for all sellers.
+  sellerHasActivity: boolean;
 };
 
 // eBay's carousel ad rows reuse this placeholder title.
@@ -65,6 +73,32 @@ function parseSoldAt(soldText: string): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+// Parse the seller feedback count from a row's seller line, e.g.
+// "dxbdxb 99.3% positive (460)" -> 460, "psa 99.9% positive (580.2K)" -> 580200,
+// "newbie 0% positive (0)" -> 0. Returns null when no parenthetical count is
+// present (e.g. a seller with no feedback history shown at all) — distinct from
+// a parsed 0, so an unparseable line never reads as "no activity".
+export function parseSellerFeedbackCount(infoText: string | null): number | null {
+  if (!infoText) return null;
+  const match = infoText.match(/\(\s*([\d.,]+)\s*([KkMm]?)\s*\)/);
+  if (!match) return null;
+  const n = parseFloat(match[1].replace(/,/g, ""));
+  if (!Number.isFinite(n)) return null;
+  const mult = /[Kk]/.test(match[2]) ? 1_000 : /[Mm]/.test(match[2]) ? 1_000_000 : 1;
+  return Math.round(n * mult);
+}
+
+// Parse the positive-feedback percentage from a row's seller line, e.g.
+// "dxbdxb 99.3% positive (460)" -> 99.3, "maokayangcards 100% positive (387)"
+// -> 100. Returns null when no "% positive" rate is present.
+export function parseSellerFeedbackPct(infoText: string | null): number | null {
+  if (!infoText) return null;
+  const match = infoText.match(/([\d.]+)\s*%\s*positive/i);
+  if (!match) return null;
+  const n = parseFloat(match[1]);
+  return Number.isFinite(n) ? n : null;
+}
+
 export function extractSaleRow(raw: RawSaleRow): SaleCandidate | null {
   const title = raw.title.replace(/Opens in a new window or tab\s*$/i, "").trim();
   if (!title || title === AD_TITLE) return null;
@@ -75,6 +109,18 @@ export function extractSaleRow(raw: RawSaleRow): SaleCandidate | null {
   const soldAt = parseSoldAt(raw.soldText);
   if (!currency || price === null || soldAt === null) return null;
 
+  const seller = parseSellerSlug(raw.sellerHref);
+
+  // Decide trust + activity from the row's own seller line, for store and
+  // non-store sellers alike (the line carries the same feedback count + positive
+  // rate for both): a feedback count of exactly 0 is no activity, and clearing
+  // the reputation bar grants trust. An unparseable line leaves count/pct null,
+  // which reads as "has activity, not trusted" — never invalidating on a miss.
+  const feedbackCount = parseSellerFeedbackCount(raw.sellerInfoText);
+  const feedbackPct = parseSellerFeedbackPct(raw.sellerInfoText);
+  const sellerHasActivity = feedbackCount !== 0;
+  const trustedSeller = qualifiesAsTrusted(feedbackCount, feedbackPct);
+
   return {
     itemId: raw.listingId,
     title,
@@ -82,7 +128,8 @@ export function extractSaleRow(raw: RawSaleRow): SaleCandidate | null {
     currency,
     soldAt,
     isBestOffer: raw.isBestOffer,
-    seller: parseSellerSlug(raw.sellerHref),
-    trustedSeller: false, // resolved by EbaySalesSource after scraping
+    seller,
+    trustedSeller,
+    sellerHasActivity,
   };
 }

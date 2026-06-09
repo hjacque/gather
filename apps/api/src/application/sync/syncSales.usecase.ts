@@ -19,6 +19,7 @@ export type SaleSyncCounters = {
   upserted: number; // candidates accepted by the parser and persisted
   skipped: number; // candidates rejected by the parser (bundle / foreign / etc.)
   autoValidated: number; // upserted Sales auto-validated by trusted seller
+  autoInvalidated: number; // upserted Sales auto-invalidated for a 0-activity seller
   reverified: number; // pending Sales revisited at a checkpoint this run
   confirmed: number; // reverified Sales that survived to 30 days
   invalidated: number; // reverified Sales found gone / relisted
@@ -37,6 +38,7 @@ const emptyCounters = (): SaleSyncCounters => ({
   upserted: 0,
   skipped: 0,
   autoValidated: 0,
+  autoInvalidated: 0,
   reverified: 0,
   confirmed: 0,
   invalidated: 0,
@@ -149,11 +151,18 @@ export class SyncSalesUsecase {
         continue;
       }
 
-      // Only PSA's own store is auto-confirmed — they're the grading authority
-      // so no manual review is needed. Other reputable sellers (trusted in the
-      // Seller table) still go through the normal review queue.
-      const autoConfirm = candidate.seller === "psa";
+      // Auto-confirm (skip the manual review queue) sales from sellers we trust:
+      // PSA's own store as the grading authority, plus any seller clearing the
+      // reputation bar (5000+ feedback at 99.5%+ positive). trustedSeller is
+      // derived from the row's seller line for store and non-store sellers alike.
+      const autoConfirm = candidate.seller === "psa" || candidate.trustedSeller;
 
+      // A seller with zero sale activity (zero feedback on the row's seller
+      // line) is a fake-listing signal: auto-invalidate rather than queue for
+      // review. PSA always wins the tie.
+      const autoInvalidate = !autoConfirm && !candidate.sellerHasActivity;
+
+      const decided = autoConfirm || autoInvalidate;
       await this.saleRepository.upsert({
         cardId: card.id,
         platform: "ebay",
@@ -165,12 +174,13 @@ export class SyncSalesUsecase {
         isBestOffer: candidate.isBestOffer,
         seller: candidate.seller,
         soldAt: candidate.soldAt,
-        reviewedAt: autoConfirm ? new Date() : null,
-        status: autoConfirm ? "confirmed" : undefined,
-        verificationStage: autoConfirm ? "complete" : undefined,
+        reviewedAt: decided ? new Date() : null,
+        status: autoConfirm ? "confirmed" : autoInvalidate ? "invalid" : undefined,
+        verificationStage: decided ? "complete" : undefined,
       });
       counters.upserted++;
       if (autoConfirm) counters.autoValidated++;
+      if (autoInvalidate) counters.autoInvalidated++;
     }
 
     // Re-verification pass: revisit this Card's due pending Sales at their
