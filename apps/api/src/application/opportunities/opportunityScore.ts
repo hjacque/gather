@@ -128,11 +128,11 @@ export function computeScore(
   premiumSignal: number
 ): number {
   return (
-    listingSignal    * 0.35 +
+    listingSignal    * 0.38 +
     yearSignal       * 0.02 +
-    populationSignal * 0.18 +
-    gradeSignal      * 0.25 +
-    ageSignal        * 0.13 +
+    populationSignal * 0.19 +
+    gradeSignal      * 0.24 +
+    ageSignal        * 0.10 +
     premiumSignal    * 0.07
   ) * 100;
 }
