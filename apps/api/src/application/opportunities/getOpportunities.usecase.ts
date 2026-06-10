@@ -226,7 +226,7 @@ export class GetOpportunitiesUsecase {
     }
 
     const ranked = [...bestPerCard.entries()].sort((a, b) => b[1].score - a[1].score);
-    const top = ranked.slice(0, 10);
+    const top = ranked.slice(0, 20);
 
     return top.map(([cardIdx, g]) => {
       const card = cards[cardIdx];
