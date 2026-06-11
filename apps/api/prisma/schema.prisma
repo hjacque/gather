@@ -86,6 +86,7 @@ model Card {
   cardMarketLink            String?
   psaLink                   String?
   ebayLink                  String?
+  ebayFrLink                String?
   number                    String?
   regions                   Region[]
 

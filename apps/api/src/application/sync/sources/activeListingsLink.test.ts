@@ -20,6 +20,11 @@ describe("activeListingsLinkFromEbayLink", () => {
     expect(url.searchParams.get("LH_PrefLoc")).toBe("3");
   });
 
+  it("drops the inherited US from-country param (_fcid)", () => {
+    const link = activeListingsLinkFromEbayLink(SOLD_LINK)!;
+    expect(new URL(link).searchParams.get("_fcid")).toBeNull();
+  });
+
   it("preserves the curated search term", () => {
     const link = activeListingsLinkFromEbayLink(SOLD_LINK)!;
     expect(new URL(link).searchParams.get("_nkw")).toBe(

@@ -24,6 +24,9 @@ export function activeListingsLinkFromEbayLink(
     url.host = "www.ebay.fr";
     url.searchParams.delete("LH_Sold");
     url.searchParams.delete("LH_Complete");
+    // The curated sold-link carries a US "from-country" param (_fcid=1) with no
+    // place in an EU search; drop it so only LH_PrefLoc governs item location.
+    url.searchParams.delete("_fcid");
     url.searchParams.set("LH_BIN", "1");
     url.searchParams.set("LH_PrefLoc", "3");
     url.searchParams.set("_sop", "15");

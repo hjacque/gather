@@ -82,6 +82,10 @@ export type CardEntity = {
   cardMarketLink: string | null;
   psaLink: string | null;
   ebayLink: string | null;
+  // Curated ebay.fr active Buy-It-Now search, EU item-location filtered
+  // (Provenance = Union européenne). Drives the Listings Sync; null cards are
+  // skipped. Distinct from `ebayLink`, which is the ebay.com *sold* search.
+  ebayFrLink: string | null;
   number: string | null;
   note: string | null;
   tags: string[];

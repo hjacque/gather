@@ -1,6 +1,5 @@
 import type { Page } from "rebrowser-puppeteer-core";
 import { CardEntity } from "../../../entities/card.entity";
-import { activeListingsLinkFromEbayLink } from "./activeListingsLink";
 import {
   RawListingRow,
   ListingCandidate,
@@ -17,7 +16,8 @@ const MAX_PAGES = 5;
  * sales source. Walks the same curated per-Card search as `EbaySalesSource`,
  * but filtered to live Buy-It-Now items (see activeListingsLink.ts), and
  * reduces each result row to a `RawListingRow` for the pure Listing Row
- * Extractor. Cards with no `ebayLink` are skipped.
+ * Extractor. The search is the Card's curated `ebayFrLink` (an ebay.fr active
+ * Buy-It-Now search, EU item-location filtered); Cards without one are skipped.
  *
  * Selectors are identical to the sales walk (rows are `li.s-card
  * [data-listingid]`); the differences are the missing "Sold <date>" caption,
@@ -28,11 +28,11 @@ const MAX_PAGES = 5;
  */
 export class EbayListingsSource {
   appliesTo(card: CardEntity): boolean {
-    return !!card.ebayLink;
+    return !!card.ebayFrLink;
   }
 
   async fetch(card: CardEntity, page: Page): Promise<ListingCandidate[]> {
-    const link = activeListingsLinkFromEbayLink(card.ebayLink);
+    const link = card.ebayFrLink;
     if (!link) return [];
 
     const candidates: ListingCandidate[] = [];

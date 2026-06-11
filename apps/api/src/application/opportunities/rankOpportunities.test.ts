@@ -40,6 +40,7 @@ const card = (id: string, overrides: Partial<CardEntity> = {}): CardWithSet => (
   cardMarketLink: null,
   psaLink: null,
   ebayLink: null,
+  ebayFrLink: null,
   number: null,
   note: null,
   tags: [],

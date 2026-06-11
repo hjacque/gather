@@ -15,6 +15,7 @@ const card = (id: string, overrides: Partial<CardEntity> = {}): CardEntity => ({
   cardMarketLink: `https://www.cardmarket.com/card-${id}`,
   psaLink: null,
   ebayLink: null,
+  ebayFrLink: null,
   number: null,
   note: null,
   tags: [],
@@ -92,7 +93,7 @@ describe("mergeListingOffers", () => {
     expect(result.get("a")![10]).toEqual({
       priceEur: 90, // 100 USD × 0.9
       source: "ebay",
-      url: "https://www.ebay.com/itm/396556820656",
+      url: "https://www.ebay.fr/itm/396556820656",
       isBestOffer: false,
     });
   });
@@ -122,7 +123,7 @@ describe("mergeListingOffers", () => {
     expect(result.get("a")![10]).toEqual({
       priceEur: 90,
       source: "ebay",
-      url: "https://www.ebay.com/itm/cheap",
+      url: "https://www.ebay.fr/itm/cheap",
       isBestOffer: true,
     });
   });

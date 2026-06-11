@@ -72,7 +72,7 @@ export class GetCardUsecase {
             isBestOffer: listing.isBestOffer,
             source: listing.platform === "ebay" ? ("ebay" as const) : ("cardmarket" as const),
             title: listing.title,
-            url: `https://www.ebay.com/itm/${listing.itemId}`,
+            url: `https://www.ebay.fr/itm/${listing.itemId}`,
             seenAt: listing.seenAt,
           },
         ];

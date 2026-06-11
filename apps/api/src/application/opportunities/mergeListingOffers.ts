@@ -20,8 +20,11 @@ export type ListingOffer = {
   isBestOffer: boolean;
 };
 
+// Listings are scraped on ebay.fr (EU item-location filter); link back there so
+// the item page shows its true EU origin + EUR price, not the ebay.com
+// ships-to-Europe framing.
 const ebayItemUrl = (itemId: string): string =>
-  `https://www.ebay.com/itm/${itemId}`;
+  `https://www.ebay.fr/itm/${itemId}`;
 
 export function mergeListingOffers({
   cards,

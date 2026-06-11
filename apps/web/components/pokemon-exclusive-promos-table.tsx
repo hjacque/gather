@@ -934,6 +934,12 @@ export function PokemonExclusivePromosTable({
                         <span className="text-sm font-medium">eBay Sold</span>
                       </a>
                     )}
+                    {displayedItem.ebayFrLink && (
+                      <a href={displayedItem.ebayFrLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
+                        <ShoppingCart className="w-5 h-5 text-primary" />
+                        <span className="text-sm font-medium">eBay EU (live)</span>
+                      </a>
+                    )}
                   </div>
                 </CardContent>
               </Card>
