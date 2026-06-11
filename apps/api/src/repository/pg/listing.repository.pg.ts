@@ -16,6 +16,16 @@ export class ListingRepositoryPg implements ListingRepositoryPort {
     platform: Platform,
     listings: NewListing[]
   ): Promise<void> {
+    // Full per-card replacement is the staleness model, but a user's
+    // invalidation must outlive it: carry invalidatedAt forward by itemId so a
+    // listing the user flagged stays hidden after a refresh re-sees it.
+    const invalidated = await this.prisma.listing.findMany({
+      where: { cardId, platform, invalidatedAt: { not: null } },
+      select: { itemId: true, invalidatedAt: true },
+    });
+    const invalidatedAtByItem = new Map(
+      invalidated.map((r) => [r.itemId, r.invalidatedAt])
+    );
     await this.prisma.$transaction([
       this.prisma.listing.deleteMany({ where: { cardId, platform } }),
       this.prisma.listing.createMany({
@@ -30,6 +40,7 @@ export class ListingRepositoryPg implements ListingRepositoryPort {
           isBestOffer: l.isBestOffer,
           seller: l.seller,
           seenAt: l.seenAt,
+          invalidatedAt: invalidatedAtByItem.get(l.itemId) ?? null,
         })),
       }),
     ]);
@@ -40,7 +51,7 @@ export class ListingRepositoryPg implements ListingRepositoryPort {
     since: Date
   ): Promise<Map<string, ListingEntity[]>> {
     const rows = await this.prisma.listing.findMany({
-      where: { cardId: { in: cardIds }, seenAt: { gte: since } },
+      where: { cardId: { in: cardIds }, seenAt: { gte: since }, invalidatedAt: null },
     });
 
     const result = new Map<string, ListingEntity[]>();
@@ -51,5 +62,12 @@ export class ListingRepositoryPg implements ListingRepositoryPort {
       else result.set(row.cardId, [entity]);
     }
     return result;
+  }
+
+  async markListingInvalid(listingId: string): Promise<void> {
+    await this.prisma.listing.update({
+      where: { id: listingId },
+      data: { invalidatedAt: new Date() },
+    });
   }
 }

@@ -8,6 +8,7 @@ import type {
   ReviewSaleRequest,
   SyncCardResponse,
   UpdateCardNoteRequest,
+  UpdateListingStatusRequest,
   UpsertCollectionEntryRequest,
 } from '@gather/api-contract';
 
@@ -98,6 +99,12 @@ export async function invalidateSale(saleId: string): Promise<void> {
   return apiPatch(`/sales/${saleId}`, {
     action: 'invalidate',
   } satisfies ReviewSaleRequest);
+}
+
+export async function invalidateListing(listingId: string): Promise<void> {
+  return apiPatch(`/listings/${listingId}`, {
+    action: 'invalidate',
+  } satisfies UpdateListingStatusRequest);
 }
 
 export async function getUnreviewedSales(

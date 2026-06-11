@@ -181,6 +181,9 @@ model Listing {
   isBestOffer Boolean  @default(false)
   seller      String?
   seenAt      DateTime
+  // User-flagged as not matching this card: excluded from reads, but kept and
+  // carried forward by itemId on re-sync so the flag survives full replacement.
+  invalidatedAt DateTime?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

@@ -19,6 +19,7 @@ export const http = async ({
   syncPsaPopReportsUsecase,
   syncSalesUsecase,
   invalidateSaleUsecase,
+  invalidateListingUsecase,
   reviewSaleUsecase,
   getUnreviewedSalesUsecase,
   updateCardNoteUsecase,
@@ -149,6 +150,16 @@ export const http = async ({
         price: body.price,
       });
     }
+    res.status(204).end();
+  });
+
+  app.patch("/listings/:listingid", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
+    // Currently only invalidation: flag a listing that does not match the card
+    // so it drops out of the panel + opportunities buy-side.
+    const bodySchema = z.object({ action: z.literal("invalidate") });
+    bodySchema.parse(req.body);
+    await invalidateListingUsecase.execute(req.params.listingid);
     res.status(204).end();
   });
 

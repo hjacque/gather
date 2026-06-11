@@ -45,6 +45,7 @@ const listing = (
     isBestOffer: false,
     seller: null,
     seenAt: NOW,
+    invalidatedAt: null,
     createdAt: NOW,
     updatedAt: NOW,
     ...overrides,

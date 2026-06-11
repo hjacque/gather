@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/card';
 import { CardNoteSection } from '@/components/card-note-section';
 import { getCard } from '@/app/actions/getCard';
+import { invalidateListing } from '@/app/actions/invalidateListing';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -105,6 +106,14 @@ export function OpportunitiesList({ opportunities }: Props) {
         }
       }
     }
+  }, []);
+
+  const handleInvalidateListing = useCallback(async (listingId: string) => {
+    const opp = activeOppRef.current;
+    if (!opp) return;
+    await invalidateListing(listingId);
+    const data = await getCard(opp.id);
+    if (activeOppRef.current?.id === opp.id) setDisplayedCard(data);
   }, []);
 
   const navigateBy = useCallback((delta: number) => {
@@ -205,7 +214,7 @@ export function OpportunitiesList({ opportunities }: Props) {
                 </div>
 
                 <div className="w-full px-4 lg:px-6">
-                  <CardListingsTable listings={displayedCard.listings} />
+                  <CardListingsTable listings={displayedCard.listings} onInvalidate={handleInvalidateListing} />
                 </div>
 
                 {displayedCard.psaPopReport && (

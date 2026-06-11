@@ -149,6 +149,12 @@ export type UpdateSaleStatusRequest = {
   status: 'invalid';
 };
 
+// User-driven Listing moderation. Currently only invalidation: flag a listing
+// that doesn't match the card so it drops out of the panel + opportunities.
+export type UpdateListingStatusRequest = {
+  action: 'invalidate';
+};
+
 // Sale Review action from the backoffice page. `approve` stamps the Sale reviewed
 // and applies any corrections (a misparsed grade, a Best-Offer's true price);
 // `invalidate` flags it invalid (which also counts as reviewed).

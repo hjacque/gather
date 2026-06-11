@@ -114,6 +114,9 @@ export type ListingEntity = {
   seller: string | null;
   // When the last Listings Sync saw this listing live.
   seenAt: Date;
+  // Set when the user flags this listing as not matching the card; invalidated
+  // listings are excluded from reads (card panel + opportunities).
+  invalidatedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };

@@ -14,6 +14,7 @@ export class ListingMapper {
     isBestOffer,
     seller,
     seenAt,
+    invalidatedAt,
     createdAt,
     updatedAt,
   }: ListingModel): ListingEntity {
@@ -29,6 +30,7 @@ export class ListingMapper {
       isBestOffer,
       seller,
       seenAt,
+      invalidatedAt,
       createdAt,
       updatedAt,
     };
