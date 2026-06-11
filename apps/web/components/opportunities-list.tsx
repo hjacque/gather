@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/tooltip';
 import { CardImage } from '@/components/card-image';
 import { EbaySalesChart } from '@/components/ebay-sales-chart';
+import { CardListingsTable } from '@/components/card-listings-table';
 import { PsaGradePriceChart } from '@/components/psa-grade-price-chart';
 import {
   Card,
@@ -35,6 +36,8 @@ import {
 } from '@/components/ui/card';
 import { CardNoteSection } from '@/components/card-note-section';
 import { getCard } from '@/app/actions/getCard';
+import { invalidateListing } from '@/app/actions/invalidateListing';
+import { syncCardListings, syncListing } from '@/app/actions/syncCard';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -103,6 +106,37 @@ export function OpportunitiesList({ opportunities }: Props) {
           setDisplayedCard(null);
         }
       }
+    }
+  }, []);
+
+  const handleInvalidateListing = useCallback(async (listingId: string) => {
+    const opp = activeOppRef.current;
+    if (!opp) return;
+    await invalidateListing(listingId);
+    const data = await getCard(opp.id);
+    if (activeOppRef.current?.id === opp.id) setDisplayedCard(data);
+  }, []);
+
+  const [isSyncingListings, setIsSyncingListings] = useState(false);
+
+  const handleSyncListing = useCallback(async (listingId: string) => {
+    const opp = activeOppRef.current;
+    if (!opp) return;
+    await syncListing(listingId);
+    const data = await getCard(opp.id);
+    if (activeOppRef.current?.id === opp.id) setDisplayedCard(data);
+  }, []);
+
+  const handleSyncCardListings = useCallback(async () => {
+    const opp = activeOppRef.current;
+    if (!opp) return;
+    setIsSyncingListings(true);
+    try {
+      await syncCardListings(opp.id);
+      const data = await getCard(opp.id);
+      if (activeOppRef.current?.id === opp.id) setDisplayedCard(data);
+    } finally {
+      setIsSyncingListings(false);
     }
   }, []);
 
@@ -203,6 +237,16 @@ export function OpportunitiesList({ opportunities }: Props) {
                   <MarketPricesCard marketPrices={displayedCard.marketPrices} />
                 </div>
 
+                <div className="w-full px-4 lg:px-6">
+                  <CardListingsTable
+                    listings={displayedCard.listings}
+                    onInvalidate={handleInvalidateListing}
+                    onSyncListing={handleSyncListing}
+                    onSyncAll={handleSyncCardListings}
+                    isSyncingAll={isSyncingListings}
+                  />
+                </div>
+
                 {displayedCard.psaPopReport && (
                   <div className="w-full px-4 lg:px-6">
                     <PsaPopCard report={displayedCard.psaPopReport} />
@@ -251,6 +295,18 @@ export function OpportunitiesList({ opportunities }: Props) {
                           >
                             <Gavel className="w-5 h-5 text-primary" />
                             <span className="text-sm font-medium">eBay Sold</span>
+                          </a>
+                        )}
+                        {displayedCard.ebayFrLink && (
+                          <a
+                            href={displayedCard.ebayFrLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <ShoppingCart className="w-5 h-5 text-primary" />
+                            <span className="text-sm font-medium">eBay EU (live)</span>
                           </a>
                         )}
                       </div>
@@ -418,7 +474,7 @@ function SignalCell({
 }: {
   label: string;
   value: string;
-  sub: string;
+  sub: ReactNode;
   highlight?: SignalLevel;
   tooltip?: ReactNode;
 }) {
@@ -457,7 +513,7 @@ function DiscountCell({ g }: { g: GradeOpportunity }) {
       <p className="font-semibold mb-1">Discount — the base of the score</p>
       <p>
         Today&apos;s cheapest listing vs the Market Sale Price (recency-weighted
-        median of eBay sold prices for this grade). Discounts under 5% score
+        median of eBay sold prices for this grade). Discounts under 3% score
         zero — that&apos;s within the median&apos;s noise, a fair price rather
         than a deal. Above that, the discount counts to the extent the market
         price is trustworthy: {conf}% confidence here, from {g.sampleSize}{' '}
@@ -473,13 +529,50 @@ function DiscountCell({ g }: { g: GradeOpportunity }) {
     );
   }
   const pct = ((g.listingPrice - g.marketSalePrice) / g.marketSalePrice) * 100;
+  // The cheapest offer can come from CardMarket or a live eBay Buy-It-Now ask;
+  // link straight to it. A Best Offer ask is buyable at the shown price but
+  // negotiable below it — marked with a gavel.
+  const priceLabel = `${eur(g.listingPrice)}${g.listingSource === 'ebay' ? ' eBay' : ''}`;
+  const sub = (
+    <>
+      {g.listingUrl ? (
+        <a
+          href={g.listingUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2 hover:text-foreground"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {priceLabel}
+        </a>
+      ) : (
+        priceLabel
+      )}
+      {g.listingIsBestOffer && (
+        <Gavel className="inline w-3 h-3 ml-0.5 align-[-1px]" aria-label="Best Offer accepted" />
+      )}
+      {` · ${eur(g.marketSalePrice)} mkt · ${conf}% conf`}
+    </>
+  );
   return (
     <SignalCell
       label="Discount"
       value={`${pct > 0 ? '+' : ''}${pct.toFixed(0)}% vs market`}
-      sub={`${eur(g.listingPrice)} · ${eur(g.marketSalePrice)} mkt · ${conf}% conf`}
+      sub={sub}
       highlight={g.listingLevel}
-      tooltip={tooltip}
+      tooltip={
+        <>
+          {tooltip}
+          {g.listingSource === 'ebay' && (
+            <p className="mt-1">
+              Cheapest offer is a live eBay Buy-It-Now ask
+              {g.listingIsBestOffer
+                ? ' with Best Offer enabled — buyable at this price, negotiable below it.'
+                : '.'}
+            </p>
+          )}
+        </>
+      }
     />
   );
 }

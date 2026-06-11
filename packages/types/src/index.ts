@@ -82,10 +82,41 @@ export type CardEntity = {
   cardMarketLink: string | null;
   psaLink: string | null;
   ebayLink: string | null;
+  // Curated ebay.fr active Buy-It-Now search, EU item-location filtered
+  // (Provenance = Union européenne). Drives the Listings Sync; null cards are
+  // skipped. Distinct from `ebayLink`, which is the ebay.com *sold* search.
+  ebayFrLink: string | null;
   number: string | null;
   note: string | null;
   tags: string[];
   regions: Region[];
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+// An active marketplace ask (buyable now), as opposed to a Sale (realized
+// transaction). One row per live listing seen by the last Listings Sync;
+// listings that disappear are pruned by full per-card replacement on each sync.
+export type ListingEntity = {
+  id: string;
+  cardId: string;
+  platform: Platform;
+  itemId: string;
+  psaGrade: number;
+  // Ask price in its original currency — an offer ceiling, not a realized price.
+  price: number;
+  currency: string;
+  title: string;
+  // Best Offer enabled: still buyable at `price`, but negotiable below it.
+  isBestOffer: boolean;
+  // eBay store slug of the seller, when the listing came from a store
+  // (e.g. "psa"); null otherwise.
+  seller: string | null;
+  // When the last Listings Sync saw this listing live.
+  seenAt: Date;
+  // Set when the user flags this listing as not matching the card; invalidated
+  // listings are excluded from reads (card panel + opportunities).
+  invalidatedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };

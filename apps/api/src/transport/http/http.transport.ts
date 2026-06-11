@@ -18,7 +18,10 @@ export const http = async ({
   syncSingleCardPsaUsecase,
   syncPsaPopReportsUsecase,
   syncSalesUsecase,
+  syncListingsUsecase,
+  syncSingleListingUsecase,
   invalidateSaleUsecase,
+  invalidateListingUsecase,
   reviewSaleUsecase,
   getUnreviewedSalesUsecase,
   updateCardNoteUsecase,
@@ -88,6 +91,20 @@ export const http = async ({
     res.json({ success: true });
   });
 
+  // Re-walk one card's live listings (panel "Sync listings").
+  app.get("/sync/listings/card/:cardid", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
+    const result = await syncListingsUsecase.executeForCard(req.params.cardid);
+    res.status(200).json(result);
+  });
+
+  // Refresh one stored listing against its eBay item page (per-row "Sync").
+  app.get("/sync/listings/:listingid", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
+    const result = await syncSingleListingUsecase.execute(req.params.listingid);
+    res.status(200).json(result);
+  });
+
   app.get("/sync/sales/card/:cardid", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
     const result = await syncSalesUsecase.execute(req.params.cardid);
@@ -149,6 +166,16 @@ export const http = async ({
         price: body.price,
       });
     }
+    res.status(204).end();
+  });
+
+  app.patch("/listings/:listingid", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
+    // Currently only invalidation: flag a listing that does not match the card
+    // so it drops out of the panel + opportunities buy-side.
+    const bodySchema = z.object({ action: z.literal("invalidate") });
+    bodySchema.parse(req.body);
+    await invalidateListingUsecase.execute(req.params.listingid);
     res.status(204).end();
   });
 

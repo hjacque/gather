@@ -10,6 +10,7 @@ import { CardSetEntity } from "../../entities/cardSet.entity";
 import { SaleEntity } from "../../entities/sale.entity";
 import type { PsaPopReportEntity } from "../../repository/ports/psaPopReport.repository.port";
 import { computeMarketPrices } from "../sale/marketPrice";
+import type { ListingOffer } from "./mergeListingOffers";
 import {
   computeListingConfidence,
   computeListingSignal,
@@ -40,7 +41,9 @@ export type OpportunityInputs = {
   cards: (CardEntity & { cardSet: CardSetEntity })[];
   // All maps are keyed by card id; absent entries mean "no data for this card".
   salesByCard: Map<string, SaleEntity[]>;
-  listingPricesByCard: Map<string, Record<number, number | null>>;
+  // Merged buy side (see mergeListingOffers): per grade, today's cheapest
+  // offer across CardMarket and live eBay asks, with its provenance.
+  listingPricesByCard: Map<string, Record<number, ListingOffer | null>>;
   yearRangesByCard: Map<string, Record<number, GradeYearRange>>;
   psaReportsByCard: Map<string, PsaPopReportEntity>;
   usdToEur: number;
@@ -111,6 +114,7 @@ export const rankOpportunities = ({
     salesPerDay: number;
     liquiditySignal: number;
     listingPrice: number | null;
+    listingOffer: ListingOffer;
     yearSignal: number;
     yearRange: GradeYearRange;
     gradeSignal: number;
@@ -139,8 +143,9 @@ export const rankOpportunities = ({
       newestSoldAt,
       salesPerDay,
     } of marketPrices) {
-      const listingPrice = listings[psaGrade] ?? null;
-      if (listingPrice === null) continue;
+      const listingOffer = listings[psaGrade] ?? null;
+      if (listingOffer === null) continue;
+      const listingPrice = listingOffer.priceEur;
 
       const yearRange = cardYearRanges[psaGrade] ?? null;
 
@@ -176,6 +181,7 @@ export const rankOpportunities = ({
         salesPerDay,
         liquiditySignal: computeLiquiditySignal(salesPerDay),
         listingPrice,
+        listingOffer,
         yearSignal: computeYearSignal(marketSalePrice, yearRange),
         yearRange,
         gradeSignal,
@@ -204,6 +210,7 @@ export const rankOpportunities = ({
       liquiditySignal: number;
       liquidityLevel: ReturnType<typeof computeLiquidityLevel>;
       listingPrice: number | null;
+      listingOffer: ListingOffer;
       marketSalePrice: number;
       listingLevel: ReturnType<typeof computeDiscountLevel>;
       yearSignal: number;
@@ -252,6 +259,7 @@ export const rankOpportunities = ({
         liquiditySignal: e.liquiditySignal,
         liquidityLevel: computeLiquidityLevel(e.liquiditySignal),
         listingPrice: e.listingPrice,
+        listingOffer: e.listingOffer,
         marketSalePrice: e.marketSalePrice,
         listingLevel: computeDiscountLevel(e.marketSalePrice, e.listingPrice),
         yearSignal: e.yearSignal,
@@ -300,6 +308,9 @@ export const rankOpportunities = ({
         liquiditySignal: g.liquiditySignal,
         liquidityLevel: g.liquidityLevel,
         listingPrice: g.listingPrice,
+        listingSource: g.listingOffer.source,
+        listingUrl: g.listingOffer.url,
+        listingIsBestOffer: g.listingOffer.isBestOffer,
         marketSalePrice: g.marketSalePrice,
         listingLevel: g.listingLevel,
         yearSignal: g.yearSignal,

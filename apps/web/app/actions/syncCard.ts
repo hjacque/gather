@@ -6,6 +6,8 @@ import {
   syncCardSales as _syncCardSales,
   syncAllPromos as _syncAllPromos,
   syncAllListings as _syncAllListings,
+  syncCardListings as _syncCardListings,
+  syncListing as _syncListing,
   syncAllSales as _syncAllSales,
   syncAllPop as _syncAllPop,
 } from '@/lib/apiClient';
@@ -28,6 +30,14 @@ export async function syncAllPromos() {
 
 export async function syncAllListings() {
   return _syncAllListings();
+}
+
+export async function syncCardListings(cardId: string) {
+  return _syncCardListings(cardId);
+}
+
+export async function syncListing(listingId: string) {
+  return _syncListing(listingId);
 }
 
 export async function syncAllSales() {

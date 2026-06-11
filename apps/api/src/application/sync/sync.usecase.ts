@@ -7,6 +7,7 @@ import { PriceSourcePort } from "./sources/priceSource.port";
 import { getEurToUsdRate } from "./helper";
 import { syncCard } from "./syncCard";
 import { SyncSalesUsecase, SaleSyncCounters } from "./syncSales.usecase";
+import { SyncListingsUsecase, ListingSyncCounters } from "./syncListings.usecase";
 
 export type SyncUsecaseInputDto = {
   filter: {
@@ -24,7 +25,8 @@ export class SyncUsecase {
     private readonly cardRepository: CardRepositoryPort,
     private readonly priceRepository: PriceRepositoryPort,
     private readonly priceSources: PriceSourcePort[],
-    private readonly syncSalesUsecase: SyncSalesUsecase
+    private readonly syncSalesUsecase: SyncSalesUsecase,
+    private readonly syncListingsUsecase: SyncListingsUsecase
   ) {}
 
   async execute({ filter, mode, skipSales = false }: SyncUsecaseInputDto) {
@@ -41,6 +43,12 @@ export class SyncUsecase {
       reverified: 0,
       confirmed: 0,
       invalidated: 0,
+    };
+    const listingCounters: ListingSyncCounters = {
+      scraped: 0,
+      stored: 0,
+      skippedTitle: 0,
+      skippedSeller: 0,
     };
 
     let paginationPage = 1;
@@ -89,6 +97,9 @@ export class SyncUsecase {
           // re-verify this Card's Sales right after its prices. No-ops for Cards
           // without an ebayLink.
           await this.syncSalesUsecase.syncCardOnPage(card, page, saleCounters);
+          // Likewise the Listings Sync: refresh this Card's live Buy-It-Now
+          // asks (the eBay buy side of the opportunities funnel).
+          await this.syncListingsUsecase.syncCardOnPage(card, page, listingCounters);
         }
         await new Promise((resolve) =>
           setTimeout(resolve, 4000 + Math.random() * 4000)
@@ -99,6 +110,6 @@ export class SyncUsecase {
     await page.close();
     await browser.close();
 
-    console.log("end", { sales: saleCounters });
+    console.log("end", { sales: saleCounters, listings: listingCounters });
   }
 }

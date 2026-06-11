@@ -46,6 +46,7 @@ function makeCard(id: string, psaLink: string | null): CardWithSet {
     imageUrl: null,
     cardMarketLink: null,
     ebayLink: null,
+    ebayFrLink: null,
     number: null,
     note: null,
     releaseDate: null,

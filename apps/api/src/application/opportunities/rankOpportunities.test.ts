@@ -7,6 +7,7 @@ import {
   OpportunityInputs,
   GradeYearRange,
 } from "./rankOpportunities";
+import type { ListingOffer } from "./mergeListingOffers";
 
 // Tests assert gating, normalization, selection and ordering — never absolute
 // score values, which move whenever the weights in computeScore are tuned.
@@ -39,6 +40,7 @@ const card = (id: string, overrides: Partial<CardEntity> = {}): CardWithSet => (
   cardMarketLink: null,
   psaLink: null,
   ebayLink: null,
+  ebayFrLink: null,
   number: null,
   note: null,
   tags: [],
@@ -100,11 +102,18 @@ const report = (
   } as PsaPopReportEntity;
 };
 
+// A bare number is shorthand for a CardMarket offer at that EUR price; a full
+// ListingOffer exercises the eBay provenance pass-through.
+const offer = (price: number | ListingOffer | null): ListingOffer | null =>
+  typeof price === "number"
+    ? { priceEur: price, source: "cardmarket", url: null, isBestOffer: false }
+    : price;
+
 const inputs = (init: {
   cards: CardWithSet[];
   sales?: SaleEntity[];
-  // cardId → grade → listing price
-  listings?: Record<string, Record<number, number | null>>;
+  // cardId → grade → listing price (number) or full offer
+  listings?: Record<string, Record<number, number | ListingOffer | null>>;
   yearRanges?: Record<string, Record<number, GradeYearRange>>;
   reports?: PsaPopReportEntity[];
 }): OpportunityInputs => {
@@ -117,7 +126,14 @@ const inputs = (init: {
   return {
     cards: init.cards,
     salesByCard,
-    listingPricesByCard: new Map(Object.entries(init.listings ?? {})),
+    listingPricesByCard: new Map(
+      Object.entries(init.listings ?? {}).map(([cardId, byGrade]) => [
+        cardId,
+        Object.fromEntries(
+          Object.entries(byGrade).map(([grade, price]) => [grade, offer(price)])
+        ),
+      ])
+    ),
     yearRangesByCard: new Map(Object.entries(init.yearRanges ?? {})),
     psaReportsByCard: new Map(
       (init.reports ?? []).map((r) => [r.cardId, r])
@@ -150,6 +166,32 @@ describe("rankOpportunities", () => {
     expect(result[0].bestGrade.psaGrade).toBe(10);
     expect(result[0].bestGrade.listingPrice).toBe(80);
     expect(result[0].bestGrade.marketSalePrice).toBe(100);
+  });
+
+  it("passes the winning offer's provenance through to the entry", () => {
+    const a = card("a");
+    const result = rankOpportunities(
+      inputs({
+        cards: [a],
+        sales: [sale("a", 10, 100)],
+        listings: {
+          a: {
+            10: {
+              priceEur: 80,
+              source: "ebay",
+              url: "https://www.ebay.com/itm/396556820656",
+              isBestOffer: true,
+            },
+          },
+        },
+      })
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].bestGrade.listingSource).toBe("ebay");
+    expect(result[0].bestGrade.listingUrl).toBe(
+      "https://www.ebay.com/itm/396556820656"
+    );
+    expect(result[0].bestGrade.listingIsBestOffer).toBe(true);
   });
 
   it("gates on a Market Sale Price: ineligible sales (invalid, unreviewed Best-Offer) cannot qualify a grade", () => {
@@ -205,19 +247,19 @@ describe("rankOpportunities", () => {
     }
   });
 
-  it("excludes listings inside the 5% discount dead zone", () => {
+  it("excludes listings inside the 3% discount dead zone", () => {
     const a = card("a");
     const inDeadZone = inputs({
       cards: [a],
       sales: [sale("a", 10, 100)],
-      listings: { a: { 10: 96 } },
+      listings: { a: { 10: 97 } },
     });
     expect(rankOpportunities(inDeadZone)).toEqual([]);
 
     const pastDeadZone = inputs({
       cards: [a],
       sales: [sale("a", 10, 100)],
-      listings: { a: { 10: 94 } },
+      listings: { a: { 10: 96 } },
     });
     expect(rankOpportunities(pastDeadZone)).toHaveLength(1);
   });

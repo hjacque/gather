@@ -86,12 +86,14 @@ model Card {
   cardMarketLink            String?
   psaLink                   String?
   ebayLink                  String?
+  ebayFrLink                String?
   number                    String?
   regions                   Region[]
 
   prices                    Price[]       @relation("CardPrices")
   psaPopReport              PsaPopReport?
   sales                     Sale[]
+  listings                  Listing[]
 
   collectionEntry           CollectionEntry?
 
@@ -159,6 +161,32 @@ model Sale {
 
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
+
+  @@unique([platform, itemId, cardId])
+}
+
+// An active marketplace ask (buyable now) — the buy-side complement of Sale.
+// One row per live listing seen by the last Listings Sync; each sync fully
+// replaces a card's rows, so disappeared listings are pruned automatically.
+model Listing {
+  id          String   @id @default(uuid())
+  card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  cardId      String
+  platform    Platform
+  itemId      String
+  psaGrade    Int
+  price       Float
+  currency    String
+  title       String
+  isBestOffer Boolean  @default(false)
+  seller      String?
+  seenAt      DateTime
+  // User-flagged as not matching this card: excluded from reads, but kept and
+  // carried forward by itemId on re-sync so the flag survives full replacement.
+  invalidatedAt DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@unique([platform, itemId, cardId])
 }

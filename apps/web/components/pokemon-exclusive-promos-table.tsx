@@ -18,7 +18,8 @@ import {
   SheetTitle,
 } from './ui/sheet';
 import { getCard } from '@/app/actions/getCard';
-import { syncAllPromos, syncAllListings, syncAllSales, syncAllPop, syncCardCardMarket, syncCardPsa, syncCardSales } from '@/app/actions/syncCard';
+import { invalidateListing } from '@/app/actions/invalidateListing';
+import { syncAllPromos, syncAllListings, syncAllSales, syncAllPop, syncCardCardMarket, syncCardPsa, syncCardSales, syncCardListings, syncListing } from '@/app/actions/syncCard';
 import { invalidateSale } from '@/app/actions/invalidateSale';
 import { CardNoteSection } from '@/components/card-note-section';
 import { CardImage } from '@/components/card-image';
@@ -41,6 +42,7 @@ import {
 } from './ui/card';
 import { PsaGradePriceChart } from '@/components/psa-grade-price-chart';
 import { EbaySalesChart } from '@/components/ebay-sales-chart';
+import { CardListingsTable } from '@/components/card-listings-table';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
@@ -736,6 +738,43 @@ export function PokemonExclusivePromosTable({
     }
   };
 
+  const [isSyncingListings, setIsSyncingListings] = React.useState(false);
+
+  const handleSyncListing = async (listingId: string) => {
+    const id = displayedItem?.id;
+    if (!id) return;
+    await syncListing(listingId);
+    if (activeItemRef.current?.id === id) {
+      const data = await getCard(id);
+      if (activeItemRef.current?.id === id) setDisplayedCard(data);
+    }
+  };
+
+  const handleSyncCardListings = async () => {
+    const id = displayedItem?.id;
+    if (!id) return;
+    setIsSyncingListings(true);
+    try {
+      await syncCardListings(id);
+      if (activeItemRef.current?.id === id) {
+        const data = await getCard(id);
+        if (activeItemRef.current?.id === id) setDisplayedCard(data);
+      }
+    } finally {
+      setIsSyncingListings(false);
+    }
+  };
+
+  const handleInvalidateListing = async (listingId: string) => {
+    const id = displayedItem?.id;
+    if (!id) return;
+    await invalidateListing(listingId);
+    if (activeItemRef.current?.id === id) {
+      const data = await getCard(id);
+      if (activeItemRef.current?.id === id) setDisplayedCard(data);
+    }
+  };
+
   const psaReport = displayedCard?.psaPopReport ?? null;
   const grades = psaReport
     ? [
@@ -855,6 +894,18 @@ export function PokemonExclusivePromosTable({
 
             {displayedCard && (
               <div className="w-full px-4 lg:px-6">
+                <CardListingsTable
+                  listings={displayedCard.listings}
+                  onInvalidate={handleInvalidateListing}
+                  onSyncListing={handleSyncListing}
+                  onSyncAll={handleSyncCardListings}
+                  isSyncingAll={isSyncingListings}
+                />
+              </div>
+            )}
+
+            {displayedCard && (
+              <div className="w-full px-4 lg:px-6">
                 <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
                   <CardHeader>
                     <CardTitle>PSA Pop Report</CardTitle>
@@ -925,6 +976,12 @@ export function PokemonExclusivePromosTable({
                       <a href={displayedItem.ebayLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
                         <Gavel className="w-5 h-5 text-primary" />
                         <span className="text-sm font-medium">eBay Sold</span>
+                      </a>
+                    )}
+                    {displayedItem.ebayFrLink && (
+                      <a href={displayedItem.ebayFrLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/70 transition-colors">
+                        <ShoppingCart className="w-5 h-5 text-primary" />
+                        <span className="text-sm font-medium">eBay EU (live)</span>
                       </a>
                     )}
                   </div>
