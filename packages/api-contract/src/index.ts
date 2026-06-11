@@ -210,6 +210,13 @@ export type GradeOpportunity = {
   liquiditySignal: number;
   liquidityLevel: SignalLevel;
   listingPrice: number | null;
+  // Where today's cheapest listing comes from. CardMarket prices are firm asks;
+  // eBay prices are Buy-It-Now asks (buyable at face value), possibly with Best
+  // Offer enabled — i.e. negotiable below the shown price.
+  listingSource: 'cardmarket' | 'ebay' | null;
+  // Direct link to the cheapest listing (eBay item page / CardMarket card page).
+  listingUrl: string | null;
+  listingIsBestOffer: boolean;
   marketSalePrice: number;
   listingLevel: SignalLevel;
   // Year signal: where Market Sale Price sits in its 52-week range (0=high,

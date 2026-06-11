@@ -418,7 +418,7 @@ function SignalCell({
 }: {
   label: string;
   value: string;
-  sub: string;
+  sub: ReactNode;
   highlight?: SignalLevel;
   tooltip?: ReactNode;
 }) {
@@ -473,13 +473,50 @@ function DiscountCell({ g }: { g: GradeOpportunity }) {
     );
   }
   const pct = ((g.listingPrice - g.marketSalePrice) / g.marketSalePrice) * 100;
+  // The cheapest offer can come from CardMarket or a live eBay Buy-It-Now ask;
+  // link straight to it. A Best Offer ask is buyable at the shown price but
+  // negotiable below it — marked with a gavel.
+  const priceLabel = `${eur(g.listingPrice)}${g.listingSource === 'ebay' ? ' eBay' : ''}`;
+  const sub = (
+    <>
+      {g.listingUrl ? (
+        <a
+          href={g.listingUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2 hover:text-foreground"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {priceLabel}
+        </a>
+      ) : (
+        priceLabel
+      )}
+      {g.listingIsBestOffer && (
+        <Gavel className="inline w-3 h-3 ml-0.5 align-[-1px]" aria-label="Best Offer accepted" />
+      )}
+      {` · ${eur(g.marketSalePrice)} mkt · ${conf}% conf`}
+    </>
+  );
   return (
     <SignalCell
       label="Discount"
       value={`${pct > 0 ? '+' : ''}${pct.toFixed(0)}% vs market`}
-      sub={`${eur(g.listingPrice)} · ${eur(g.marketSalePrice)} mkt · ${conf}% conf`}
+      sub={sub}
       highlight={g.listingLevel}
-      tooltip={tooltip}
+      tooltip={
+        <>
+          {tooltip}
+          {g.listingSource === 'ebay' && (
+            <p className="mt-1">
+              Cheapest offer is a live eBay Buy-It-Now ask
+              {g.listingIsBestOffer
+                ? ' with Best Offer enabled — buyable at this price, negotiable below it.'
+                : '.'}
+            </p>
+          )}
+        </>
+      }
     />
   );
 }

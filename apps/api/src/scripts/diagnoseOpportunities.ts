@@ -6,7 +6,7 @@
  *
  *   in top 20            shown today
  *   lost to PSA x        another grade of the same card scored higher
- *   no listing           no CardMarket listing today for this grade
+ *   no listing           no buy-side offer (CardMarket today / live eBay ask) for this grade
  *   overpriced           listed above market
  *   dead zone            listed <3% below market — fair price, not a deal
  *   conf-killed          would clear today's cutoff if confidence were 1
@@ -22,6 +22,7 @@
  */
 
 import { initRepository } from "../repository/init.repository";
+import { mergeListingOffers } from "../application/opportunities/mergeListingOffers";
 import { getEurToUsdRate } from "../application/sync/helper";
 import { computeMarketPrices } from "../application/sale/marketPrice";
 import { rankOpportunities } from "../application/opportunities/rankOpportunities";
@@ -67,6 +68,7 @@ type Diag = {
   psaTotal: number | null;
   marketEur: number;
   listingEur: number | null;
+  listingSource: "cardmarket" | "ebay" | null;
   discountPct: number | null;
   sampleSize: number;
   lastSaleDays: number;
@@ -95,26 +97,48 @@ const padL = (s: string, w: number): string => s.padStart(w);
 
 async function main() {
   const { repositories, close } = await initRepository();
-  const { cardRepository, priceRepository, psaPopReportRepository, saleRepository } =
-    repositories;
+  const {
+    cardRepository,
+    priceRepository,
+    psaPopReportRepository,
+    saleRepository,
+    listingRepository,
+  } = repositories;
 
   const now = new Date();
   const today = startOfDayUtc(now);
   const yearAgo = new Date(today);
   yearAgo.setUTCDate(yearAgo.getUTCDate() - YEAR_DAYS);
+  // Same eBay freshness window as GetOpportunitiesUsecase.
+  const listingsSince = new Date(today);
+  listingsSince.setUTCDate(listingsSince.getUTCDate() - 3);
 
   const [cards, usdToEur] = await Promise.all([
     cardRepository.getCards(),
     getEurToUsdRate(),
   ]);
   const cardIds = cards.map((c) => c.id);
-  const [salesByCard, listingPricesByCard, yearRangesByCard, psaReportsByCard] =
-    await Promise.all([
-      saleRepository.getCardsSales(cardIds),
-      priceRepository.getCardsListingGradePricesByDate(cardIds, today),
-      priceRepository.getCardsMarketSaleYearRange(cardIds, yearAgo, today),
-      psaPopReportRepository.findByCardIds(cardIds),
-    ]);
+  const [
+    salesByCard,
+    cardmarketPricesByCard,
+    ebayListingsByCard,
+    yearRangesByCard,
+    psaReportsByCard,
+  ] = await Promise.all([
+    saleRepository.getCardsSales(cardIds),
+    priceRepository.getCardsListingGradePricesByDate(cardIds, today),
+    listingRepository.getCardsListings(cardIds, listingsSince),
+    priceRepository.getCardsMarketSaleYearRange(cardIds, yearAgo, today),
+    psaPopReportRepository.findByCardIds(cardIds),
+  ]);
+
+  // Merged buy side — the exact input GET /opportunities ranks on.
+  const listingPricesByCard = mergeListingOffers({
+    cards,
+    cardmarketPricesByCard,
+    ebayListingsByCard,
+    usdToEur,
+  });
 
   // What the page actually shows today, and the score needed to get on it.
   const page = rankOpportunities({
@@ -177,7 +201,8 @@ async function main() {
 
     const cardDiags: Diag[] = [];
     for (const mp of marketPrices) {
-      const listingEur = listings[mp.psaGrade] ?? null;
+      const offer = listings[mp.psaGrade] ?? null;
+      const listingEur = offer?.priceEur ?? null;
       const discountPct =
         listingEur === null
           ? null
@@ -215,6 +240,7 @@ async function main() {
         psaTotal: psaReport?.total ?? null,
         marketEur: mp.priceEur,
         listingEur,
+        listingSource: offer?.source ?? null,
         discountPct,
         sampleSize: mp.sampleSize,
         lastSaleDays: (now.getTime() - mp.newestSoldAt.getTime()) / DAY_MS,
@@ -243,6 +269,7 @@ async function main() {
     padL("pop", 7) +
     padL("mkt€", 8) +
     padL("list€", 8) +
+    padL("src", 4) +
     padL("disc%", 7) +
     padL("n", 4) +
     padL("last d", 7) +
@@ -268,6 +295,7 @@ async function main() {
         padL(d.psaTotal?.toLocaleString("en-US") ?? "—", 7) +
         padL(fmt(d.marketEur), 8) +
         padL(fmt(d.listingEur), 8) +
+        padL(d.listingSource === "ebay" ? "eb" : d.listingSource === "cardmarket" ? "cm" : "—", 4) +
         padL(fmt(d.discountPct, 1), 7) +
         padL(d.sampleSize.toString(), 4) +
         padL(fmt(d.lastSaleDays), 7) +
