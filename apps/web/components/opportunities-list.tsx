@@ -337,8 +337,9 @@ function OpportunityCard({
         </div>
 
         {/* Signal breakdown */}
-        <div className="grid grid-cols-2 sm:grid-cols-6 gap-x-4 gap-y-2 pt-0.5">
+        <div className="grid grid-cols-2 sm:grid-cols-7 gap-x-4 gap-y-2 pt-0.5">
           <DiscountCell g={g} />
+          <LiquidityCell g={g} />
           <PopCell g={g} />
           <GradeCell g={g} />
           <AgeCell g={g} releaseDate={opportunity.releaseDate} />
@@ -443,6 +444,22 @@ function WeekCell({ g }: { g: GradeOpportunity }) {
       value={label}
       sub={`Range ${eur(g.yearLow)} – ${eur(g.yearHigh)}`}
       highlight={g.yearLevel}
+    />
+  );
+}
+
+function LiquidityCell({ g }: { g: GradeOpportunity }) {
+  const label =
+    g.liquiditySignal >= 0.75 ? 'Very liquid' :
+    g.liquiditySignal >= 0.50 ? 'Liquid' :
+    g.liquiditySignal >= 0.25 ? 'Slow' :
+                                'Illiquid';
+  return (
+    <SignalCell
+      label="Liquidity"
+      value={label}
+      sub={`${formatSalesFrequency(g.salesPerDay)} · ${g.sampleSize} sales`}
+      highlight={g.liquidityLevel}
     />
   );
 }

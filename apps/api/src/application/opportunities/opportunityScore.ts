@@ -37,6 +37,31 @@ export function computeListingConfidence(
   return sampleFactor * recencyFactor;
 }
 
+// Liquidity: how fast this grade trades, i.e. how easily a buyer could exit.
+// Log scale because the gap between 1/month and 1/week matters far more than
+// the gap between 2/day and 3/day: 0 at one sale per month or slower, 1 at one
+// sale per day or faster. Distinct from confidence — five lifetime sales with a
+// recent one give a trustworthy price (confidence 1) but can still be a market
+// where exiting takes months.
+export const LIQUIDITY_FLOOR_PER_DAY = 1 / 30.44; // one sale a month
+export const LIQUIDITY_CEIL_PER_DAY = 1; // one sale a day
+
+export function computeLiquiditySignal(salesPerDay: number): number {
+  if (salesPerDay <= LIQUIDITY_FLOOR_PER_DAY) return 0;
+  const span = Math.log(LIQUIDITY_CEIL_PER_DAY / LIQUIDITY_FLOOR_PER_DAY);
+  const position = Math.log(salesPerDay / LIQUIDITY_FLOOR_PER_DAY);
+  return Math.min(1, position / span);
+}
+
+// Quartile boundaries match population/age. On the log scale: ≥0.75 ≈ 3/week,
+// ≥0.50 ≈ 1.3/week, ≥0.25 ≈ 2.3/month.
+export function computeLiquidityLevel(liquiditySignal: number): SignalLevel {
+  if (liquiditySignal >= 0.75) return 'green-strong';
+  if (liquiditySignal >= 0.50) return 'yellow-light';
+  if (liquiditySignal >= 0.25) return 'orange-light';
+  return 'red-strong';
+}
+
 export function computeYearSignal(
   marketSale: number,
   range: { min: number; max: number } | null | undefined
@@ -149,14 +174,16 @@ export function computeScore(
   ageSignal: number,
   populationSignal: number,
   gradeSignal: number,
-  premiumSignal: number
+  premiumSignal: number,
+  liquiditySignal: number
 ): number {
   return (
     listingSignal    * 0.40 +
     yearSignal       * 0.01 +
-    populationSignal * 0.20 +
-    gradeSignal      * 0.22 +
-    ageSignal        * 0.10 +
-    premiumSignal    * 0.07
+    populationSignal * 0.18 +
+    gradeSignal      * 0.20 +
+    ageSignal        * 0.08 +
+    premiumSignal    * 0.05 +
+    liquiditySignal  * 0.08
   ) * 100;
 }

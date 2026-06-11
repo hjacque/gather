@@ -13,6 +13,8 @@ import { computeMarketPrices } from "../sale/marketPrice";
 import {
   computeListingConfidence,
   computeListingSignal,
+  computeLiquidityLevel,
+  computeLiquiditySignal,
   computeYearSignal,
   computeGradeSignal,
   computePopsAtOrAbove,
@@ -105,6 +107,8 @@ export const rankOpportunities = ({
     listingConfidence: number;
     sampleSize: number;
     newestSoldAt: Date;
+    salesPerDay: number;
+    liquiditySignal: number;
     listingPrice: number | null;
     yearSignal: number;
     yearRange: GradeYearRange;
@@ -132,6 +136,7 @@ export const rankOpportunities = ({
       priceEur: marketSalePrice,
       sampleSize,
       newestSoldAt,
+      salesPerDay,
     } of marketPrices) {
       const listingPrice = listings[psaGrade] ?? null;
       if (listingPrice === null) continue;
@@ -167,6 +172,8 @@ export const rankOpportunities = ({
         listingConfidence,
         sampleSize,
         newestSoldAt,
+        salesPerDay,
+        liquiditySignal: computeLiquiditySignal(salesPerDay),
         listingPrice,
         yearSignal: computeYearSignal(marketSalePrice, yearRange),
         yearRange,
@@ -191,6 +198,9 @@ export const rankOpportunities = ({
       listingConfidence: number;
       sampleSize: number;
       newestSoldAt: Date;
+      salesPerDay: number;
+      liquiditySignal: number;
+      liquidityLevel: ReturnType<typeof computeLiquidityLevel>;
       listingPrice: number | null;
       marketSalePrice: number;
       listingLevel: ReturnType<typeof computeDiscountLevel>;
@@ -221,7 +231,8 @@ export const rankOpportunities = ({
       ageSignal,
       populationSignal,
       e.gradeSignal,
-      premiumSignal
+      premiumSignal,
+      e.liquiditySignal
     );
     const roundedScore = Math.round(score * 10) / 10;
 
@@ -235,6 +246,9 @@ export const rankOpportunities = ({
         listingConfidence: e.listingConfidence,
         sampleSize: e.sampleSize,
         newestSoldAt: e.newestSoldAt,
+        salesPerDay: e.salesPerDay,
+        liquiditySignal: e.liquiditySignal,
+        liquidityLevel: computeLiquidityLevel(e.liquiditySignal),
         listingPrice: e.listingPrice,
         marketSalePrice: e.marketSalePrice,
         listingLevel: computeDiscountLevel(e.marketSalePrice, e.listingPrice),
@@ -276,6 +290,9 @@ export const rankOpportunities = ({
         listingConfidence: g.listingConfidence,
         sampleSize: g.sampleSize,
         newestSoldAt: g.newestSoldAt,
+        salesPerDay: g.salesPerDay,
+        liquiditySignal: g.liquiditySignal,
+        liquidityLevel: g.liquidityLevel,
         listingPrice: g.listingPrice,
         marketSalePrice: g.marketSalePrice,
         listingLevel: g.listingLevel,

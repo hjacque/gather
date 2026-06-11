@@ -196,6 +196,11 @@ export type GradeOpportunity = {
   listingConfidence: number;
   sampleSize: number;
   newestSoldAt: Date;
+  // Liquidity: sale velocity for this grade, log-scaled (0 = ≤1 sale/month,
+  // 1 = ≥1 sale/day). Measures how easily a buyer could exit the position.
+  salesPerDay: number;
+  liquiditySignal: number;
+  liquidityLevel: SignalLevel;
   listingPrice: number | null;
   marketSalePrice: number;
   listingLevel: SignalLevel;

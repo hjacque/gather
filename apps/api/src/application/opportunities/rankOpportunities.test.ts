@@ -228,6 +228,33 @@ describe("rankOpportunities", () => {
     expect(result[1].bestGrade.listingConfidence).toBeLessThan(0.1);
   });
 
+  it("ranks a fast-trading grade above one with the same discount but months between sales", () => {
+    // Both market prices are fully confident (5 sales, newest within days) and
+    // both listings sit 20% under market — only sale velocity differs.
+    const cards = [card("slowmover"), card("fastmover")];
+    const result = rankOpportunities(
+      inputs({
+        cards,
+        sales: [
+          // 5 sales spread over ~a year: trustworthy price, hard exit.
+          ...[3, 80, 160, 240, 320].map((d) =>
+            sale("slowmover", 10, 100, { soldAt: daysAgo(d) })
+          ),
+          // 5 sales inside a week: same price, liquid market.
+          ...[1, 2, 3, 4, 5].map((d) =>
+            sale("fastmover", 10, 100, { soldAt: daysAgo(d) })
+          ),
+        ],
+        listings: { slowmover: { 10: 80 }, fastmover: { 10: 80 } },
+      })
+    );
+    expect(result.map((r) => r.id)).toEqual(["fastmover", "slowmover"]);
+    expect(result[0].bestGrade.listingConfidence).toBe(1);
+    expect(result[1].bestGrade.listingConfidence).toBe(1);
+    expect(result[0].bestGrade.liquiditySignal).toBe(1);
+    expect(result[1].bestGrade.liquiditySignal).toBe(0);
+  });
+
   it("normalizes the population signal across the full collection, not just gated cards", () => {
     // "a" has the lowest pop but no listing today; it must still anchor the
     // scale so "b" sits mid-pack instead of being promoted to best.

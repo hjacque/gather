@@ -1,4 +1,7 @@
-import { computeListingConfidence } from "./opportunityScore";
+import {
+  computeListingConfidence,
+  computeLiquiditySignal,
+} from "./opportunityScore";
 
 const NOW = new Date("2026-06-11T12:00:00Z");
 
@@ -33,5 +36,29 @@ describe("computeListingConfidence", () => {
 
   it("treats a future newestSoldAt as fully recent rather than over-crediting", () => {
     expect(computeListingConfidence(5, daysAgo(-3), NOW)).toBe(1);
+  });
+});
+
+describe("computeLiquiditySignal", () => {
+  it("is 0 at one sale per month or slower", () => {
+    expect(computeLiquiditySignal(1 / 30.44)).toBe(0);
+    expect(computeLiquiditySignal(0.001)).toBe(0);
+    expect(computeLiquiditySignal(0)).toBe(0);
+  });
+
+  it("is 1 at one sale per day or faster", () => {
+    expect(computeLiquiditySignal(1)).toBe(1);
+    expect(computeLiquiditySignal(4)).toBe(1);
+  });
+
+  it("places one sale per week mid-scale on the log axis", () => {
+    // log(30.44/7) / log(30.44) ≈ 0.43
+    expect(computeLiquiditySignal(1 / 7)).toBeCloseTo(0.43, 2);
+  });
+
+  it("grows monotonically with sale velocity", () => {
+    const velocities = [0.05, 0.1, 0.2, 0.5, 0.9];
+    const signals = velocities.map(computeLiquiditySignal);
+    expect([...signals].sort((a, b) => a - b)).toEqual(signals);
   });
 });
