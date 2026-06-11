@@ -15,6 +15,7 @@ import { SyncSingleCardPsaUsecase } from "./sync/syncSingleCardPsa.usecase";
 import { SyncPsaPopReportsUsecase } from "./sync/syncPsaPopReports.usecase";
 import { SyncSalesUsecase } from "./sync/syncSales.usecase";
 import { SyncListingsUsecase } from "./sync/syncListings.usecase";
+import { SyncSingleListingUsecase } from "./sync/syncSingleListing.usecase";
 import { InvalidateSaleUsecase } from "./sale/invalidateSale.usecase";
 import { InvalidateListingUsecase } from "./listing/invalidateListing.usecase";
 import { ReviewSaleUsecase } from "./sale/reviewSale.usecase";
@@ -22,6 +23,7 @@ import { GetUnreviewedSalesUsecase } from "./sale/getUnreviewedSales.usecase";
 import { CardMarketGradedSource } from "./sync/sources/cardmarketGraded.source";
 import { EbaySalesSource } from "./sync/sources/ebaySales.source";
 import { EbayListingsSource } from "./sync/sources/ebayListings.source";
+import { EbayItemPageSource } from "./sync/sources/ebayItemPage.source";
 import { MarketSalePriceSnapshotService } from "./sale/marketSalePriceSnapshot";
 import { GetOpportunitiesUsecase } from "./opportunities/getOpportunities.usecase";
 
@@ -34,6 +36,7 @@ export type Usecases = {
   syncPsaPopReportsUsecase: SyncPsaPopReportsUsecase;
   syncSalesUsecase: SyncSalesUsecase;
   syncListingsUsecase: SyncListingsUsecase;
+  syncSingleListingUsecase: SyncSingleListingUsecase;
   invalidateSaleUsecase: InvalidateSaleUsecase;
   invalidateListingUsecase: InvalidateListingUsecase;
   reviewSaleUsecase: ReviewSaleUsecase;
@@ -78,6 +81,10 @@ export const initApplication = ({
     cardRepository,
     listingRepository,
     new EbayListingsSource()
+  );
+  const syncSingleListingUsecase = new SyncSingleListingUsecase(
+    listingRepository,
+    new EbayItemPageSource()
   );
   const syncUsecase = new SyncUsecase(
     cardRepository,
@@ -150,6 +157,7 @@ export const initApplication = ({
     syncPsaPopReportsUsecase,
     syncSalesUsecase,
     syncListingsUsecase,
+    syncSingleListingUsecase,
     invalidateSaleUsecase,
     invalidateListingUsecase,
     reviewSaleUsecase,

@@ -77,6 +77,24 @@ export class SyncListingsUsecase {
     return result;
   }
 
+  // Sync one card's listings in its own browser session (the panel's
+  // "Sync listings" action). Mirrors executeBatch for a single card.
+  async executeForCard(cardId: string): Promise<BatchSyncListingsResult> {
+    const card = await this.cardRepository.getCard(cardId);
+    const counters = emptyCounters();
+    if (!this.ebayListingsSource.appliesTo(card)) {
+      return { cardsSynced: 0, cardsSkipped: 1, ...counters };
+    }
+    const { browser, page } = await this.openBrowser();
+    try {
+      await this.processCard(card, page, counters);
+    } finally {
+      await page.close();
+      await browser.close();
+    }
+    return { cardsSynced: 1, cardsSkipped: 0, ...counters };
+  }
+
   // Scrape one Card's active eBay asks on a page the caller already owns (e.g.
   // the full price Sync, which holds its own browser session). No-ops for Cards
   // without an ebayLink. Counters accumulate into `into` when provided.

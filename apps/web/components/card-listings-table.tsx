@@ -1,17 +1,33 @@
 'use client';
 
 import { useState } from 'react';
-import { Ban, ExternalLink, Gavel, Loader2, ShoppingCart } from 'lucide-react';
+import {
+  Ban,
+  ExternalLink,
+  Gavel,
+  Loader2,
+  MoreVertical,
+  RefreshCw,
+  ShoppingCart,
+} from 'lucide-react';
 import type { GetCardResponse } from '@gather/api-contract';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Table,
   TableBody,
@@ -20,7 +36,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Asks keep their cents: unlike the rounded market medians, these are exact
 // buyable prices.
@@ -38,32 +53,43 @@ const PANEL_CARD_CLASS =
   '@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full';
 
 // Live-asks table for the card side panel: one row per active listing, grade
-// ASC then price ASC (the API sorts; re-sorted here so the order survives any
-// caller). Row titles expose the raw marketplace title for judging query
-// mismatches by hand; `onInvalidate` flags a row that isn't this card, dropping
-// it from the panel and the opportunities buy-side.
+// ASC then price ASC. Each row gets an action menu — Sync (re-verify this one
+// listing's price / whether it still exists) and Delete (invalidate a listing
+// that isn't this card, hiding it from the panel and opportunities). The header
+// carries a "Sync" that re-walks the whole card's listings.
 export function CardListingsTable({
   listings,
   onInvalidate,
+  onSyncListing,
+  onSyncAll,
+  isSyncingAll = false,
 }: {
   listings: GetCardResponse['listings'];
   onInvalidate?: (listingId: string) => void | Promise<void>;
+  onSyncListing?: (listingId: string) => void | Promise<void>;
+  onSyncAll?: () => void | Promise<void>;
+  isSyncingAll?: boolean;
 }) {
-  const [invalidatingId, setInvalidatingId] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const sorted = [...listings].sort(
     (a, b) => a.psaGrade - b.psaGrade || a.priceEur - b.priceEur
   );
 
-  const handleInvalidate = async (listingId: string) => {
-    if (!onInvalidate || invalidatingId) return;
-    setInvalidatingId(listingId);
+  const runRowAction = async (
+    listingId: string,
+    action?: (id: string) => void | Promise<void>
+  ) => {
+    if (!action || busyId) return;
+    setBusyId(listingId);
     try {
-      await onInvalidate(listingId);
+      await action(listingId);
     } finally {
-      setInvalidatingId(null);
+      setBusyId(null);
     }
   };
+
+  const hasRowActions = !!onInvalidate || !!onSyncListing;
 
   return (
     <Card className={PANEL_CARD_CLASS}>
@@ -72,6 +98,20 @@ export function CardListingsTable({
         <CardDescription>
           Active Buy-It-Now asks from EU sellers, per grade
         </CardDescription>
+        {onSyncAll && (
+          <CardAction>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onSyncAll()}
+              disabled={isSyncingAll}
+              className="gap-1.5"
+            >
+              <RefreshCw className={`w-3.5 h-3.5${isSyncingAll ? ' animate-spin' : ''}`} />
+              Sync
+            </Button>
+          </CardAction>
+        )}
       </CardHeader>
       <CardContent>
         {sorted.length > 0 ? (
@@ -124,28 +164,46 @@ export function CardListingsTable({
                           Open
                         </a>
                       </Button>
-                      {onInvalidate && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
+                      {hasRowActions && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="text-muted-foreground hover:text-destructive"
-                              disabled={invalidatingId === listing.id}
-                              onClick={() => handleInvalidate(listing.id)}
+                              className="text-muted-foreground data-[state=open]:bg-muted"
+                              disabled={busyId === listing.id}
                             >
-                              {invalidatingId === listing.id ? (
+                              {busyId === listing.id ? (
                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
                               ) : (
-                                <Ban className="w-3.5 h-3.5" />
+                                <MoreVertical className="w-3.5 h-3.5" />
                               )}
-                              <span className="sr-only">Invalidate listing</span>
+                              <span className="sr-only">Open listing actions</span>
                             </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            Not this card — hide from panel &amp; opportunities
-                          </TooltipContent>
-                        </Tooltip>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {onSyncListing && (
+                              <DropdownMenuItem
+                                onSelect={() => runRowAction(listing.id, onSyncListing)}
+                              >
+                                <RefreshCw className="w-3.5 h-3.5" />
+                                Sync
+                              </DropdownMenuItem>
+                            )}
+                            {onInvalidate && (
+                              <>
+                                {onSyncListing && <DropdownMenuSeparator />}
+                                <DropdownMenuItem
+                                  variant="destructive"
+                                  onSelect={() => runRowAction(listing.id, onInvalidate)}
+                                >
+                                  <Ban className="w-3.5 h-3.5" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       )}
                     </TableCell>
                   </TableRow>

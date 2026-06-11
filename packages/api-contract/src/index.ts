@@ -155,6 +155,27 @@ export type UpdateListingStatusRequest = {
   action: 'invalidate';
 };
 
+// Result of re-walking one card's live listings (panel "Sync listings").
+export type SyncCardListingsResponse = {
+  cardsSynced: number;
+  cardsSkipped: number;
+  scraped: number;
+  stored: number;
+  skippedTitle: number;
+  skippedSeller: number;
+};
+
+// Result of refreshing one listing against its eBay item page: removed when the
+// listing has ended, otherwise the current EUR price + Best-Offer flag (or
+// unchanged when the page couldn't be read).
+export type SyncListingResponse = {
+  listingId: string;
+  removed: boolean;
+  priceEur?: number;
+  isBestOffer?: boolean;
+  unchanged?: boolean;
+};
+
 // Sale Review action from the backoffice page. `approve` stamps the Sale reviewed
 // and applies any corrections (a misparsed grade, a Best-Offer's true price);
 // `invalidate` flags it invalid (which also counts as reviewed).

@@ -22,4 +22,16 @@ export abstract class ListingRepositoryPort {
   // (card panel + opportunities) and the flag is carried forward by itemId on
   // re-sync so a refresh that still sees the item keeps it hidden.
   abstract markListingInvalid(listingId: string): Promise<void>;
+
+  // One listing by id, or null. Used by the single-listing refresh.
+  abstract getListingById(listingId: string): Promise<ListingEntity | null>;
+
+  // Update a listing's live state after re-reading its item page.
+  abstract updateListingState(
+    listingId: string,
+    state: { price: number; currency: string; isBestOffer: boolean; seenAt: Date }
+  ): Promise<void>;
+
+  // Hard-delete a listing whose item page shows it has ended.
+  abstract deleteListing(listingId: string): Promise<void>;
 }

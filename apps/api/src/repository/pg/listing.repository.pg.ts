@@ -70,4 +70,28 @@ export class ListingRepositoryPg implements ListingRepositoryPort {
       data: { invalidatedAt: new Date() },
     });
   }
+
+  async getListingById(listingId: string): Promise<ListingEntity | null> {
+    const row = await this.prisma.listing.findUnique({ where: { id: listingId } });
+    return row ? this.listingMapper.toEntity(row) : null;
+  }
+
+  async updateListingState(
+    listingId: string,
+    state: { price: number; currency: string; isBestOffer: boolean; seenAt: Date }
+  ): Promise<void> {
+    await this.prisma.listing.update({
+      where: { id: listingId },
+      data: {
+        price: state.price,
+        currency: state.currency,
+        isBestOffer: state.isBestOffer,
+        seenAt: state.seenAt,
+      },
+    });
+  }
+
+  async deleteListing(listingId: string): Promise<void> {
+    await this.prisma.listing.delete({ where: { id: listingId } });
+  }
 }

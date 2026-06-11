@@ -18,6 +18,8 @@ export const http = async ({
   syncSingleCardPsaUsecase,
   syncPsaPopReportsUsecase,
   syncSalesUsecase,
+  syncListingsUsecase,
+  syncSingleListingUsecase,
   invalidateSaleUsecase,
   invalidateListingUsecase,
   reviewSaleUsecase,
@@ -87,6 +89,20 @@ export const http = async ({
 
     res.status(200);
     res.json({ success: true });
+  });
+
+  // Re-walk one card's live listings (panel "Sync listings").
+  app.get("/sync/listings/card/:cardid", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
+    const result = await syncListingsUsecase.executeForCard(req.params.cardid);
+    res.status(200).json(result);
+  });
+
+  // Refresh one stored listing against its eBay item page (per-row "Sync").
+  app.get("/sync/listings/:listingid", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
+    const result = await syncSingleListingUsecase.execute(req.params.listingid);
+    res.status(200).json(result);
   });
 
   app.get("/sync/sales/card/:cardid", async (req, res) => {

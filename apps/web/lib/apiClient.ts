@@ -6,7 +6,9 @@ import type {
   GetUnreviewedSalesResponse,
   GetUnreviewedCountResponse,
   ReviewSaleRequest,
+  SyncCardListingsResponse,
   SyncCardResponse,
+  SyncListingResponse,
   UpdateCardNoteRequest,
   UpdateListingStatusRequest,
   UpsertCollectionEntryRequest,
@@ -134,6 +136,14 @@ export async function syncAllPromos(): Promise<void> {
 
 export async function syncAllListings(): Promise<void> {
   await apiFetch('/sync/listings');
+}
+
+export async function syncCardListings(cardId: string): Promise<SyncCardListingsResponse> {
+  return apiFetch(`/sync/listings/card/${cardId}`);
+}
+
+export async function syncListing(listingId: string): Promise<SyncListingResponse> {
+  return apiFetch(`/sync/listings/${listingId}`);
 }
 
 export async function syncAllSales(): Promise<void> {

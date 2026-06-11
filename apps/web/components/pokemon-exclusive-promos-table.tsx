@@ -19,7 +19,7 @@ import {
 } from './ui/sheet';
 import { getCard } from '@/app/actions/getCard';
 import { invalidateListing } from '@/app/actions/invalidateListing';
-import { syncAllPromos, syncAllListings, syncAllSales, syncAllPop, syncCardCardMarket, syncCardPsa, syncCardSales } from '@/app/actions/syncCard';
+import { syncAllPromos, syncAllListings, syncAllSales, syncAllPop, syncCardCardMarket, syncCardPsa, syncCardSales, syncCardListings, syncListing } from '@/app/actions/syncCard';
 import { invalidateSale } from '@/app/actions/invalidateSale';
 import { CardNoteSection } from '@/components/card-note-section';
 import { CardImage } from '@/components/card-image';
@@ -738,6 +738,33 @@ export function PokemonExclusivePromosTable({
     }
   };
 
+  const [isSyncingListings, setIsSyncingListings] = React.useState(false);
+
+  const handleSyncListing = async (listingId: string) => {
+    const id = displayedItem?.id;
+    if (!id) return;
+    await syncListing(listingId);
+    if (activeItemRef.current?.id === id) {
+      const data = await getCard(id);
+      if (activeItemRef.current?.id === id) setDisplayedCard(data);
+    }
+  };
+
+  const handleSyncCardListings = async () => {
+    const id = displayedItem?.id;
+    if (!id) return;
+    setIsSyncingListings(true);
+    try {
+      await syncCardListings(id);
+      if (activeItemRef.current?.id === id) {
+        const data = await getCard(id);
+        if (activeItemRef.current?.id === id) setDisplayedCard(data);
+      }
+    } finally {
+      setIsSyncingListings(false);
+    }
+  };
+
   const handleInvalidateListing = async (listingId: string) => {
     const id = displayedItem?.id;
     if (!id) return;
@@ -867,7 +894,13 @@ export function PokemonExclusivePromosTable({
 
             {displayedCard && (
               <div className="w-full px-4 lg:px-6">
-                <CardListingsTable listings={displayedCard.listings} onInvalidate={handleInvalidateListing} />
+                <CardListingsTable
+                  listings={displayedCard.listings}
+                  onInvalidate={handleInvalidateListing}
+                  onSyncListing={handleSyncListing}
+                  onSyncAll={handleSyncCardListings}
+                  isSyncingAll={isSyncingListings}
+                />
               </div>
             )}
 
