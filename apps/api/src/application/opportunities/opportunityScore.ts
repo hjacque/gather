@@ -13,6 +13,30 @@ export function computeListingSignal(
   return Math.max(-1, linear);
 }
 
+// Confidence in a grade's Market Sale Price, used to scale the listing signal:
+// a discount against a median built on one stale comp is noise, not opportunity.
+// Sample side: linear credit up to FULL_CONFIDENCE_SAMPLE sales. Recency side:
+// full credit while the newest sale is within the grace window, then the same
+// 30-day half-life decay the weighted median itself uses. Both sides are 1 for
+// well-supported prices, so confident discounts score exactly as before.
+export const FULL_CONFIDENCE_SAMPLE = 5;
+export const CONFIDENCE_GRACE_DAYS = 14;
+export const CONFIDENCE_HALF_LIFE_DAYS = 30;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export function computeListingConfidence(
+  sampleSize: number,
+  newestSoldAt: Date,
+  now: Date
+): number {
+  const sampleFactor = Math.min(1, sampleSize / FULL_CONFIDENCE_SAMPLE);
+  const ageDays = Math.max(0, (now.getTime() - newestSoldAt.getTime()) / DAY_MS);
+  const staleDays = Math.max(0, ageDays - CONFIDENCE_GRACE_DAYS);
+  const recencyFactor = Math.pow(0.5, staleDays / CONFIDENCE_HALF_LIFE_DAYS);
+  return sampleFactor * recencyFactor;
+}
+
 export function computeYearSignal(
   marketSale: number,
   range: { min: number; max: number } | null | undefined

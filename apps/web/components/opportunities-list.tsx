@@ -417,11 +417,12 @@ function DiscountCell({ g }: { g: GradeOpportunity }) {
     );
   }
   const pct = ((g.listingPrice - g.marketSalePrice) / g.marketSalePrice) * 100;
+  const conf = Math.round(g.listingConfidence * 100);
   return (
     <SignalCell
       label="Discount"
       value={`${pct > 0 ? '+' : ''}${pct.toFixed(0)}% vs market`}
-      sub={`${eur(g.listingPrice)} listed · ${eur(g.marketSalePrice)} mkt`}
+      sub={`${eur(g.listingPrice)} · ${eur(g.marketSalePrice)} mkt · ${conf}% conf`}
       highlight={g.listingLevel}
     />
   );

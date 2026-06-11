@@ -11,6 +11,7 @@ import { SaleEntity } from "../../entities/sale.entity";
 import type { PsaPopReportEntity } from "../../repository/ports/psaPopReport.repository.port";
 import { computeMarketPrices } from "../sale/marketPrice";
 import {
+  computeListingConfidence,
   computeListingSignal,
   computeYearSignal,
   computeGradeSignal,
@@ -101,6 +102,9 @@ export const rankOpportunities = ({
     grade: number;
     marketSalePrice: number;
     listingSignal: number;
+    listingConfidence: number;
+    sampleSize: number;
+    newestSoldAt: Date;
     listingPrice: number | null;
     yearSignal: number;
     yearRange: GradeYearRange;
@@ -123,7 +127,12 @@ export const rankOpportunities = ({
 
     const marketPrices = computeMarketPrices(sales, usdToEur, now);
 
-    for (const { psaGrade, priceEur: marketSalePrice } of marketPrices) {
+    for (const {
+      psaGrade,
+      priceEur: marketSalePrice,
+      sampleSize,
+      newestSoldAt,
+    } of marketPrices) {
       const listingPrice = listings[psaGrade] ?? null;
       if (listingPrice === null) continue;
 
@@ -139,11 +148,25 @@ export const rankOpportunities = ({
         gradeSignal = computeGradeSignal(psaReport, psaGrade);
       }
 
+      // The discount only counts to the extent the market price is trustworthy:
+      // confidence shrinks the signal toward neutral on thin or stale sales,
+      // in both directions (an "overpriced" verdict on weak data is just as unreliable).
+      const listingConfidence = computeListingConfidence(
+        sampleSize,
+        newestSoldAt,
+        now
+      );
+
       rawEntries.push({
         cardIdx,
         grade: psaGrade,
         marketSalePrice,
-        listingSignal: computeListingSignal(marketSalePrice, listingPrice),
+        listingSignal:
+          computeListingSignal(marketSalePrice, listingPrice) *
+          listingConfidence,
+        listingConfidence,
+        sampleSize,
+        newestSoldAt,
         listingPrice,
         yearSignal: computeYearSignal(marketSalePrice, yearRange),
         yearRange,
@@ -165,6 +188,9 @@ export const rankOpportunities = ({
       score: number;
       scoreLevel: ReturnType<typeof computeScoreLevel>;
       listingSignal: number;
+      listingConfidence: number;
+      sampleSize: number;
+      newestSoldAt: Date;
       listingPrice: number | null;
       marketSalePrice: number;
       listingLevel: ReturnType<typeof computeDiscountLevel>;
@@ -206,6 +232,9 @@ export const rankOpportunities = ({
         score,
         scoreLevel: computeScoreLevel(roundedScore),
         listingSignal: e.listingSignal,
+        listingConfidence: e.listingConfidence,
+        sampleSize: e.sampleSize,
+        newestSoldAt: e.newestSoldAt,
         listingPrice: e.listingPrice,
         marketSalePrice: e.marketSalePrice,
         listingLevel: computeDiscountLevel(e.marketSalePrice, e.listingPrice),
@@ -244,6 +273,9 @@ export const rankOpportunities = ({
         score: Math.round(g.score * 10) / 10,
         scoreLevel: g.scoreLevel,
         listingSignal: g.listingSignal,
+        listingConfidence: g.listingConfidence,
+        sampleSize: g.sampleSize,
+        newestSoldAt: g.newestSoldAt,
         listingPrice: g.listingPrice,
         marketSalePrice: g.marketSalePrice,
         listingLevel: g.listingLevel,

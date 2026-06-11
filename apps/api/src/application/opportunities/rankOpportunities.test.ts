@@ -205,6 +205,29 @@ describe("rankOpportunities", () => {
     }
   });
 
+  it("ranks a modest discount on solid sale history above a deep discount on one stale comp", () => {
+    // "thin": 40% off a market price built on a single 90-day-old sale.
+    // "solid": 15% off a market price built on 6 sales from the last week.
+    // Confidence must collapse the thin discount so "solid" wins.
+    const cards = [card("thin"), card("solid")];
+    const result = rankOpportunities(
+      inputs({
+        cards,
+        sales: [
+          sale("thin", 10, 100, { soldAt: daysAgo(90) }),
+          ...Array.from({ length: 6 }, (_, i) =>
+            sale("solid", 10, 100, { soldAt: daysAgo(i + 1) })
+          ),
+        ],
+        listings: { thin: { 10: 60 }, solid: { 10: 85 } },
+      })
+    );
+    expect(result.map((r) => r.id)).toEqual(["solid", "thin"]);
+    expect(result[0].bestGrade.listingConfidence).toBe(1);
+    expect(result[0].bestGrade.sampleSize).toBe(6);
+    expect(result[1].bestGrade.listingConfidence).toBeLessThan(0.1);
+  });
+
   it("normalizes the population signal across the full collection, not just gated cards", () => {
     // "a" has the lowest pop but no listing today; it must still anchor the
     // scale so "b" sits mid-pack instead of being promoted to best.

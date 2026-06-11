@@ -189,8 +189,13 @@ export type GradeOpportunity = {
   psaGrade: number;
   score: number;
   scoreLevel: SignalLevel;
-  // Listing signal: sqrt discount of listing vs Market Sale Price (0–1).
+  // Listing signal: sqrt discount of listing vs Market Sale Price (negative when
+  // listed above market), scaled by listingConfidence — how trustworthy the
+  // Market Sale Price is, from its sample size and the recency of the last sale.
   listingSignal: number;
+  listingConfidence: number;
+  sampleSize: number;
+  newestSoldAt: Date;
   listingPrice: number | null;
   marketSalePrice: number;
   listingLevel: SignalLevel;
