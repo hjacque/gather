@@ -10,7 +10,7 @@ import type {
 } from '@gather/api-contract';
 import { Badge } from '@/components/ui/badge';
 import { TrendingDown, ExternalLink, Gavel, ShoppingCart } from 'lucide-react';
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, type ReactNode } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -18,6 +18,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { CardImage } from '@/components/card-image';
 import { EbaySalesChart } from '@/components/ebay-sales-chart';
 import { PsaGradePriceChart } from '@/components/psa-grade-price-chart';
@@ -369,15 +374,29 @@ const SCORE_BADGE_CLASS: Record<SignalLevel, string> = {
 
 function ScoreBadge({ g }: { g: GradeOpportunity }) {
   return (
-    <div className={`shrink-0 flex flex-col items-end gap-1 px-2.5 py-1.5 rounded-lg ${SCORE_BADGE_CLASS[g.scoreLevel]}`}>
-      <div className="flex items-baseline gap-1.5">
-        <span className="text-xl font-bold tabular-nums leading-none">{g.score.toFixed(0)}</span>
-        <span className="text-xs font-semibold">{SCORE_LABEL[g.scoreLevel]}</span>
-      </div>
-      <span className="text-[10px] font-medium tabular-nums opacity-70">
-        deal {Math.round(g.listingSignal * 100)} × card {Math.round(g.qualitySignal * 100)}
-      </span>
-    </div>
+    <Tooltip delayDuration={300}>
+      <TooltipTrigger asChild>
+        <div className={`shrink-0 flex flex-col items-end gap-1 px-2.5 py-1.5 rounded-lg ${SCORE_BADGE_CLASS[g.scoreLevel]}`}>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-xl font-bold tabular-nums leading-none">{g.score.toFixed(0)}</span>
+            <span className="text-xs font-semibold">{SCORE_LABEL[g.scoreLevel]}</span>
+          </div>
+          <span className="text-[10px] font-medium tabular-nums opacity-70">
+            deal {Math.round(g.listingSignal * 100)} × card {Math.round(g.qualitySignal * 100)}
+          </span>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="left" className="max-w-[280px]">
+        <p className="font-semibold mb-1">Opportunity Score = deal × card quality</p>
+        <p>
+          The deal ({Math.round(g.listingSignal * 100)}) is the confidence-weighted
+          discount vs market — the base of the score. Card quality
+          ({Math.round(g.qualitySignal * 100)}) scales it between 0.4× and 1×: a
+          great card amplifies a discount but never replaces one. 35+ is strong,
+          20+ good. Cards without a real discount are not shown at all.
+        </p>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -395,13 +414,15 @@ function SignalCell({
   value,
   sub,
   highlight = 'yellow-light',
+  tooltip,
 }: {
   label: string;
   value: string;
   sub: string;
   highlight?: SignalLevel;
+  tooltip?: ReactNode;
 }) {
-  return (
+  const cell = (
     <div className="flex flex-col gap-0.5 min-w-0">
       <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
         {label}
@@ -414,29 +435,66 @@ function SignalCell({
       </span>
     </div>
   );
+
+  if (!tooltip) return cell;
+  return (
+    <Tooltip delayDuration={300}>
+      <TooltipTrigger asChild>{cell}</TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[280px]">
+        {tooltip}
+      </TooltipContent>
+    </Tooltip>
+  );
 }
 
 function DiscountCell({ g }: { g: GradeOpportunity }) {
+  const conf = Math.round(g.listingConfidence * 100);
+  const lastSoldDays = Math.round(
+    (Date.now() - new Date(g.newestSoldAt).getTime()) / (24 * 60 * 60 * 1000)
+  );
+  const tooltip = (
+    <>
+      <p className="font-semibold mb-1">Discount — the base of the score</p>
+      <p>
+        Today&apos;s cheapest listing vs the Market Sale Price (recency-weighted
+        median of eBay sold prices for this grade). The discount only counts to
+        the extent the market price is trustworthy: {conf}% confidence here,
+        from {g.sampleSize} eligible sale{g.sampleSize === 1 ? '' : 's'} (5+ =
+        full credit) and the last sale being {lastSoldDays}d ago (full credit
+        within 14d, halving every 30d after).
+      </p>
+    </>
+  );
   if (g.listingPrice === null) {
     return (
-      <SignalCell label="Discount" value="No listing" sub={`Market ${eur(g.marketSalePrice)}`} highlight={g.listingLevel} />
+      <SignalCell label="Discount" value="No listing" sub={`Market ${eur(g.marketSalePrice)}`} highlight={g.listingLevel} tooltip={tooltip} />
     );
   }
   const pct = ((g.listingPrice - g.marketSalePrice) / g.marketSalePrice) * 100;
-  const conf = Math.round(g.listingConfidence * 100);
   return (
     <SignalCell
       label="Discount"
       value={`${pct > 0 ? '+' : ''}${pct.toFixed(0)}% vs market`}
       sub={`${eur(g.listingPrice)} · ${eur(g.marketSalePrice)} mkt · ${conf}% conf`}
       highlight={g.listingLevel}
+      tooltip={tooltip}
     />
   );
 }
 
 function WeekCell({ g }: { g: GradeOpportunity }) {
+  const tooltip = (
+    <>
+      <p className="font-semibold mb-1">52-week range — informational</p>
+      <p>
+        Where the current market price sits in its 52-week range. Not part of
+        the score: a price near its yearly low can be value or a falling knife,
+        so it&apos;s shown for context only.
+      </p>
+    </>
+  );
   if (g.yearLow === null || g.yearHigh === null) {
-    return <SignalCell label="52-week" value="No history" sub="insufficient data" highlight={g.yearLevel} />;
+    return <SignalCell label="52-week" value="No history" sub="insufficient data" highlight={g.yearLevel} tooltip={tooltip} />;
   }
   const label =
     g.yearSignal >= 0.70 ? 'Near 52w low' :
@@ -449,6 +507,7 @@ function WeekCell({ g }: { g: GradeOpportunity }) {
       value={label}
       sub={`Range ${eur(g.yearLow)} – ${eur(g.yearHigh)}`}
       highlight={g.yearLevel}
+      tooltip={tooltip}
     />
   );
 }
@@ -465,13 +524,34 @@ function LiquidityCell({ g }: { g: GradeOpportunity }) {
       value={label}
       sub={`${formatSalesFrequency(g.salesPerDay)} · ${g.sampleSize} sales`}
       highlight={g.liquidityLevel}
+      tooltip={
+        <>
+          <p className="font-semibold mb-1">Liquidity — 14% of card quality</p>
+          <p>
+            How fast this grade trades, i.e. how easily you could exit the
+            position. Log-scaled from one sale a month (0) to one sale a day
+            (full marks). Distinct from price confidence: a handful of lifetime
+            sales can price a card reliably yet still take months to resell.
+          </p>
+        </>
+      }
     />
   );
 }
 
 function PopCell({ g }: { g: GradeOpportunity }) {
+  const tooltip = (
+    <>
+      <p className="font-semibold mb-1">Population — 31% of card quality</p>
+      <p>
+        Total PSA-graded copies of this card, percentile-ranked against the
+        whole collection: the scarcer the card, the higher it scores. A missing
+        pop report currently scores as most-common.
+      </p>
+    </>
+  );
   if (g.psaTotal === null) {
-    return <SignalCell label="PSA Pop" value="No data" sub="sync PSA pop" highlight={g.populationLevel} />;
+    return <SignalCell label="PSA Pop" value="No data" sub="sync PSA pop" highlight={g.populationLevel} tooltip={tooltip} />;
   }
   return (
     <SignalCell
@@ -479,13 +559,24 @@ function PopCell({ g }: { g: GradeOpportunity }) {
       value={g.psaTotal.toLocaleString()}
       sub="total graded"
       highlight={g.populationLevel}
+      tooltip={tooltip}
     />
   );
 }
 
 function GradeCell({ g }: { g: GradeOpportunity }) {
+  const tooltip = (
+    <>
+      <p className="font-semibold mb-1">Grade rarity — 34% of card quality</p>
+      <p>
+        The largest quality factor: the share of this card&apos;s graded copies
+        at PSA {g.psaGrade} or higher. The smaller that share, the harder this
+        grade is to pull and the higher it scores.
+      </p>
+    </>
+  );
   if (g.popsAtOrAbove === null || g.psaTotal === null || g.psaTotal === 0) {
-    return <SignalCell label="Grade" value="No data" sub="sync PSA pop" highlight={g.gradeLevel} />;
+    return <SignalCell label="Grade" value="No data" sub="sync PSA pop" highlight={g.gradeLevel} tooltip={tooltip} />;
   }
   const pct = (g.popsAtOrAbove / g.psaTotal) * 100;
   return (
@@ -494,6 +585,7 @@ function GradeCell({ g }: { g: GradeOpportunity }) {
       value={`${pct.toFixed(0)}% at PSA ${g.psaGrade}+`}
       sub={`${g.popsAtOrAbove}/${g.psaTotal} total`}
       highlight={g.gradeLevel}
+      tooltip={tooltip}
     />
   );
 }
@@ -507,6 +599,16 @@ function AgeCell({ g, releaseDate }: { g: GradeOpportunity; releaseDate: Date | 
       value={age != null ? `${age} years old` : 'Unknown'}
       sub={year ? `Released ${year}` : 'release date missing'}
       highlight={g.ageLevel}
+      tooltip={
+        <>
+          <p className="font-semibold mb-1">Age — 14% of card quality</p>
+          <p>
+            Release date ranked across the collection: older cards score
+            higher, on the thesis that vintage value is more established and
+            less exposed to reprint or hype cycles.
+          </p>
+        </>
+      }
     />
   );
 }
@@ -518,6 +620,15 @@ function PremiumCell({ g }: { g: GradeOpportunity }) {
       value={g.psaGrade === 10 ? 'PSA 10' : `PSA ${g.psaGrade}`}
       sub={g.psaGrade === 10 ? 'gem mint premium' : 'no gem mint premium'}
       highlight={g.premiumLevel}
+      tooltip={
+        <>
+          <p className="font-semibold mb-1">Gem mint — 8% of card quality</p>
+          <p>
+            A flat bonus for PSA 10, the most sought-after and most liquid
+            grade. All-or-nothing: any other grade gets no premium.
+          </p>
+        </>
+      }
     />
   );
 }
