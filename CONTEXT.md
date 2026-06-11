@@ -240,7 +240,7 @@ The fraction of a Product's total eBay sold volume at a specific PSA Grade over 
 _Avoid_: grade volume, grade activity
 
 **Opportunity Score**:
-A numeric score (0–100) per Card per PSA Grade surfacing buying opportunities. Computed on the fly at read time (no stored table). Five signals with fixed weights: Listing Signal (25%), Year Signal (5%), Population Signal (25%), Grade Signal (20%), Age Signal (25%). A CardMarket listing below Market Sale Price is required — grades without one are excluded. Floor: 40/100 to appear on the Opportunities page, with a guaranteed minimum of 5 entries (top-scoring regardless of floor). Per card, only the best-scoring grade is surfaced. Each signal and the overall score are returned as both a raw numeric value and a `SignalLevel` (`'green-strong' | 'yellow-light' | 'orange-light' | 'red-strong'`) computed by the backend so threshold logic lives in one place.
+A numeric score (0–100) per Card per PSA Grade surfacing buying opportunities. Computed on the fly at read time (no stored table) by the pure ranking pipeline in `rankOpportunities.ts` (the use case only fetches inputs). Six weighted signals — Listing, Year, Population, Grade, Age, Premium — whose weights are tuned over time in `computeScore` (`opportunityScore.ts`); a CardMarket listing for the grade is required (a listing above Market Sale Price scores a penalty rather than being excluded). The page shows the top 20 entries by score, no floor. Per card, only the best-scoring grade is surfaced. Each signal and the overall score are returned as both a raw numeric value and a `SignalLevel` (`'green-strong' | 'yellow-light' | 'orange-light' | 'red-strong'`) computed by the backend so threshold logic lives in one place.
 _Avoid_: deal score, buy score, opportunity index
 
 **Listing Signal**:
@@ -386,7 +386,7 @@ Adjacent issues (enabled by the same foundation, not blocking #91):
 
 ## Opportunities page
 
-A dedicated page surfacing the top buying opportunities across all tracked Cards for the day. Shows 5–10 Cards ranked by Opportunity Score descending: up to 10 entries with score ≥ 40/100, but always at least 5 (top-scoring regardless of floor). One entry per Card (best-scoring grade only).
+A dedicated page surfacing the top buying opportunities across all tracked Cards for the day. Shows up to 20 Cards ranked by Opportunity Score descending, no score floor. One entry per Card (best-scoring grade only).
 
 Each opportunity row shows: card image, card name + Product Set + PSA Grade, overall score badge, and five signal cells (Discount, 52-Week, Pop, Grade, Age). Each cell is coloured by its `SignalLevel` (`green-strong` → `yellow-light` → `orange-light` → `red-strong`). Clicking a row opens a side panel with the full card detail (chart, PSA pop breakdown, CardMarket link, card note). Arrow-key navigation moves between rows while the panel is open.
 
