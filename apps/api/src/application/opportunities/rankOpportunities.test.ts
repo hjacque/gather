@@ -205,6 +205,23 @@ describe("rankOpportunities", () => {
     }
   });
 
+  it("excludes listings inside the 5% discount dead zone", () => {
+    const a = card("a");
+    const inDeadZone = inputs({
+      cards: [a],
+      sales: [sale("a", 10, 100)],
+      listings: { a: { 10: 96 } },
+    });
+    expect(rankOpportunities(inDeadZone)).toEqual([]);
+
+    const pastDeadZone = inputs({
+      cards: [a],
+      sales: [sale("a", 10, 100)],
+      listings: { a: { 10: 94 } },
+    });
+    expect(rankOpportunities(pastDeadZone)).toHaveLength(1);
+  });
+
   it("excludes a card listed at market even when the card itself is excellent", () => {
     // Low pop, PSA 10, vintage, liquid — but the listing carries no discount.
     // Multiplicative scoring: no deal means no opportunity.

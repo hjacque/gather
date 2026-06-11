@@ -196,8 +196,10 @@ export type GradeOpportunity = {
   // rarity, population, age, gem-mint premium and liquidity.
   qualitySignal: number;
   // Listing signal: sqrt discount of listing vs Market Sale Price (negative when
-  // listed above market), scaled by listingConfidence — how trustworthy the
-  // Market Sale Price is, from its sample size and the recency of the last sale.
+  // listed above market; 0 inside the 5% dead zone, where "below market" is
+  // median noise rather than a deal), scaled by listingConfidence — how
+  // trustworthy the Market Sale Price is, from its sample size and the recency
+  // of the last sale.
   listingSignal: number;
   listingConfidence: number;
   sampleSize: number;

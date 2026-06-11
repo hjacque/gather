@@ -1,5 +1,6 @@
 import {
   computeListingConfidence,
+  computeListingSignal,
   computeLiquiditySignal,
   computeQualitySignal,
   computeScore,
@@ -9,6 +10,32 @@ const NOW = new Date("2026-06-11T12:00:00Z");
 
 const daysAgo = (days: number): Date =>
   new Date(NOW.getTime() - days * 24 * 60 * 60 * 1000);
+
+describe("computeListingSignal", () => {
+  it("scores 0 inside the 5% dead zone — noise, not a deal", () => {
+    expect(computeListingSignal(100, 100)).toBe(0);
+    expect(computeListingSignal(100, 97)).toBe(0);
+    expect(computeListingSignal(100, 95)).toBe(0);
+  });
+
+  it("rises smoothly from the dead zone with sqrt amplification", () => {
+    // 10% off: sqrt((0.10 − 0.05) / 0.95) ≈ 0.23
+    expect(computeListingSignal(100, 90)).toBeCloseTo(0.229, 2);
+    // 20% off ≈ 0.40
+    expect(computeListingSignal(100, 80)).toBeCloseTo(0.397, 2);
+    // free card caps at 1
+    expect(computeListingSignal(100, 0)).toBe(1);
+  });
+
+  it("penalizes listings above market linearly, clamped at -1", () => {
+    expect(computeListingSignal(100, 120)).toBeCloseTo(-0.2);
+    expect(computeListingSignal(100, 300)).toBe(-1);
+  });
+
+  it("is 0 without a listing", () => {
+    expect(computeListingSignal(100, null)).toBe(0);
+  });
+});
 
 describe("computeListingConfidence", () => {
   it("gives full confidence to 5+ recent sales", () => {

@@ -1,16 +1,26 @@
 import type { SignalLevel } from "@gather/api-contract";
 import type { PsaPopReportEntity } from "../../repository/ports/psaPopReport.repository.port";
 
+// Discounts inside the dead zone score 0: the Market Sale Price is a median
+// over scattered comps, so a few percent "below market" is estimation noise —
+// a fair price, not a deal. Sized for collecting; a flipper would raise this
+// to the ~13–15% sell-side fee hurdle.
+export const DISCOUNT_DEAD_ZONE = 0.05;
+
 export function computeListingSignal(
   marketSale: number,
   listing: number | null
 ): number {
   if (listing === null) return 0;
   const linear = (marketSale - listing) / marketSale;
-  // positive side: sqrt amplifies small discounts (1% → 0.10, 5% → 0.22, 20% → 0.45)
   // negative side: linear penalty, clamped at -1 (listing 2× market)
-  if (linear >= 0) return Math.sqrt(Math.min(1, linear));
-  return Math.max(-1, linear);
+  if (linear <= 0) return Math.max(-1, linear);
+  if (linear <= DISCOUNT_DEAD_ZONE) return 0;
+  // sqrt re-anchored at the dead zone: smooth from zero, still amplifies
+  // modest discounts (10% → 0.23, 20% → 0.40, 50% → 0.69)
+  return Math.sqrt(
+    Math.min(1, (linear - DISCOUNT_DEAD_ZONE) / (1 - DISCOUNT_DEAD_ZONE))
+  );
 }
 
 // Confidence in a grade's Market Sale Price, used to scale the listing signal:
