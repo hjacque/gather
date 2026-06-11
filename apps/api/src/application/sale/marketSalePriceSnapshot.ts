@@ -2,7 +2,6 @@ import type { PriceType } from "@gather/types";
 import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { computeMarketPrices } from "./marketPrice";
-import { convertToEur } from "./eurConverter";
 import { getEurToUsdRate } from "../sync/helper";
 
 const gradeToType = (grade: number): PriceType =>
@@ -33,21 +32,6 @@ export class MarketSalePriceSnapshotService {
       getEurToUsdRate(),
     ]);
 
-    const salesForPricing = sales.flatMap((sale) => {
-      if (sale.status === "invalid") return [];
-      const priceEur = convertToEur(sale.price, sale.currency, usdToEur);
-      if (priceEur === null) return [];
-      return [
-        {
-          psaGrade: sale.psaGrade,
-          priceEur,
-          soldAt: sale.soldAt,
-          isBestOffer: sale.isBestOffer,
-          reviewedAt: sale.reviewedAt,
-        },
-      ];
-    });
-
     const from = startOfDayUtc(fromDate);
     const to = startOfDayUtc(toDate);
 
@@ -57,7 +41,7 @@ export class MarketSalePriceSnapshotService {
       d.setUTCDate(d.getUTCDate() + 1)
     ) {
       const snapshot = new Date(d);
-      const grades = computeMarketPrices(salesForPricing, snapshot);
+      const grades = computeMarketPrices(sales, usdToEur, snapshot);
       for (const { psaGrade, priceEur } of grades) {
         await this.priceRepository.upsertPrice(
           cardId,

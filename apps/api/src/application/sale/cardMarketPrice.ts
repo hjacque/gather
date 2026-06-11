@@ -1,32 +1,14 @@
 import { SaleEntity } from "../../entities/sale.entity";
-import { convertToEur } from "./eurConverter";
 import { computeMarketPrices } from "./marketPrice";
 
-// Reduce a card's raw sales to its PSA 10 market price in EUR: drop invalid
-// sales and unconvertible currencies, convert to EUR, then
-// take the recency-weighted median of the PSA 10 grade. Null when no usable
-// PSA 10 sales.
+// A card's PSA 10 Market Sale Price in EUR, or null when the grade has no
+// usable sales. Eligibility and conversion live in computeMarketPrices.
 export const psa10MarketPriceFromSales = (
   sales: SaleEntity[],
   usdToEur: number,
   now: Date = new Date()
 ): number | null => {
-  const forPricing = sales.flatMap((sale) => {
-    if (sale.status === "invalid") return [];
-    const priceEur = convertToEur(sale.price, sale.currency, usdToEur);
-    if (priceEur === null) return [];
-    return [
-      {
-        psaGrade: sale.psaGrade,
-        priceEur,
-        soldAt: sale.soldAt,
-        isBestOffer: sale.isBestOffer,
-        reviewedAt: sale.reviewedAt,
-      },
-    ];
-  });
-
-  const psa10 = computeMarketPrices(forPricing, now).find(
+  const psa10 = computeMarketPrices(sales, usdToEur, now).find(
     (m) => m.psaGrade === 10
   );
   return psa10?.priceEur ?? null;

@@ -2,19 +2,48 @@
 // separate market, priced independently. The estimate is a recency-weighted
 // median of the grade's EUR sale prices (exponential age decay, default 30-day
 // half-life). The median resists off comps; genuinely wrong listings are
-// excluded upstream by moderation (status invalid/cancelled), so there is no
-// automatic outlier rejection here.
+// excluded by moderation (status invalid), so there is no automatic outlier
+// rejection here.
+//
+// This module owns the whole eligibility rule: which Sales count, how their
+// prices reach EUR, and how the per-grade median is taken. Callers hand over
+// raw SaleEntity rows plus today's USD→EUR rate and get Market Sale Prices
+// back — they never pre-filter or pre-convert.
 
-export type SaleForPricing = {
+import { SaleEntity } from "../../entities/sale.entity";
+import { convertToEur } from "./eurConverter";
+
+type SaleForPricing = {
   psaGrade: number;
   priceEur: number;
   soldAt: Date;
   // A Best-Offer's scraped price is the listing price, not the realized one, so
-  // it only counts once Sale Review has enriched it (reviewedAt set). Omitting
-  // these treats the sale as a non-Best-Offer that counts immediately.
-  isBestOffer?: boolean;
-  reviewedAt?: Date | null;
+  // it only counts once Sale Review has enriched it (reviewedAt set).
+  isBestOffer: boolean;
+  reviewedAt: Date | null;
 };
+
+// Eligibility: moderated-out Sales (status invalid) are dropped, and prices
+// convert to EUR at read time — Sales in currencies we cannot convert yet are
+// excluded rather than shown wrong (see ADR 0004).
+const toSalesForPricing = (
+  sales: SaleEntity[],
+  usdToEur: number
+): SaleForPricing[] =>
+  sales.flatMap((sale) => {
+    if (sale.status === "invalid") return [];
+    const priceEur = convertToEur(sale.price, sale.currency, usdToEur);
+    if (priceEur === null) return [];
+    return [
+      {
+        psaGrade: sale.psaGrade,
+        priceEur,
+        soldAt: sale.soldAt,
+        isBestOffer: sale.isBestOffer,
+        reviewedAt: sale.reviewedAt,
+      },
+    ];
+  });
 
 // A sale contributes to Market Sale Price only if it is not a Best-Offer, or it
 // is a Best-Offer that has been reviewed (its true price entered). See Market
@@ -37,9 +66,17 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export const DEFAULT_HALF_LIFE_DAYS = 30;
 
 export const computeMarketPrices = (
-  sales: SaleForPricing[],
+  sales: SaleEntity[],
+  usdToEur: number,
   now: Date = new Date(),
   halfLifeDays: number = DEFAULT_HALF_LIFE_DAYS
+): GradeMarketPrice[] =>
+  computeFromEligible(toSalesForPricing(sales, usdToEur), now, halfLifeDays);
+
+const computeFromEligible = (
+  sales: SaleForPricing[],
+  now: Date,
+  halfLifeDays: number
 ): GradeMarketPrice[] => {
   const byGrade = new Map<number, SaleForPricing[]>();
   for (const sale of sales) {

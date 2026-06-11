@@ -3,7 +3,6 @@ import type { CardRepositoryPort } from "../../repository/ports/card.repository.
 import type { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import type { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import type { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
-import { convertToEur } from "../sale/eurConverter";
 import { getEurToUsdRate } from "../sync/helper";
 import { computeMarketPrices } from "../sale/marketPrice";
 import {
@@ -117,20 +116,7 @@ export class GetOpportunitiesUsecase {
       const cardYearRanges = yearRanges.get(card.id) ?? {};
       const psaReport = psaReports.get(card.id) ?? null;
 
-      const salesForPricing = sales.flatMap((sale) => {
-        if (sale.status === "invalid") return [];
-        const priceEur = convertToEur(sale.price, sale.currency, usdToEur);
-        if (priceEur === null) return [];
-        return [{
-          psaGrade: sale.psaGrade,
-          priceEur,
-          soldAt: sale.soldAt,
-          isBestOffer: sale.isBestOffer,
-          reviewedAt: sale.reviewedAt,
-        }];
-      });
-
-      const marketPrices = computeMarketPrices(salesForPricing, now);
+      const marketPrices = computeMarketPrices(sales, usdToEur, now);
 
       for (const { psaGrade, priceEur: marketSalePrice } of marketPrices) {
         const listingPrice = listings[psaGrade] ?? null;

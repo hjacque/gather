@@ -47,25 +47,9 @@ export class GetCardUsecase {
       ];
     });
 
-    // Per-grade market price from the EUR-converted sales. Re-derived from the
-    // Sale entities (not saleRecords) so the Best-Offer/review gate can see each
-    // sale's isBestOffer and reviewedAt.
-    const marketPrices = computeMarketPrices(
-      sales.flatMap((sale) => {
-        if (sale.status === "invalid") return [];
-        const priceEur = convertToEur(sale.price, sale.currency, usdToEur);
-        if (priceEur === null) return [];
-        return [
-          {
-            psaGrade: sale.psaGrade,
-            priceEur,
-            soldAt: sale.soldAt,
-            isBestOffer: sale.isBestOffer,
-            reviewedAt: sale.reviewedAt,
-          },
-        ];
-      })
-    );
+    // Per-grade Market Sale Price; eligibility (invalid, unconvertible,
+    // Best-Offer/review gate) is owned by computeMarketPrices.
+    const marketPrices = computeMarketPrices(sales, usdToEur);
 
     const psaPopReport = psaReport
       ? {
