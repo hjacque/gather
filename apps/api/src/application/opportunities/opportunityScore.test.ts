@@ -1,6 +1,8 @@
 import {
   computeListingConfidence,
   computeLiquiditySignal,
+  computeQualitySignal,
+  computeScore,
 } from "./opportunityScore";
 
 const NOW = new Date("2026-06-11T12:00:00Z");
@@ -60,5 +62,34 @@ describe("computeLiquiditySignal", () => {
     const velocities = [0.05, 0.1, 0.2, 0.5, 0.9];
     const signals = velocities.map(computeLiquiditySignal);
     expect([...signals].sort((a, b) => a - b)).toEqual(signals);
+  });
+});
+
+describe("computeScore (multiplicative)", () => {
+  it("scores 0 with no discount, regardless of card quality", () => {
+    expect(computeScore(0, 1)).toBe(0);
+  });
+
+  it("goes negative for overpriced listings so they can be filtered out", () => {
+    expect(computeScore(-0.5, 1)).toBeLessThan(0);
+  });
+
+  it("applies the quality floor: worst-quality card keeps 40% of the deal", () => {
+    expect(computeScore(0.5, 0)).toBeCloseTo(20);
+  });
+
+  it("passes the deal through fully at maximum quality", () => {
+    expect(computeScore(0.5, 1)).toBeCloseTo(50);
+  });
+
+  it("lets quality leverage a deal by at most 2.5×", () => {
+    expect(computeScore(0.4, 1)).toBeCloseTo(computeScore(1, 0));
+  });
+});
+
+describe("computeQualitySignal", () => {
+  it("is 0 when every component is at its worst and 1 when all are at their best", () => {
+    expect(computeQualitySignal(0, 0, 0, 0, 0)).toBe(0);
+    expect(computeQualitySignal(1, 1, 1, 1, 1)).toBeCloseTo(1);
   });
 });

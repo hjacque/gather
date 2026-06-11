@@ -205,6 +205,23 @@ describe("rankOpportunities", () => {
     }
   });
 
+  it("excludes a card listed at market even when the card itself is excellent", () => {
+    // Low pop, PSA 10, vintage, liquid — but the listing carries no discount.
+    // Multiplicative scoring: no deal means no opportunity.
+    const grail = card("grail", { releaseDate: new Date("1999-01-01") });
+    const result = rankOpportunities(
+      inputs({
+        cards: [grail],
+        sales: Array.from({ length: 6 }, (_, i) =>
+          sale("grail", 10, 100, { soldAt: daysAgo(i + 1) })
+        ),
+        listings: { grail: { 10: 100 } },
+        reports: [report("grail", { grade9: 500, grade10: 5 })],
+      })
+    );
+    expect(result).toEqual([]);
+  });
+
   it("ranks a modest discount on solid sale history above a deep discount on one stale comp", () => {
     // "thin": 40% off a market price built on a single 90-day-old sale.
     // "solid": 15% off a market price built on 6 sales from the last week.

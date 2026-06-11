@@ -15,6 +15,7 @@ import {
   computeListingSignal,
   computeLiquidityLevel,
   computeLiquiditySignal,
+  computeQualitySignal,
   computeYearSignal,
   computeGradeSignal,
   computePopsAtOrAbove,
@@ -194,6 +195,7 @@ export const rankOpportunities = ({
       grade: number;
       score: number;
       scoreLevel: ReturnType<typeof computeScoreLevel>;
+      qualitySignal: number;
       listingSignal: number;
       listingConfidence: number;
       sampleSize: number;
@@ -225,15 +227,14 @@ export const rankOpportunities = ({
     const ageSignal = e.ageSignal;
     const populationSignal = e.populationSignal;
     const premiumSignal = computePremiumSignal(e.grade);
-    const score = computeScore(
-      e.listingSignal,
-      e.yearSignal,
-      ageSignal,
+    const qualitySignal = computeQualitySignal(
       populationSignal,
       e.gradeSignal,
+      ageSignal,
       premiumSignal,
       e.liquiditySignal
     );
+    const score = computeScore(e.listingSignal, qualitySignal);
     const roundedScore = Math.round(score * 10) / 10;
 
     const existing = bestPerCard.get(e.cardIdx);
@@ -242,6 +243,7 @@ export const rankOpportunities = ({
         grade: e.grade,
         score,
         scoreLevel: computeScoreLevel(roundedScore),
+        qualitySignal,
         listingSignal: e.listingSignal,
         listingConfidence: e.listingConfidence,
         sampleSize: e.sampleSize,
@@ -269,9 +271,12 @@ export const rankOpportunities = ({
     }
   }
 
-  const ranked = [...bestPerCard.entries()].sort(
-    (a, b) => b[1].score - a[1].score
-  );
+  // Multiplicative scoring means no discount → score 0: those entries are not
+  // opportunities and are dropped rather than padding the list. A quiet day
+  // yields a short (or empty) page.
+  const ranked = [...bestPerCard.entries()]
+    .filter(([, g]) => g.score > 0)
+    .sort((a, b) => b[1].score - a[1].score);
   const top = ranked.slice(0, TOP_N);
 
   return top.map(([cardIdx, g]) => {
@@ -286,6 +291,7 @@ export const rankOpportunities = ({
         psaGrade: g.grade,
         score: Math.round(g.score * 10) / 10,
         scoreLevel: g.scoreLevel,
+        qualitySignal: g.qualitySignal,
         listingSignal: g.listingSignal,
         listingConfidence: g.listingConfidence,
         sampleSize: g.sampleSize,

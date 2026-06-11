@@ -161,29 +161,46 @@ export function computePremiumLevel(grade: number): SignalLevel {
   return grade === 10 ? 'green-strong' : 'red-strong';
 }
 
+// Calibrated to the multiplicative scale: 35 ≈ a 20% discount on a strong
+// card, 20 ≈ a 10% discount on a decent one. Non-positive scores never reach
+// the page (rankOpportunities filters them), so red is vestigial.
 export function computeScoreLevel(score: number): SignalLevel {
-  if (score >= 75) return 'green-strong';
-  if (score >= 55) return 'yellow-light';
-  if (score >= 0)  return 'orange-light';
+  if (score >= 35) return 'green-strong';
+  if (score >= 20) return 'yellow-light';
+  if (score >   0) return 'orange-light';
   return 'red-strong';
 }
 
-export function computeScore(
-  listingSignal: number,
-  yearSignal: number,
-  ageSignal: number,
+// How desirable the card itself is, independent of today's listing: the old
+// additive quality weights renormalized to [0,1].
+export function computeQualitySignal(
   populationSignal: number,
   gradeSignal: number,
+  ageSignal: number,
   premiumSignal: number,
   liquiditySignal: number
 ): number {
   return (
-    listingSignal    * 0.40 +
-    yearSignal       * 0.01 +
-    populationSignal * 0.18 +
-    gradeSignal      * 0.20 +
-    ageSignal        * 0.08 +
-    premiumSignal    * 0.05 +
-    liquiditySignal  * 0.08
-  ) * 100;
+    (populationSignal * 0.18 +
+      gradeSignal     * 0.20 +
+      ageSignal       * 0.08 +
+      premiumSignal   * 0.05 +
+      liquiditySignal * 0.08) /
+    0.59
+  );
+}
+
+// Quality modulates the deal instead of substituting for it: a card at market
+// price is not an opportunity no matter how desirable it is. The floor caps
+// quality's leverage — it scales a given discount by 0.4×–1×, so a grail can
+// outrank a junk card with up to 2.5× its deal signal, never "no deal".
+export const QUALITY_FLOOR = 0.4;
+
+export function computeScore(
+  listingSignal: number,
+  qualitySignal: number
+): number {
+  return (
+    listingSignal * (QUALITY_FLOOR + (1 - QUALITY_FLOOR) * qualitySignal) * 100
+  );
 }

@@ -333,7 +333,7 @@ function OpportunityCard({
             </div>
             <p className="text-muted-foreground text-xs mt-0.5">{opportunity.cardSetName}</p>
           </div>
-          <ScoreBadge score={g.score} level={g.scoreLevel} />
+          <ScoreBadge g={g} />
         </div>
 
         {/* Signal breakdown */}
@@ -367,11 +367,16 @@ const SCORE_BADGE_CLASS: Record<SignalLevel, string> = {
   'red-strong':   'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-500',
 };
 
-function ScoreBadge({ score, level }: { score: number; level: SignalLevel }) {
+function ScoreBadge({ g }: { g: GradeOpportunity }) {
   return (
-    <div className={`shrink-0 flex items-baseline gap-1.5 px-2.5 py-1.5 rounded-lg ${SCORE_BADGE_CLASS[level]}`}>
-      <span className="text-xl font-bold tabular-nums leading-none">{score.toFixed(0)}</span>
-      <span className="text-xs font-semibold">{SCORE_LABEL[level]}</span>
+    <div className={`shrink-0 flex flex-col items-end gap-1 px-2.5 py-1.5 rounded-lg ${SCORE_BADGE_CLASS[g.scoreLevel]}`}>
+      <div className="flex items-baseline gap-1.5">
+        <span className="text-xl font-bold tabular-nums leading-none">{g.score.toFixed(0)}</span>
+        <span className="text-xs font-semibold">{SCORE_LABEL[g.scoreLevel]}</span>
+      </div>
+      <span className="text-[10px] font-medium tabular-nums opacity-70">
+        deal {Math.round(g.listingSignal * 100)} × card {Math.round(g.qualitySignal * 100)}
+      </span>
     </div>
   );
 }

@@ -187,8 +187,14 @@ export type SignalLevel = 'green-strong' | 'yellow-light' | 'orange-light' | 're
 
 export type GradeOpportunity = {
   psaGrade: number;
+  // score = 100 × listingSignal × (0.4 + 0.6 × qualitySignal): the deal is the
+  // base, card quality scales it 0.4×–1×. Entries with no discount (score ≤ 0)
+  // are never returned.
   score: number;
   scoreLevel: SignalLevel;
+  // Card desirability independent of today's listing (0–1): blend of grade
+  // rarity, population, age, gem-mint premium and liquidity.
+  qualitySignal: number;
   // Listing signal: sqrt discount of listing vs Market Sale Price (negative when
   // listed above market), scaled by listingConfidence — how trustworthy the
   // Market Sale Price is, from its sample size and the recency of the last sale.
@@ -204,7 +210,8 @@ export type GradeOpportunity = {
   listingPrice: number | null;
   marketSalePrice: number;
   listingLevel: SignalLevel;
-  // Year signal: where Market Sale Price sits in its 52-week range (0=high, 1=low).
+  // Year signal: where Market Sale Price sits in its 52-week range (0=high,
+  // 1=low). Display-only — it does not enter the score.
   yearSignal: number;
   yearLow: number | null;
   yearHigh: number | null;
