@@ -205,19 +205,19 @@ describe("rankOpportunities", () => {
     }
   });
 
-  it("excludes listings inside the 5% discount dead zone", () => {
+  it("excludes listings inside the 3% discount dead zone", () => {
     const a = card("a");
     const inDeadZone = inputs({
       cards: [a],
       sales: [sale("a", 10, 100)],
-      listings: { a: { 10: 96 } },
+      listings: { a: { 10: 97 } },
     });
     expect(rankOpportunities(inDeadZone)).toEqual([]);
 
     const pastDeadZone = inputs({
       cards: [a],
       sales: [sale("a", 10, 100)],
-      listings: { a: { 10: 94 } },
+      listings: { a: { 10: 96 } },
     });
     expect(rankOpportunities(pastDeadZone)).toHaveLength(1);
   });

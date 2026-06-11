@@ -457,7 +457,7 @@ function DiscountCell({ g }: { g: GradeOpportunity }) {
       <p className="font-semibold mb-1">Discount — the base of the score</p>
       <p>
         Today&apos;s cheapest listing vs the Market Sale Price (recency-weighted
-        median of eBay sold prices for this grade). Discounts under 5% score
+        median of eBay sold prices for this grade). Discounts under 3% score
         zero — that&apos;s within the median&apos;s noise, a fair price rather
         than a deal. Above that, the discount counts to the extent the market
         price is trustworthy: {conf}% confidence here, from {g.sampleSize}{' '}

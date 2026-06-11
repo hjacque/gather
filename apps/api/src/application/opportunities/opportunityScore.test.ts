@@ -12,17 +12,17 @@ const daysAgo = (days: number): Date =>
   new Date(NOW.getTime() - days * 24 * 60 * 60 * 1000);
 
 describe("computeListingSignal", () => {
-  it("scores 0 inside the 5% dead zone — noise, not a deal", () => {
+  it("scores 0 inside the 3% dead zone — noise, not a deal", () => {
     expect(computeListingSignal(100, 100)).toBe(0);
+    expect(computeListingSignal(100, 98)).toBe(0);
     expect(computeListingSignal(100, 97)).toBe(0);
-    expect(computeListingSignal(100, 95)).toBe(0);
   });
 
   it("rises smoothly from the dead zone with sqrt amplification", () => {
-    // 10% off: sqrt((0.10 − 0.05) / 0.95) ≈ 0.23
-    expect(computeListingSignal(100, 90)).toBeCloseTo(0.229, 2);
-    // 20% off ≈ 0.40
-    expect(computeListingSignal(100, 80)).toBeCloseTo(0.397, 2);
+    // 10% off: sqrt((0.10 − 0.03) / 0.97) ≈ 0.27
+    expect(computeListingSignal(100, 90)).toBeCloseTo(0.269, 2);
+    // 20% off ≈ 0.42
+    expect(computeListingSignal(100, 80)).toBeCloseTo(0.419, 2);
     // free card caps at 1
     expect(computeListingSignal(100, 0)).toBe(1);
   });

@@ -5,7 +5,7 @@ import type { PsaPopReportEntity } from "../../repository/ports/psaPopReport.rep
 // over scattered comps, so a few percent "below market" is estimation noise —
 // a fair price, not a deal. Sized for collecting; a flipper would raise this
 // to the ~13–15% sell-side fee hurdle.
-export const DISCOUNT_DEAD_ZONE = 0.05;
+export const DISCOUNT_DEAD_ZONE = 0.03;
 
 export function computeListingSignal(
   marketSale: number,
@@ -17,7 +17,7 @@ export function computeListingSignal(
   if (linear <= 0) return Math.max(-1, linear);
   if (linear <= DISCOUNT_DEAD_ZONE) return 0;
   // sqrt re-anchored at the dead zone: smooth from zero, still amplifies
-  // modest discounts (10% → 0.23, 20% → 0.40, 50% → 0.69)
+  // modest discounts (10% → 0.27, 20% → 0.42, 50% → 0.70)
   return Math.sqrt(
     Math.min(1, (linear - DISCOUNT_DEAD_ZONE) / (1 - DISCOUNT_DEAD_ZONE))
   );
