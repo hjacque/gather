@@ -13,6 +13,13 @@ describe("activeListingsLinkFromEbayLink", () => {
     expect(params.get("_sop")).toBe("15");
   });
 
+  it("moves the search to ebay.fr restricted to EU item location", () => {
+    const link = activeListingsLinkFromEbayLink(SOLD_LINK)!;
+    const url = new URL(link);
+    expect(url.host).toBe("www.ebay.fr");
+    expect(url.searchParams.get("LH_PrefLoc")).toBe("3");
+  });
+
   it("preserves the curated search term", () => {
     const link = activeListingsLinkFromEbayLink(SOLD_LINK)!;
     expect(new URL(link).searchParams.get("_nkw")).toBe(

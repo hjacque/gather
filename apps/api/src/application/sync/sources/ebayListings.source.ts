@@ -20,8 +20,11 @@ const MAX_PAGES = 5;
  * Extractor. Cards with no `ebayLink` are skipped.
  *
  * Selectors are identical to the sales walk (rows are `li.s-card
- * [data-listingid]`); the only differences are the missing "Sold <date>"
- * caption and the price being a live ask.
+ * [data-listingid]`); the differences are the missing "Sold <date>" caption,
+ * the price being a live ask, and the site language being French (the EU
+ * item-location filter only exists on ebay.fr — see activeListingsLink.ts).
+ * eBay.fr rows carry no seller line, so seller trust/activity stay at their
+ * null-input defaults there.
  */
 export class EbayListingsSource {
   appliesTo(card: CardEntity): boolean {
@@ -122,7 +125,9 @@ export class EbayListingsSource {
           listingId: row.getAttribute("data-listingid"),
           title: text(".s-card__title"),
           priceText: text(".s-card__price"),
-          isBestOffer: /best offer/i.test(row.textContent ?? ""),
+          isBestOffer: /best offer|faire une offre|offre directe/i.test(
+            row.textContent ?? ""
+          ),
           sellerHref:
             row
               .querySelector(".s-card__seller-logo")

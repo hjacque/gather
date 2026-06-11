@@ -5,13 +5,17 @@
  * Row Extractor: same row markup, but there is no "Sold <date>" caption and the
  * price is a live ask rather than a realized price.
  *
+ * Unlike the sales walk (ebay.com), the active walk runs on ebay.fr for its EU
+ * item-location filter (see activeListingsLink.ts), so rows render in French:
+ * prices like "2 499,00 EUR" (comma decimal, space-grouped thousands), Best
+ * Offer as "ou Faire une offre", and a French screen-reader title suffix. Both
+ * the US and French shapes are accepted here.
+ *
  * The PSA grade is intentionally NOT extracted here — that is the card-aware
  * Listing Title Parser's job, run by the use case over `title`.
  */
 
 import {
-  detectCurrency,
-  parseAmount,
   parseSellerFeedbackCount,
   parseSellerFeedbackPct,
 } from "./saleRowExtractor";
@@ -21,11 +25,12 @@ import { parseSellerSlug, qualifiesAsTrusted } from "./trustedSeller";
 export type RawListingRow = {
   listingId: string | null; // data-listingid
   title: string;
-  priceText: string; // e.g. "$1,009.00", "US $1,009.00", "€850,00"
-  isBestOffer: boolean; // row shows "or Best Offer"
+  priceText: string; // e.g. "$1,009.00", "120,00 EUR", "2 499,00 EUR"
+  isBestOffer: boolean; // row shows "or Best Offer" / "ou Faire une offre"
   sellerHref: string | null; // href of the store seller link, when present
-  // Text of the row's seller line, e.g. "dxbdxb 99.3% positive (460)". Present
-  // for store and non-store sellers alike; null when no seller line was found.
+  // Text of the row's seller line, e.g. "dxbdxb 99.3% positive (460)". eBay.fr
+  // result rows carry no seller line at all, so this is null there and the
+  // zero-feedback guard downstream is inert for the EU walk.
   sellerInfoText: string | null;
 };
 
@@ -47,19 +52,49 @@ export type ListingCandidate = {
 // eBay's carousel ad rows reuse this placeholder title.
 const AD_TITLE = "Shop on eBay";
 
-// Multi-variation listings render a price range; a single ask can't be read
-// off them, so they are rejected (and for a PSA-graded single they are
-// ambiguous bundles anyway).
-const PRICE_RANGE = /\bto\b/i;
+// Screen-reader suffix appended to row titles, per site language.
+const TITLE_SUFFIX =
+  /(?:Opens in a new window or tab|La page s'ouvre dans une nouvelle fenêtre.*)$/i;
+
+// Multi-variation listings render a price range ("$10.00 to $25.00" /
+// "10,00 EUR à 25,00 EUR"); a single ask can't be read off them, so they are
+// rejected (and for a PSA-graded single they are ambiguous bundles anyway).
+const PRICE_RANGE = /\bto\b|\sà\s/i;
+
+// Currency markers eBay renders, mapped to ISO codes. ebay.fr suffixes the
+// code ("120,00 EUR"); ebay.com prefixes a symbol, where "$" defaults to USD
+// and a "C $" / "A $" prefix narrows it to the local dollar.
+export function detectListingCurrency(priceText: string): string | null {
+  if (/\bEUR\b/.test(priceText) || priceText.includes("€")) return "EUR";
+  if (/\bGBP\b/.test(priceText) || priceText.includes("£")) return "GBP";
+  if (/C\s*\$/.test(priceText)) return "CAD";
+  if (/A(?:U)?\s*\$/.test(priceText)) return "AUD";
+  if (priceText.includes("$")) return "USD";
+  return null;
+}
+
+// Parse the numeric amount from either locale's price text. French format is
+// recognized by a trailing comma decimal ("2 499,00", incl. NBSP grouping);
+// anything else is read as US-formatted ("1,009.00").
+export function parseListingAmount(priceText: string): number | null {
+  const match = priceText.match(/\d[\d\s.,  ]*/);
+  if (!match) return null;
+  const token = match[0].replace(/[\s  ]/g, "");
+  const normalized = /,\d{1,2}$/.test(token)
+    ? token.replace(/\./g, "").replace(",", ".")
+    : token.replace(/,/g, "");
+  const amount = parseFloat(normalized);
+  return Number.isFinite(amount) && amount > 0 ? amount : null;
+}
 
 export function extractListingRow(raw: RawListingRow): ListingCandidate | null {
-  const title = raw.title.replace(/Opens in a new window or tab\s*$/i, "").trim();
+  const title = raw.title.replace(TITLE_SUFFIX, "").trim();
   if (!title || title === AD_TITLE) return null;
   if (!raw.listingId) return null;
   if (PRICE_RANGE.test(raw.priceText)) return null;
 
-  const currency = detectCurrency(raw.priceText);
-  const price = parseAmount(raw.priceText);
+  const currency = detectListingCurrency(raw.priceText);
+  const price = parseListingAmount(raw.priceText);
   if (!currency || price === null) return null;
 
   const seller = parseSellerSlug(raw.sellerHref);

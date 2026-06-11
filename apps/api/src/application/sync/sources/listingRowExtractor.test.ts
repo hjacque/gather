@@ -38,8 +38,20 @@ describe("extractListingRow", () => {
     expect(result?.price).toBe(850);
   });
 
-  it("rejects multi-variation price ranges", () => {
+  it("parses ebay.fr French-formatted EUR prices", () => {
+    expect(extractListingRow(row({ priceText: "120,00 EUR" }))?.price).toBe(120);
+    // Thousands grouped with a non-breaking space, comma decimal.
+    const result = extractListingRow(row({ priceText: "2 499,00 EUR" }));
+    expect(result?.price).toBe(2499);
+    expect(result?.currency).toBe("EUR");
+    expect(extractListingRow(row({ priceText: "7 500,00 EUR" }))?.price).toBe(7500);
+  });
+
+  it("rejects multi-variation price ranges in either locale", () => {
     expect(extractListingRow(row({ priceText: "$10.00 to $25.00" }))).toBeNull();
+    expect(
+      extractListingRow(row({ priceText: "10,00 EUR à 25,00 EUR" }))
+    ).toBeNull();
   });
 
   it("rejects the carousel ad placeholder row", () => {
@@ -53,12 +65,20 @@ describe("extractListingRow", () => {
     expect(extractListingRow(row({ priceText: "Contact seller" }))).toBeNull();
   });
 
-  it("strips the screen-reader suffix from titles", () => {
+  it("strips the screen-reader suffix from titles in either language", () => {
     expect(
       extractListingRow(
         row({ title: "Cramorant PSA 10 Opens in a new window or tab" })
       )?.title
     ).toBe("Cramorant PSA 10");
+    expect(
+      extractListingRow(
+        row({
+          title:
+            "2022 POKEMON GO #053 DITTO-HOLO PSA 7La page s'ouvre dans une nouvelle fenêtre ou un nouvel onglet",
+        })
+      )?.title
+    ).toBe("2022 POKEMON GO #053 DITTO-HOLO PSA 7");
   });
 
   it("marks a seller with zero feedback as having no activity", () => {
