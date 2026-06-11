@@ -3,10 +3,16 @@ import { PriceRepositoryPort } from "../../repository/ports/price.repository.por
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import { CollectionRepositoryPort } from "../../repository/ports/collection.repository.port";
 import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
+import { ListingRepositoryPort } from "../../repository/ports/listing.repository.port";
+import { LISTING_FRESHNESS_DAYS } from "../../entities/listing.entity";
 import { getEurToUsdRate } from "../sync/helper";
 import { convertToEur } from "../sale/eurConverter";
 import { computeMarketPrices } from "../sale/marketPrice";
-import type { GetCardResponse, SaleRecord } from "@gather/api-contract";
+import type {
+  GetCardResponse,
+  ListingRecord,
+  SaleRecord,
+} from "@gather/api-contract";
 
 export class GetCardUsecase {
   constructor(
@@ -14,17 +20,22 @@ export class GetCardUsecase {
     private readonly priceRepository: PriceRepositoryPort,
     private readonly psaPopReportRepository: PsaPopReportRepositoryPort,
     private readonly collectionRepository: CollectionRepositoryPort,
-    private readonly saleRepository: SaleRepositoryPort
+    private readonly saleRepository: SaleRepositoryPort,
+    private readonly listingRepository: ListingRepositoryPort
   ) {}
 
   async execute(cardId: string): Promise<GetCardResponse> {
     const card = await this.cardRepository.getCard(cardId);
-    const [cardPrices, psaReport, collectionEntry, sales, usdToEur] =
+    const listingsSince = new Date();
+    listingsSince.setUTCHours(0, 0, 0, 0);
+    listingsSince.setUTCDate(listingsSince.getUTCDate() - LISTING_FRESHNESS_DAYS);
+    const [cardPrices, psaReport, collectionEntry, sales, listingsByCard, usdToEur] =
       await Promise.all([
         this.priceRepository.getCardPrices(cardId),
         this.psaPopReportRepository.findByCardId(cardId),
         this.collectionRepository.findByCardId(cardId),
         this.saleRepository.getCardSales(cardId),
+        this.listingRepository.getCardsListings([cardId], listingsSince),
         getEurToUsdRate(),
       ]);
 
@@ -46,6 +57,27 @@ export class GetCardUsecase {
         },
       ];
     });
+
+    // Live asks in EUR, cheapest first within each grade. Unconvertible
+    // currencies are dropped, like Sales.
+    const listingRecords: ListingRecord[] = (listingsByCard.get(cardId) ?? [])
+      .flatMap((listing) => {
+        const priceEur = convertToEur(listing.price, listing.currency, usdToEur);
+        if (priceEur === null) return [];
+        return [
+          {
+            id: listing.id,
+            psaGrade: listing.psaGrade,
+            priceEur,
+            isBestOffer: listing.isBestOffer,
+            source: listing.platform === "ebay" ? ("ebay" as const) : ("cardmarket" as const),
+            title: listing.title,
+            url: `https://www.ebay.com/itm/${listing.itemId}`,
+            seenAt: listing.seenAt,
+          },
+        ];
+      })
+      .sort((a, b) => a.psaGrade - b.psaGrade || a.priceEur - b.priceEur);
 
     // Per-grade Market Sale Price; eligibility (invalid, unconvertible,
     // Best-Offer/review gate) is owned by computeMarketPrices.
@@ -72,6 +104,7 @@ export class GetCardUsecase {
       ...card,
       ...cardPrices,
       sales: saleRecords,
+      listings: listingRecords,
       marketPrices,
       psaPopReport,
       collectionEntry: collectionEntry ?? null,

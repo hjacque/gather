@@ -41,6 +41,7 @@ import {
 } from './ui/card';
 import { PsaGradePriceChart } from '@/components/psa-grade-price-chart';
 import { EbaySalesChart } from '@/components/ebay-sales-chart';
+import { CardListingsTable } from '@/components/card-listings-table';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
@@ -850,6 +851,12 @@ export function PokemonExclusivePromosTable({
                     )}
                   </CardContent>
                 </Card>
+              </div>
+            )}
+
+            {displayedCard && (
+              <div className="w-full px-4 lg:px-6">
+                <CardListingsTable listings={displayedCard.listings} />
               </div>
             )}
 

@@ -96,7 +96,8 @@ export const initApplication = ({
     priceRepository,
     psaPopReportRepository,
     collectionRepository,
-    saleRepository
+    saleRepository,
+    listingRepository
   );
   const cardmarketPriceSources = [
     new CardMarketGradedSource(),

@@ -4,16 +4,12 @@ import type { ListingRepositoryPort } from "../../repository/ports/listing.repos
 import type { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import type { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import type { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
+import { LISTING_FRESHNESS_DAYS } from "../../entities/listing.entity";
 import { getEurToUsdRate } from "../sync/helper";
 import { mergeListingOffers } from "./mergeListingOffers";
 import { rankOpportunities } from "./rankOpportunities";
 
 const YEAR_DAYS = 365;
-
-// eBay listings older than this are ignored: CardMarket prices are read for
-// today only, but pruning eBay asks just as hard would empty the buy side
-// whenever a sync is missed. Three days bounds how stale a surfaced ask can be.
-const LISTING_FRESHNESS_DAYS = 3;
 
 const startOfDayUtc = (d: Date): Date => {
   const out = new Date(d);

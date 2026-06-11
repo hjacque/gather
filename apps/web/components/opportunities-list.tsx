@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/tooltip';
 import { CardImage } from '@/components/card-image';
 import { EbaySalesChart } from '@/components/ebay-sales-chart';
+import { CardListingsTable } from '@/components/card-listings-table';
 import { PsaGradePriceChart } from '@/components/psa-grade-price-chart';
 import {
   Card,
@@ -201,6 +202,10 @@ export function OpportunitiesList({ opportunities }: Props) {
 
                 <div className="w-full px-4 lg:px-6">
                   <MarketPricesCard marketPrices={displayedCard.marketPrices} />
+                </div>
+
+                <div className="w-full px-4 lg:px-6">
+                  <CardListingsTable listings={displayedCard.listings} />
                 </div>
 
                 {displayedCard.psaPopReport && (

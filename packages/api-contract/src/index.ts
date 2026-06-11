@@ -48,6 +48,24 @@ export type SaleRecord = {
   url: string;
 };
 
+// A live marketplace ask with its price converted to EUR at read time.
+// Unconvertible currencies are excluded by the API; only listings seen by a
+// recent Listings Sync (freshness window) are returned.
+export type ListingRecord = {
+  id: string;
+  psaGrade: number;
+  priceEur: number;
+  // Best Offer enabled: still buyable at priceEur, but negotiable below it.
+  isBestOffer: boolean;
+  // eBay only today; CardMarket asks join later.
+  source: 'cardmarket' | 'ebay';
+  // Raw marketplace title, for judging card/grade mismatches by hand.
+  title: string;
+  // Link to the live listing (eBay item page).
+  url: string;
+  seenAt: Date;
+};
+
 // ─── Market Price ─────────────────────────────────────────────────────────────
 
 // Per-grade market price: the recency-weighted median of that grade's eBay sale
@@ -110,6 +128,8 @@ export type GetCardResponse = CardEntity & {
   cardSet: CardSetEntity;
   psaGradePrices: PriceRecord[];
   sales: SaleRecord[];
+  // Live asks, sorted by grade ASC then price ASC.
+  listings: ListingRecord[];
   marketPrices: MarketPriceRecord[];
   psaPopReport: PsaPopReportSummary | null;
   collectionEntry: CollectionEntry | null;
