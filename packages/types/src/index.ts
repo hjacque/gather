@@ -90,6 +90,30 @@ export type CardEntity = {
   updatedAt: Date;
 };
 
+// An active marketplace ask (buyable now), as opposed to a Sale (realized
+// transaction). One row per live listing seen by the last Listings Sync;
+// listings that disappear are pruned by full per-card replacement on each sync.
+export type ListingEntity = {
+  id: string;
+  cardId: string;
+  platform: Platform;
+  itemId: string;
+  psaGrade: number;
+  // Ask price in its original currency — an offer ceiling, not a realized price.
+  price: number;
+  currency: string;
+  title: string;
+  // Best Offer enabled: still buyable at `price`, but negotiable below it.
+  isBestOffer: boolean;
+  // eBay store slug of the seller, when the listing came from a store
+  // (e.g. "psa"); null otherwise.
+  seller: string | null;
+  // When the last Listings Sync saw this listing live.
+  seenAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type SaleEntity = {
   id: string;
   cardId: string;

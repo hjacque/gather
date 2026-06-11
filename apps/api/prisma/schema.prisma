@@ -92,6 +92,7 @@ model Card {
   prices                    Price[]       @relation("CardPrices")
   psaPopReport              PsaPopReport?
   sales                     Sale[]
+  listings                  Listing[]
 
   collectionEntry           CollectionEntry?
 
@@ -159,6 +160,29 @@ model Sale {
 
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
+
+  @@unique([platform, itemId, cardId])
+}
+
+// An active marketplace ask (buyable now) — the buy-side complement of Sale.
+// One row per live listing seen by the last Listings Sync; each sync fully
+// replaces a card's rows, so disappeared listings are pruned automatically.
+model Listing {
+  id          String   @id @default(uuid())
+  card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  cardId      String
+  platform    Platform
+  itemId      String
+  psaGrade    Int
+  price       Float
+  currency    String
+  title       String
+  isBestOffer Boolean  @default(false)
+  seller      String?
+  seenAt      DateTime
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@unique([platform, itemId, cardId])
 }
