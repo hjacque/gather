@@ -19,6 +19,14 @@ export class SyncSingleListingUsecase {
     const listing = await this.listingRepository.getListingById(listingId);
     if (!listing) throw new Error(`listing ${listingId} not found`);
 
+    // Only eBay listings map to a re-readable item page. CardMarket asks are
+    // synthetic per-grade rows refreshed by the card-level CardMarket sync, so a
+    // per-row refresh here is a no-op rather than a doomed eBay item-page read
+    // (which would 404 on the synthetic itemId and wrongly delete the row).
+    if (listing.platform !== "ebay") {
+      return { listingId, removed: false, unchanged: true };
+    }
+
     const { browser, page } = await this.openBrowser();
     try {
       const raw = await this.itemPageSource.fetchState(listing.itemId, page);

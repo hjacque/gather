@@ -1,5 +1,6 @@
 import { CardEntity } from "../../entities/card.entity";
 import { ListingEntity } from "../../entities/listing.entity";
+import { Platform } from "@gather/types";
 import { mergeListingOffers } from "./mergeListingOffers";
 
 const NOW = new Date("2026-06-11T12:00:00Z");
@@ -33,14 +34,15 @@ const listing = (
   overrides: Partial<ListingEntity> = {}
 ): ListingEntity => {
   seq++;
+  const platform: Platform = overrides.platform ?? "ebay";
   return {
     id: `listing-${seq}`,
     cardId,
-    platform: "ebay",
+    platform,
     itemId: `item-${seq}`,
     psaGrade,
     price,
-    currency: "USD",
+    currency: platform === "cardmarket" ? "EUR" : "USD",
     title: `Card ${cardId} PSA ${psaGrade}`,
     isBestOffer: false,
     seller: null,
@@ -52,30 +54,30 @@ const listing = (
   };
 };
 
-const merge = (init: {
-  cards: CardEntity[];
-  cardmarket?: Record<string, Record<number, number | null>>;
-  ebay?: ListingEntity[];
-}) => {
-  const ebayListingsByCard = new Map<string, ListingEntity[]>();
-  for (const l of init.ebay ?? []) {
-    const list = ebayListingsByCard.get(l.cardId);
+// CardMarket asks live as EUR cardmarket-platform listings.
+const cm = (
+  cardId: string,
+  psaGrade: number,
+  priceEur: number,
+  overrides: Partial<ListingEntity> = {}
+): ListingEntity =>
+  listing(cardId, psaGrade, priceEur, { platform: "cardmarket", ...overrides });
+
+const merge = (init: { cards: CardEntity[]; listings?: ListingEntity[] }) => {
+  const listingsByCard = new Map<string, ListingEntity[]>();
+  for (const l of init.listings ?? []) {
+    const list = listingsByCard.get(l.cardId);
     if (list) list.push(l);
-    else ebayListingsByCard.set(l.cardId, [l]);
+    else listingsByCard.set(l.cardId, [l]);
   }
-  return mergeListingOffers({
-    cards: init.cards,
-    cardmarketPricesByCard: new Map(Object.entries(init.cardmarket ?? {})),
-    ebayListingsByCard,
-    usdToEur: RATE,
-  });
+  return mergeListingOffers({ cards: init.cards, listingsByCard, usdToEur: RATE });
 };
 
 describe("mergeListingOffers", () => {
   it("keeps the CardMarket offer when it is the only source", () => {
     const result = merge({
       cards: [card("a")],
-      cardmarket: { a: { 10: 100 } },
+      listings: [cm("a", 10, 100)],
     });
     expect(result.get("a")![10]).toEqual({
       priceEur: 100,
@@ -89,7 +91,7 @@ describe("mergeListingOffers", () => {
   it("fills a grade CardMarket has no listing for from eBay, converted to EUR", () => {
     const result = merge({
       cards: [card("a")],
-      ebay: [listing("a", 10, 100, { itemId: "396556820656" })],
+      listings: [listing("a", 10, 100, { itemId: "396556820656" })],
     });
     expect(result.get("a")![10]).toEqual({
       priceEur: 90, // 100 USD × 0.9
@@ -102,8 +104,12 @@ describe("mergeListingOffers", () => {
   it("takes the cheaper source per grade, in EUR terms", () => {
     const result = merge({
       cards: [card("a")],
-      cardmarket: { a: { 10: 100, 9: 50 } },
-      ebay: [listing("a", 10, 100), listing("a", 9, 100)],
+      listings: [
+        cm("a", 10, 100),
+        cm("a", 9, 50),
+        listing("a", 10, 100),
+        listing("a", 9, 100),
+      ],
     });
     // grade 10: eBay 100 USD = 90 EUR beats CardMarket 100 EUR.
     expect(result.get("a")![10]!.source).toBe("ebay");
@@ -116,7 +122,7 @@ describe("mergeListingOffers", () => {
   it("picks the cheapest eBay ask per grade and carries its Best Offer flag", () => {
     const result = merge({
       cards: [card("a")],
-      ebay: [
+      listings: [
         listing("a", 10, 120),
         listing("a", 10, 100, { itemId: "cheap", isBestOffer: true }),
       ],
@@ -129,11 +135,13 @@ describe("mergeListingOffers", () => {
     });
   });
 
-  it("breaks ties toward CardMarket", () => {
+  it("breaks ties toward CardMarket regardless of listing order", () => {
     const result = merge({
       cards: [card("a")],
-      cardmarket: { a: { 10: 90 } },
-      ebay: [listing("a", 10, 100)], // = 90 EUR
+      listings: [
+        listing("a", 10, 100), // = 90 EUR, seen first
+        cm("a", 10, 90),
+      ],
     });
     expect(result.get("a")![10]!.source).toBe("cardmarket");
   });
@@ -141,7 +149,7 @@ describe("mergeListingOffers", () => {
   it("skips eBay asks in unsupported currencies rather than mispricing them", () => {
     const result = merge({
       cards: [card("a")],
-      ebay: [listing("a", 10, 100, { currency: "GBP" })],
+      listings: [listing("a", 10, 100, { currency: "GBP" })],
     });
     expect(result.get("a")![10]).toBeNull();
   });

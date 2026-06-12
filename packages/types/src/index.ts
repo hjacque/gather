@@ -44,7 +44,7 @@ export type Region = typeof REGIONS[number];
 export const FOIL_PATTERNS = ['rareHolo', 'reverse', 'regularHolo'] as const;
 export type FoilPattern = typeof FOIL_PATTERNS[number];
 
-export const PLATFORMS = ['ebay'] as const;
+export const PLATFORMS = ['ebay', 'cardmarket'] as const;
 export type Platform = typeof PLATFORMS[number];
 
 export const SALE_STATUSES = ['pending', 'confirmed', 'invalid'] as const;

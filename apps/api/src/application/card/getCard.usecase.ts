@@ -64,15 +64,18 @@ export class GetCardUsecase {
       .flatMap((listing) => {
         const priceEur = convertToEur(listing.price, listing.currency, usdToEur);
         if (priceEur === null) return [];
+        const isCardmarket = listing.platform === "cardmarket";
         return [
           {
             id: listing.id,
             psaGrade: listing.psaGrade,
             priceEur,
             isBestOffer: listing.isBestOffer,
-            source: listing.platform === "ebay" ? ("ebay" as const) : ("cardmarket" as const),
+            source: isCardmarket ? ("cardmarket" as const) : ("ebay" as const),
             title: listing.title,
-            url: `https://www.ebay.fr/itm/${listing.itemId}`,
+            url: isCardmarket
+              ? card.cardMarketLink!
+              : `https://www.ebay.fr/itm/${listing.itemId}`,
             seenAt: listing.seenAt,
           },
         ];

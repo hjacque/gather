@@ -120,13 +120,11 @@ async function main() {
   const cardIds = cards.map((c) => c.id);
   const [
     salesByCard,
-    cardmarketPricesByCard,
-    ebayListingsByCard,
+    listingsByCard,
     yearRangesByCard,
     psaReportsByCard,
   ] = await Promise.all([
     saleRepository.getCardsSales(cardIds),
-    priceRepository.getCardsListingGradePricesByDate(cardIds, today),
     listingRepository.getCardsListings(cardIds, listingsSince),
     priceRepository.getCardsMarketSaleYearRange(cardIds, yearAgo, today),
     psaPopReportRepository.findByCardIds(cardIds),
@@ -135,8 +133,7 @@ async function main() {
   // Merged buy side — the exact input GET /opportunities ranks on.
   const listingPricesByCard = mergeListingOffers({
     cards,
-    cardmarketPricesByCard,
-    ebayListingsByCard,
+    listingsByCard,
     usdToEur,
   });
 

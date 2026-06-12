@@ -44,13 +44,11 @@ export class GetOpportunitiesUsecase {
 
     const [
       salesByCard,
-      cardmarketPricesByCard,
-      ebayListingsByCard,
+      listingsByCard,
       yearRangesByCard,
       psaReportsByCard,
     ] = await Promise.all([
       this.saleRepository.getCardsSales(cardIds),
-      this.priceRepository.getCardsListingGradePricesByDate(cardIds, today),
       this.listingRepository.getCardsListings(cardIds, listingsSince),
       this.priceRepository.getCardsMarketSaleYearRange(cardIds, yearAgo, today),
       this.psaPopReportRepository.findByCardIds(cardIds),
@@ -58,8 +56,7 @@ export class GetOpportunitiesUsecase {
 
     const listingPricesByCard = mergeListingOffers({
       cards,
-      cardmarketPricesByCard,
-      ebayListingsByCard,
+      listingsByCard,
       usdToEur,
     });
 

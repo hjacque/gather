@@ -3,6 +3,7 @@ import { CardEntity, Set } from "../../entities/card.entity";
 import { CardRepositoryPort } from "../../repository/ports/card.repository.port";
 import { DEFAULT_USD_TO_EUR } from "../../constants";
 import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
+import { ListingRepositoryPort } from "../../repository/ports/listing.repository.port";
 import { PriceSourcePort } from "./sources/priceSource.port";
 import { getEurToUsdRate } from "./helper";
 import { syncCard } from "./syncCard";
@@ -26,7 +27,8 @@ export class SyncUsecase {
     private readonly priceRepository: PriceRepositoryPort,
     private readonly priceSources: PriceSourcePort[],
     private readonly syncSalesUsecase: SyncSalesUsecase,
-    private readonly syncListingsUsecase: SyncListingsUsecase
+    private readonly syncListingsUsecase: SyncListingsUsecase,
+    private readonly listingRepository: ListingRepositoryPort
   ) {}
 
   async execute({ filter, mode, skipSales = false }: SyncUsecaseInputDto) {
@@ -90,7 +92,8 @@ export class SyncUsecase {
           page,
           usdToEur,
           this.priceSources,
-          this.priceRepository
+          this.priceRepository,
+          this.listingRepository
         );
         if (!skipSales) {
           // Fold the eBay Sale Sync into the same browser session — scrape +

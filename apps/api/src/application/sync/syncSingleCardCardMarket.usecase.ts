@@ -4,8 +4,10 @@ import { PriceRepositoryPort } from "../../repository/ports/price.repository.por
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import { CollectionRepositoryPort } from "../../repository/ports/collection.repository.port";
 import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
+import { ListingRepositoryPort } from "../../repository/ports/listing.repository.port";
 import { PriceSourcePort, RawPrices } from "./sources/priceSource.port";
 import { aggregatePrices } from "./priceAggregator";
+import { mirrorCardmarketListings } from "./cardmarketListings";
 import { getEurToUsdRate } from "./helper";
 import { psa10MarketPriceWithPrior } from "../sale/cardMarketPrice";
 import type { SyncCardResponse } from "@gather/api-contract";
@@ -17,7 +19,8 @@ export class SyncSingleCardCardMarketUsecase {
     private readonly cardmarketPriceSources: PriceSourcePort[],
     private readonly psaPopReportRepository: PsaPopReportRepositoryPort,
     private readonly collectionRepository: CollectionRepositoryPort,
-    private readonly saleRepository: SaleRepositoryPort
+    private readonly saleRepository: SaleRepositoryPort,
+    private readonly listingRepository: ListingRepositoryPort
   ) {}
 
   async execute(cardId: string): Promise<SyncCardResponse> {
@@ -57,6 +60,11 @@ export class SyncSingleCardCardMarketUsecase {
         await this.priceRepository.upsertPrice(card.id, value, key, today);
       }
     }
+
+    // The same grade prices are also the card's live CardMarket asks: mirror
+    // them into the unified Listing model so the buy side reads one source for
+    // both eBay and CardMarket. Dated price points above stay for trend/history.
+    await mirrorCardmarketListings(this.listingRepository, card.id, prices, today);
 
     await page.close();
     await browser.close();

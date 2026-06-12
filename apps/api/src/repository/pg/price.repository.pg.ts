@@ -132,29 +132,6 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
     return price ? this.priceMapper.toEntity(price) : null;
   }
 
-  async getCardsListingGradePricesByDate(cardIds: string[], date: Date) {
-    const listingTypes: PriceType[] = [
-      "cardmarketPsa1", "cardmarketPsa2", "cardmarketPsa3", "cardmarketPsa4",
-      "cardmarketPsa5", "cardmarketPsa6", "cardmarketPsa7", "cardmarketPsa8",
-      "cardmarketPsa9", "cardmarketPsa10",
-    ];
-
-    const prices = await this.prisma.price.findMany({
-      where: { cardId: { in: cardIds }, date, type: { in: listingTypes } },
-    });
-
-    const result = new Map<string, Record<number, number | null>>();
-    for (const cardId of cardIds) {
-      result.set(cardId, {1:null,2:null,3:null,4:null,5:null,6:null,7:null,8:null,9:null,10:null});
-    }
-    for (const price of prices) {
-      const grade = parseInt(price.type.replace("cardmarketPsa", ""));
-      const entry = result.get(price.cardId);
-      if (entry) entry[grade] = price.value;
-    }
-    return result;
-  }
-
   async getCardsMarketSaleYearRange(cardIds: string[], fromDate: Date, toDate: Date) {
     const marketTypes: PriceType[] = [
       "marketSalePsa1", "marketSalePsa2", "marketSalePsa3", "marketSalePsa4",

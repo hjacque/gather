@@ -91,7 +91,8 @@ export const initApplication = ({
     priceRepository,
     priceSources,
     syncSalesUsecase,
-    syncListingsUsecase
+    syncListingsUsecase,
+    listingRepository
   );
   const getCardsUsecase = new GetCardsUsecase(
     cardRepository,
@@ -118,7 +119,8 @@ export const initApplication = ({
     cardmarketPriceSources,
     psaPopReportRepository,
     collectionRepository,
-    saleRepository
+    saleRepository,
+    listingRepository
   );
 
   const syncSingleCardPsaUsecase = new SyncSingleCardPsaUsecase(

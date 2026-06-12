@@ -57,11 +57,10 @@ export type ListingRecord = {
   priceEur: number;
   // Best Offer enabled: still buyable at priceEur, but negotiable below it.
   isBestOffer: boolean;
-  // eBay only today; CardMarket asks join later.
   source: 'cardmarket' | 'ebay';
   // Raw marketplace title, for judging card/grade mismatches by hand.
   title: string;
-  // Link to the live listing (eBay item page).
+  // Link to the live listing: the eBay item page, or the card's CardMarket page.
   url: string;
   seenAt: Date;
 };
