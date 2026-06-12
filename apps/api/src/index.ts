@@ -36,33 +36,38 @@ run().catch((e) => {
   process.exit(1);
 });
 
-[
-  "SIGINT",
-  "SIGTERM",
-  "SIGQUIT",
-  "SIGHUP",
-  "uncaughtException",
-  "unhandledRejection",
-].forEach((signal) => {
-  process.on(signal, async () => {
-    // Prevents the server from hanging on exit
-    setTimeout(() => {
-      console.info(
-        "[graceful shutown] Forced exit after server hanged on close"
-      );
-      process.exit(1);
-    }, 5000);
+const shutdown = async (reason: string, exitCode: number) => {
+  // Prevents the server from hanging on exit
+  setTimeout(() => {
+    console.info("[graceful shutown] Forced exit after server hanged on close");
+    process.exit(1);
+  }, 5000);
 
-    console.info(`[graceful shutdown] Received ${signal}, exiting...`);
+  console.info(`[graceful shutdown] ${reason}, exiting...`);
 
-    for (const connection of danglingConnections) {
-      try {
-        await connection.close();
-      } catch (e) {
-        console.log(`[graceful shutdown] Cannot close service`, e);
-      }
+  for (const connection of danglingConnections) {
+    try {
+      await connection.close();
+    } catch (e) {
+      console.log(`[graceful shutdown] Cannot close service`, e);
     }
+  }
 
-    process.exit(0);
-  });
+  process.exit(exitCode);
+};
+
+["SIGINT", "SIGTERM", "SIGQUIT", "SIGHUP"].forEach((signal) => {
+  process.on(signal, () => shutdown(`Received ${signal}`, 0));
+});
+
+// uncaughtException / unhandledRejection hand the *error* to the listener, not a
+// signal name — log it before shutting down so the crash isn't swallowed, and
+// exit non-zero since the process is in an undefined state.
+process.on("uncaughtException", (error) => {
+  console.error("[fatal] Uncaught exception:", error);
+  void shutdown("Uncaught exception", 1);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("[fatal] Unhandled rejection:", reason);
+  void shutdown("Unhandled rejection", 1);
 });
