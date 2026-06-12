@@ -2,7 +2,6 @@ import type {
   CardEntity,
   CardSetEntity,
   Region,
-  PriceType,
   SaleStatus,
 } from '@gather/types';
 
@@ -21,19 +20,6 @@ export type UpsertCollectionEntryRequest = {
 };
 
 // ─── Shared shapes ───────────────────────────────────────────────────────────
-
-export type PriceRecord = {
-  id: string;
-  cardId: string;
-  date: Date;
-  value: number | null;
-  type: PriceType;
-};
-
-export type DailyPrices = {
-  cardmarketPsa9: number | null;
-  cardmarketPsa10: number | null;
-};
 
 // A confirmed-or-pending Sale with its price converted to EUR at read time.
 // Cancelled, invalid, and unsupported-currency Sales are excluded by the API.
@@ -105,14 +91,11 @@ export type GetCardsQuery = {
   region?: Region | Region[];
 };
 
-export type GetCardsResponseItem = CardEntity & DailyPrices & {
+export type GetCardsResponseItem = CardEntity & {
   cardSet: CardSetEntity;
   psaTotal: number | null;
   psaGrade10Pop: number | null;
-  cardmarketPsa9Yesterday: number | null;
-  cardmarketPsa10Yesterday: number | null;
-  // PSA 10 market price in EUR; null when the card has no PSA 10 sales. Paired
-  // with cardmarketPsa10 (lowest PSA 10 listing) to surface under-priced cards.
+  // PSA 10 market price in EUR; null when the card has no PSA 10 sales.
   marketPsa10: number | null;
   // Same market price as of 7 days ago, for the column's trend delta.
   marketPsa10Prior7d: number | null;
@@ -125,7 +108,6 @@ export type GetCardsResponse = GetCardsResponseItem[];
 
 export type GetCardResponse = CardEntity & {
   cardSet: CardSetEntity;
-  psaGradePrices: PriceRecord[];
   sales: SaleRecord[];
   // Live asks, sorted by grade ASC then price ASC.
   listings: ListingRecord[];
@@ -297,12 +279,10 @@ export type GetOpportunitiesResponse = OpportunityEntry[];
 
 // ─── GET /sync/card/:id/cardmarket | GET /sync/card/:id/psa ─────────────────
 
-export type SyncCardResponse = CardEntity & DailyPrices & {
+export type SyncCardResponse = CardEntity & {
   cardSet: CardSetEntity;
   psaTotal: number | null;
   psaGrade10Pop: number | null;
-  cardmarketPsa9Yesterday: number | null;
-  cardmarketPsa10Yesterday: number | null;
   marketPsa10: number | null;
   marketPsa10Prior7d: number | null;
   collectionEntry: CollectionEntry | null;

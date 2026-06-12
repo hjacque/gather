@@ -26,7 +26,6 @@ import {
 import { CardImage } from '@/components/card-image';
 import { EbaySalesChart } from '@/components/ebay-sales-chart';
 import { CardListingsTable } from '@/components/card-listings-table';
-import { PsaGradePriceChart } from '@/components/psa-grade-price-chart';
 import {
   Card,
   CardContent,
@@ -37,7 +36,7 @@ import {
 import { CardNoteSection } from '@/components/card-note-section';
 import { getCard } from '@/app/actions/getCard';
 import { invalidateListing } from '@/app/actions/invalidateListing';
-import { syncCardListings, syncListing } from '@/app/actions/syncCard';
+import { syncCardListings, syncListing, syncCardCardMarket } from '@/app/actions/syncCard';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -127,12 +126,15 @@ export function OpportunitiesList({ opportunities }: Props) {
     if (activeOppRef.current?.id === opp.id) setDisplayedCard(data);
   }, []);
 
+  // One panel "Sync" refreshes both buy-side sources for the card: eBay live
+  // asks and CardMarket asks (both land in the Listing model now).
   const handleSyncCardListings = useCallback(async () => {
     const opp = activeOppRef.current;
     if (!opp) return;
     setIsSyncingListings(true);
     try {
       await syncCardListings(opp.id);
+      await syncCardCardMarket(opp.id);
       const data = await getCard(opp.id);
       if (activeOppRef.current?.id === opp.id) setDisplayedCard(data);
     } finally {
@@ -228,10 +230,6 @@ export function OpportunitiesList({ opportunities }: Props) {
                     </div>
                   </div>
                 )}
-
-                <div className="w-full px-4 lg:px-6">
-                  <PsaGradePriceChart psaGradePrices={displayedCard.psaGradePrices} />
-                </div>
 
                 <div className="w-full px-4 lg:px-6">
                   <MarketPricesCard marketPrices={displayedCard.marketPrices} />

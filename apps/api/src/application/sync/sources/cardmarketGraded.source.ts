@@ -1,21 +1,8 @@
 import type { Page } from "rebrowser-puppeteer-core";
 import { CardEntity } from "../../../entities/card.entity";
-import { PriceSourcePort, RawPrices } from "./priceSource.port";
+import { CardmarketGradePrices, PriceSourcePort } from "./priceSource.port";
 
 const BANNED_DESCRIPTION_KEYWORDS = ["contendent", "Probably", "Sealed", "maybe", "possible", "like"];
-
-const PSA_GRADE_TYPES = [
-  "cardmarketPsa1",
-  "cardmarketPsa2",
-  "cardmarketPsa3",
-  "cardmarketPsa4",
-  "cardmarketPsa5",
-  "cardmarketPsa6",
-  "cardmarketPsa7",
-  "cardmarketPsa8",
-  "cardmarketPsa9",
-  "cardmarketPsa10",
-] as const;
 
 export class CardMarketGradedSource implements PriceSourcePort {
   appliesTo(product: CardEntity): boolean {
@@ -27,7 +14,7 @@ export class CardMarketGradedSource implements PriceSourcePort {
     page: Page,
     _usdToEur: number,
     retry = 0
-  ): Promise<RawPrices> {
+  ): Promise<CardmarketGradePrices> {
     try {
       await page.goto(product.cardMarketLink!, { waitUntil: "networkidle2" });
       await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -48,7 +35,7 @@ export class CardMarketGradedSource implements PriceSourcePort {
         console.log("[GradedSource] Rate limit detected");
         if (retry > 3) {
           console.log("[GradedSource] Max retries reached");
-          return {};
+          return new Map();
         }
         await new Promise((resolve) => setTimeout(resolve, 60000 * retry));
         return this.fetch(product, page, _usdToEur, retry + 1);
@@ -130,18 +117,17 @@ export class CardMarketGradedSource implements PriceSourcePort {
 
       console.log("[GradedSource] PSA grade prices", gradeMinPrices);
 
-      const raw: RawPrices = {};
+      const prices: CardmarketGradePrices = new Map();
       for (let grade = 1; grade <= 10; grade++) {
         if (gradeMinPrices[grade] !== undefined) {
-          const key = `cardmarketPsa${grade}` as keyof RawPrices;
-          raw[key] = gradeMinPrices[grade];
+          prices.set(grade, gradeMinPrices[grade]);
         }
       }
 
-      return raw;
+      return prices;
     } catch (error) {
       console.log("[GradedSource] Failed to scrape graded prices for", product.name, error);
-      return {};
+      return new Map();
     }
   }
 }

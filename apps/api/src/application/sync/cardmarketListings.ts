@@ -1,7 +1,6 @@
-import { PriceType } from "@gather/types";
 import { NewListing } from "../../entities/listing.entity";
 import { ListingRepositoryPort } from "../../repository/ports/listing.repository.port";
-import { DerivedPrices } from "./priceAggregator";
+import { CardmarketGradePrices } from "./sources/priceSource.port";
 
 // CardMarket is scraped as one lowest ask per PSA grade (CardMarketGradedSource
 // keeps only the minimum), so each grade maps to a single synthetic Listing
@@ -38,22 +37,16 @@ export const cardmarketGradePricesToListings = (
   return listings;
 };
 
-// Mirror a card's freshly scraped CardMarket grade prices into the unified
+// Mirror a card's freshly scraped CardMarket grade asks into the unified
 // Listing model. Shared by every sync path (full, per-set, per-card) so they
-// can't drift: the dated price points stay the source of trend history, while
-// these listings are the live buy-side asks. Full per-card replacement prunes
+// can't drift on what a CardMarket listing is. Full per-card replacement prunes
 // grades that dropped off, exactly like the eBay listings sync.
 export const mirrorCardmarketListings = async (
   listingRepository: ListingRepositoryPort,
   cardId: string,
-  prices: DerivedPrices,
+  gradePrices: CardmarketGradePrices,
   seenAt: Date
 ): Promise<NewListing[]> => {
-  const gradePrices = new Map<number, number>();
-  for (let grade = 1; grade <= 10; grade++) {
-    const value = prices.get(`cardmarketPsa${grade}` as PriceType);
-    if (value !== undefined) gradePrices.set(grade, value);
-  }
   const listings = cardmarketGradePricesToListings(cardId, gradePrices, seenAt);
   await listingRepository.replaceCardListings(cardId, "cardmarket", listings);
   return listings;

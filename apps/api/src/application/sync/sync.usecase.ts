@@ -2,7 +2,6 @@ import { connect } from "puppeteer-real-browser";
 import { CardEntity, Set } from "../../entities/card.entity";
 import { CardRepositoryPort } from "../../repository/ports/card.repository.port";
 import { DEFAULT_USD_TO_EUR } from "../../constants";
-import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { ListingRepositoryPort } from "../../repository/ports/listing.repository.port";
 import { PriceSourcePort } from "./sources/priceSource.port";
 import { getEurToUsdRate } from "./helper";
@@ -24,7 +23,6 @@ export type SyncUsecaseInputDto = {
 export class SyncUsecase {
   constructor(
     private readonly cardRepository: CardRepositoryPort,
-    private readonly priceRepository: PriceRepositoryPort,
     private readonly priceSources: PriceSourcePort[],
     private readonly syncSalesUsecase: SyncSalesUsecase,
     private readonly syncListingsUsecase: SyncListingsUsecase,
@@ -92,7 +90,6 @@ export class SyncUsecase {
           page,
           usdToEur,
           this.priceSources,
-          this.priceRepository,
           this.listingRepository
         );
         if (!skipSales) {

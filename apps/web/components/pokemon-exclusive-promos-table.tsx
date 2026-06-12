@@ -40,7 +40,6 @@ import {
   CardHeader,
   CardTitle,
 } from './ui/card';
-import { PsaGradePriceChart } from '@/components/psa-grade-price-chart';
 import { EbaySalesChart } from '@/components/ebay-sales-chart';
 import { CardListingsTable } from '@/components/card-listings-table';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
@@ -272,42 +271,6 @@ const columns: ColumnDef<GetCardsResponseItem>[] = [
               {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
             </sup>
           )}
-        </div>
-      );
-    },
-    enableSorting: true,
-  },
-  {
-    id: 'listingDeal',
-    size: 100,
-    // PSA 10 listing vs market: (lowest listing − market) / market. Negative
-    // means the listing sits below market — an opportunity. Sortable ascending
-    // to float the best deals to the top.
-    accessorFn: (row) => {
-      const market = row.marketPsa10;
-      const listing = row.cardmarketPsa10;
-      if (market == null || market === 0 || listing == null) return undefined;
-      return ((listing - market) / market) * 100;
-    },
-    sortUndefined: 'last',
-    header: ({ column }) => (
-      <div className="flex justify-center">
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Deal <ArrowUpDown />
-        </Button>
-      </div>
-    ),
-    cell: ({ row }) => {
-      const market = row.original.marketPsa10;
-      const listing = row.original.cardmarketPsa10;
-      if (market == null || market === 0 || listing == null) {
-        return <div className="text-center text-muted-foreground">—</div>;
-      }
-      const pct = ((listing - market) / market) * 100;
-      const color = pct < 0 ? 'text-green-500' : pct > 0 ? 'text-red-500' : '';
-      return (
-        <div className={`text-center tabular-nums text-sm ${color}`}>
-          {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
         </div>
       );
     },
@@ -659,7 +622,7 @@ export function PokemonExclusivePromosTable({
     }
   };
 
-  const [panelSyncLoading, setPanelSyncLoading] = React.useState<'cardmarket' | 'psa' | 'sales' | null>(null);
+  const [panelSyncLoading, setPanelSyncLoading] = React.useState<'psa' | 'sales' | null>(null);
   const [loadingCollectionId, setLoadingCollectionId] = React.useState<string | null>(null);
 
   const toggleCollection = useCallback(async (item: GetCardsResponseItem, flag: 'isOwned' | 'isWanted') => {
@@ -690,7 +653,7 @@ export function PokemonExclusivePromosTable({
     }
   }, [loadingCollectionId]);
 
-  const handlePanelSync = async (action: 'cardmarket' | 'psa' | 'sales') => {
+  const handlePanelSync = async (action: 'psa' | 'sales') => {
     if (!displayedItem || panelSyncLoading) return;
     const id = displayedItem.id;
     setPanelSyncLoading(action);
@@ -707,9 +670,7 @@ export function PokemonExclusivePromosTable({
         }
         return;
       }
-      const updatedItem = action === 'cardmarket'
-        ? await syncCardCardMarket(id)
-        : await syncCardPsa(id);
+      const updatedItem = await syncCardPsa(id);
       tableRef.current?.updateRow(id, updatedItem);
       if (activeItemRef.current?.id === id) {
         setDisplayedItem(updatedItem);
@@ -750,12 +711,15 @@ export function PokemonExclusivePromosTable({
     }
   };
 
+  // One panel "Sync" refreshes both buy-side sources for the card: eBay live
+  // asks and CardMarket asks (both land in the Listing model now).
   const handleSyncCardListings = async () => {
     const id = displayedItem?.id;
     if (!id) return;
     setIsSyncingListings(true);
     try {
       await syncCardListings(id);
+      await syncCardCardMarket(id);
       if (activeItemRef.current?.id === id) {
         const data = await getCard(id);
         if (activeItemRef.current?.id === id) setDisplayedCard(data);
@@ -848,13 +812,6 @@ export function PokemonExclusivePromosTable({
                     onRemoveSale={handleRemoveSale}
                   />
                   </div>
-                </div>
-                <div className="w-full px-4 lg:px-6">
-                  <PsaGradePriceChart
-                    psaGradePrices={displayedCard?.psaGradePrices ?? []}
-                    onSyncCardMarket={() => handlePanelSync('cardmarket')}
-                    isSyncingCardMarket={panelSyncLoading === 'cardmarket'}
-                  />
                 </div>
               </>
             )}

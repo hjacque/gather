@@ -96,7 +96,7 @@ export function CardListingsTable({
       <CardHeader>
         <CardTitle>Live Listings</CardTitle>
         <CardDescription>
-          Active Buy-It-Now asks from EU sellers, per grade
+          Live asks per grade — eBay EU Buy-It-Now + CardMarket
         </CardDescription>
         {onSyncAll && (
           <CardAction>

@@ -1,5 +1,4 @@
 import { CardRepositoryPort } from "../../repository/ports/card.repository.port";
-import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import { CollectionRepositoryPort } from "../../repository/ports/collection.repository.port";
 import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
@@ -17,7 +16,6 @@ import type {
 export class GetCardUsecase {
   constructor(
     private readonly cardRepository: CardRepositoryPort,
-    private readonly priceRepository: PriceRepositoryPort,
     private readonly psaPopReportRepository: PsaPopReportRepositoryPort,
     private readonly collectionRepository: CollectionRepositoryPort,
     private readonly saleRepository: SaleRepositoryPort,
@@ -29,9 +27,8 @@ export class GetCardUsecase {
     const listingsSince = new Date();
     listingsSince.setUTCHours(0, 0, 0, 0);
     listingsSince.setUTCDate(listingsSince.getUTCDate() - LISTING_FRESHNESS_DAYS);
-    const [cardPrices, psaReport, collectionEntry, sales, listingsByCard, usdToEur] =
+    const [psaReport, collectionEntry, sales, listingsByCard, usdToEur] =
       await Promise.all([
-        this.priceRepository.getCardPrices(cardId),
         this.psaPopReportRepository.findByCardId(cardId),
         this.collectionRepository.findByCardId(cardId),
         this.saleRepository.getCardSales(cardId),
@@ -105,7 +102,6 @@ export class GetCardUsecase {
 
     return {
       ...card,
-      ...cardPrices,
       sales: saleRecords,
       listings: listingRecords,
       marketPrices,

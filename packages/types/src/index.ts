@@ -14,16 +14,6 @@ export type Block = typeof BLOCKS[number];
 
 
 export const PRICE_TYPES = [
-  'cardmarketPsa1',
-  'cardmarketPsa2',
-  'cardmarketPsa3',
-  'cardmarketPsa4',
-  'cardmarketPsa5',
-  'cardmarketPsa6',
-  'cardmarketPsa7',
-  'cardmarketPsa8',
-  'cardmarketPsa9',
-  'cardmarketPsa10',
   'marketSalePsa1',
   'marketSalePsa2',
   'marketSalePsa3',

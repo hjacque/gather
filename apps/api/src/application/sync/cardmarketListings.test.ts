@@ -3,7 +3,7 @@ import {
   cardmarketListingItemId,
   mirrorCardmarketListings,
 } from "./cardmarketListings";
-import { DerivedPrices } from "./priceAggregator";
+import { CardmarketGradePrices } from "./sources/priceSource.port";
 import { NewListing } from "../../entities/listing.entity";
 import { Platform } from "@gather/types";
 
@@ -82,14 +82,11 @@ describe("mirrorCardmarketListings", () => {
     } as any;
   };
 
-  it("extracts cardmarket grade prices from DerivedPrices and replaces the card's cardmarket listings", async () => {
-    const prices: DerivedPrices = new Map([
-      ["cardmarketPsa9", 50],
-      ["cardmarketPsa10", 120],
-      // Non-listing price types and missing grades are ignored.
-      ["marketSalePsa10", 999],
-      ["cardmarketPsa8", undefined],
-    ] as any);
+  it("replaces the card's cardmarket listings from the scraped grade prices", async () => {
+    const prices: CardmarketGradePrices = new Map([
+      [9, 50],
+      [10, 120],
+    ]);
     const repo = fakeRepo();
 
     const written = await mirrorCardmarketListings(repo, "card-a", prices, SEEN_AT);
@@ -107,7 +104,7 @@ describe("mirrorCardmarketListings", () => {
     const written = await mirrorCardmarketListings(
       repo,
       "card-a",
-      new Map() as DerivedPrices,
+      new Map(),
       SEEN_AT
     );
     expect(repo.calls[0].listings).toEqual([]);

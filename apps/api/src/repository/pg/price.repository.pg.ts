@@ -1,14 +1,9 @@
 import { PriceRepositoryPort } from "../ports/price.repository.port";
-import { PriceMapper } from "./mappers/price.mapper.pg";
 import { PriceType } from "@gather/types";
 import { PrismaClient } from "@prisma/client";
 
 export class PriceRepositoryPg implements PriceRepositoryPort {
-  private priceMapper: PriceMapper;
-
-  constructor(private readonly prisma: PrismaClient) {
-    this.priceMapper = new PriceMapper();
-  }
+  constructor(private readonly prisma: PrismaClient) {}
 
   async upsertPrice(
     cardId: string,
@@ -51,85 +46,6 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
         date,
       },
     });
-  }
-
-  async getCardPrices(cardId: string) {
-    const psaGradePrices = await this.prisma.price.findMany({
-      where: {
-        cardId,
-        type: {
-          in: [
-            "cardmarketPsa1",
-            "cardmarketPsa2",
-            "cardmarketPsa3",
-            "cardmarketPsa4",
-            "cardmarketPsa5",
-            "cardmarketPsa6",
-            "cardmarketPsa7",
-            "cardmarketPsa8",
-            "cardmarketPsa9",
-            "cardmarketPsa10",
-          ],
-        },
-      },
-      orderBy: {
-        date: "asc",
-      },
-    });
-
-    return {
-      psaGradePrices: psaGradePrices.map((p) => this.priceMapper.toEntity(p)),
-    };
-  }
-
-  async getCardsPricesByDate(cardIds: string[], date: Date) {
-    const prices = await this.prisma.price.findMany({
-      where: {
-        cardId: { in: cardIds },
-        date,
-        type: {
-          in: [
-            "cardmarketPsa9",
-            "cardmarketPsa10",
-          ],
-        },
-      },
-    });
-
-    type ResKey =
-      | "cardmarketPsa9"
-      | "cardmarketPsa10";
-    const result: Map<string, Record<ResKey, number | null>> = new Map();
-
-    for (const cardId of cardIds) {
-      result.set(cardId, {
-        cardmarketPsa9: null,
-        cardmarketPsa10: null,
-      });
-    }
-
-    for (const price of prices) {
-      result.set(price.cardId.toString(), {
-        ...result.get(price.cardId.toString()),
-        [price.type]: price.value,
-      } as Record<ResKey, number | null>);
-    }
-
-    return result;
-  }
-
-  async getOne(cardId: string, type: PriceType, date: Date) {
-    const price = await this.prisma.price.findUnique({
-      where: {
-        cardId_date_type: {
-          cardId,
-          date,
-          type,
-        },
-      },
-    });
-
-    return price ? this.priceMapper.toEntity(price) : null;
   }
 
   async getCardsMarketSaleYearRange(cardIds: string[], fromDate: Date, toDate: Date) {
