@@ -102,6 +102,10 @@ export type ListingEntity = {
   // eBay store slug of the seller, when the listing came from a store
   // (e.g. "psa"); null otherwise.
   seller: string | null;
+  // Item-location country (e.g. "Allemagne"), verified to be an EU member state
+  // at ingest for eBay asks. null for CardMarket (inherently EU) and for rows
+  // eBay rendered without a location line.
+  location: string | null;
   // When the last Listings Sync saw this listing live.
   seenAt: Date;
   // Set when the user flags this listing as not matching the card; invalidated

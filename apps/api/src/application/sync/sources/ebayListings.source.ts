@@ -43,7 +43,10 @@ export class EbayListingsSource {
       try {
         await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
       } catch (error) {
-        console.log(`[EbayListings] navigation failed for ${card.name} p${pageNum}`, error);
+        console.log(
+          `[EbayListings] navigation failed for ${card.name} p${pageNum}`,
+          error,
+        );
         break;
       }
 
@@ -64,7 +67,9 @@ export class EbayListingsSource {
       if (newOnPage === 0) break;
     }
 
-    console.log(`[EbayListings] ${card.name}: ${candidates.length} listing candidate(s)`);
+    console.log(
+      `[EbayListings] ${card.name}: ${candidates.length} listing candidate(s)`,
+    );
     return candidates;
   }
 
@@ -82,11 +87,17 @@ export class EbayListingsSource {
   // rate-limit / Cloudflare turnstile screens.
   private async handleInterstitials(page: Page): Promise<void> {
     const body = await this.readBodyText(page);
-    if (body.includes("Checking your browser") || body.includes("Verifying you are human")) {
+    if (
+      body.includes("Checking your browser") ||
+      body.includes("Verifying you are human")
+    ) {
       console.log("[EbayListings] Cloudflare check detected");
       await this.sleep(5500);
     }
-    if (body.includes("Pardon Our Interruption") || body.includes("rate limited")) {
+    if (
+      body.includes("Pardon Our Interruption") ||
+      body.includes("rate limited")
+    ) {
       console.log("[EbayListings] interruption / rate limit detected");
       await this.sleep(30000);
     }
@@ -116,25 +127,32 @@ export class EbayListingsSource {
         // The seller line lives in its own attribute-row, e.g.
         // "dxbdxb 99.3% positive (460)". That class is reused for price / offer
         // rows too, so pick the one carrying the "% positive" feedback marker.
+        const attributeRows = [
+          ...row.querySelectorAll(".s-card__attribute-row"),
+        ].map((r) => r.textContent?.trim() ?? "");
         const sellerInfoText =
-          [...row.querySelectorAll(".s-card__attribute-row")]
-            .map((r) => r.textContent?.trim() ?? "")
-            .find((t) => /%\s*positive/i.test(t)) ?? null;
+          attributeRows.find((t) => /%\s*positive/i.test(t)) ?? null;
+
+        // Item location renders as a "de <Pays>" attribute line ("de Allemagne",
+        // "de Japon"). The shipping line ("...pour la livraison") never starts
+        // with "de", so an anchored match isolates the location safely.
+        const locationText =
+          attributeRows.find((t) => /^de\s+\S/i.test(t)) ?? null;
 
         return {
           listingId: row.getAttribute("data-listingid"),
           title: text(".s-card__title"),
           priceText: text(".s-card__price"),
           isBestOffer: /best offer|faire une offre|offre directe/i.test(
-            row.textContent ?? ""
+            row.textContent ?? "",
           ),
           sellerHref:
-            row
-              .querySelector(".s-card__seller-logo")
-              ?.getAttribute("href") ?? null,
+            row.querySelector(".s-card__seller-logo")?.getAttribute("href") ??
+            null,
           sellerInfoText,
+          locationText,
         };
-      })
+      }),
     );
   }
 }

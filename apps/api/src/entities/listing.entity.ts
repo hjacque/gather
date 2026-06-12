@@ -22,5 +22,8 @@ export type NewListing = {
   isBestOffer: boolean;
   // eBay store slug of the seller, or null for non-store listings.
   seller: string | null;
+  // Item-location country (e.g. "Allemagne") for eBay asks, verified EU at
+  // ingest. null for CardMarket (inherently EU) and rows with no location line.
+  location: string | null;
   seenAt: Date;
 };

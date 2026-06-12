@@ -7,7 +7,10 @@ import { PriceSourcePort } from "./sources/priceSource.port";
 import { getEurToUsdRate } from "./helper";
 import { syncCard } from "./syncCard";
 import { SyncSalesUsecase, SaleSyncCounters } from "./syncSales.usecase";
-import { SyncListingsUsecase, ListingSyncCounters } from "./syncListings.usecase";
+import {
+  SyncListingsUsecase,
+  ListingSyncCounters,
+} from "./syncListings.usecase";
 
 export type SyncUsecaseInputDto = {
   filter: {
@@ -26,7 +29,7 @@ export class SyncUsecase {
     private readonly priceSources: PriceSourcePort[],
     private readonly syncSalesUsecase: SyncSalesUsecase,
     private readonly syncListingsUsecase: SyncListingsUsecase,
-    private readonly listingRepository: ListingRepositoryPort
+    private readonly listingRepository: ListingRepositoryPort,
   ) {}
 
   async execute({ filter, mode, skipSales = false }: SyncUsecaseInputDto) {
@@ -49,6 +52,7 @@ export class SyncUsecase {
       stored: 0,
       skippedTitle: 0,
       skippedSeller: 0,
+      skippedLocation: 0,
     };
 
     let paginationPage = 1;
@@ -90,7 +94,7 @@ export class SyncUsecase {
           page,
           usdToEur,
           this.priceSources,
-          this.listingRepository
+          this.listingRepository,
         );
         if (!skipSales) {
           // Fold the eBay Sale Sync into the same browser session — scrape +
@@ -99,10 +103,14 @@ export class SyncUsecase {
           await this.syncSalesUsecase.syncCardOnPage(card, page, saleCounters);
           // Likewise the Listings Sync: refresh this Card's live Buy-It-Now
           // asks (the eBay buy side of the opportunities funnel).
-          await this.syncListingsUsecase.syncCardOnPage(card, page, listingCounters);
+          await this.syncListingsUsecase.syncCardOnPage(
+            card,
+            page,
+            listingCounters,
+          );
         }
         await new Promise((resolve) =>
-          setTimeout(resolve, 4000 + Math.random() * 4000)
+          setTimeout(resolve, 4000 + Math.random() * 4000),
         );
       }
     }

@@ -17,7 +17,7 @@ describe("cardmarketGradePricesToListings", () => {
         [9, 50],
         [10, 120],
       ]),
-      SEEN_AT
+      SEEN_AT,
     );
 
     expect(listings).toEqual([
@@ -31,6 +31,7 @@ describe("cardmarketGradePricesToListings", () => {
         title: "CardMarket PSA 9 lowest ask",
         isBestOffer: false,
         seller: null,
+        location: null,
         seenAt: SEEN_AT,
       },
       {
@@ -43,6 +44,7 @@ describe("cardmarketGradePricesToListings", () => {
         title: "CardMarket PSA 10 lowest ask",
         isBestOffer: false,
         seller: null,
+        location: null,
         seenAt: SEEN_AT,
       },
     ]);
@@ -55,7 +57,7 @@ describe("cardmarketGradePricesToListings", () => {
         [8, 0],
         [10, 75],
       ]),
-      SEEN_AT
+      SEEN_AT,
     );
 
     expect(listings.map((l) => l.psaGrade)).toEqual([10]);
@@ -69,13 +71,17 @@ describe("cardmarketGradePricesToListings", () => {
 describe("mirrorCardmarketListings", () => {
   // Captures the replaceCardListings call both sync paths route through.
   const fakeRepo = () => {
-    const calls: { cardId: string; platform: Platform; listings: NewListing[] }[] = [];
+    const calls: {
+      cardId: string;
+      platform: Platform;
+      listings: NewListing[];
+    }[] = [];
     return {
       calls,
       replaceCardListings: async (
         cardId: string,
         platform: Platform,
-        listings: NewListing[]
+        listings: NewListing[],
       ) => {
         calls.push({ cardId, platform, listings });
       },
@@ -89,7 +95,12 @@ describe("mirrorCardmarketListings", () => {
     ]);
     const repo = fakeRepo();
 
-    const written = await mirrorCardmarketListings(repo, "card-a", prices, SEEN_AT);
+    const written = await mirrorCardmarketListings(
+      repo,
+      "card-a",
+      prices,
+      SEEN_AT,
+    );
 
     expect(repo.calls).toHaveLength(1);
     expect(repo.calls[0].cardId).toBe("card-a");
@@ -105,7 +116,7 @@ describe("mirrorCardmarketListings", () => {
       repo,
       "card-a",
       new Map(),
-      SEEN_AT
+      SEEN_AT,
     );
     expect(repo.calls[0].listings).toEqual([]);
     expect(written).toEqual([]);

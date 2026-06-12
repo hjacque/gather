@@ -14,7 +14,7 @@ export class ListingRepositoryPg implements ListingRepositoryPort {
   async replaceCardListings(
     cardId: string,
     platform: Platform,
-    listings: NewListing[]
+    listings: NewListing[],
   ): Promise<void> {
     // Full per-card replacement is the staleness model, but a user's
     // invalidation must outlive it: carry invalidatedAt forward by itemId so a
@@ -24,7 +24,7 @@ export class ListingRepositoryPg implements ListingRepositoryPort {
       select: { itemId: true, invalidatedAt: true },
     });
     const invalidatedAtByItem = new Map(
-      invalidated.map((r) => [r.itemId, r.invalidatedAt])
+      invalidated.map((r) => [r.itemId, r.invalidatedAt]),
     );
     await this.prisma.$transaction([
       this.prisma.listing.deleteMany({ where: { cardId, platform } }),
@@ -39,6 +39,7 @@ export class ListingRepositoryPg implements ListingRepositoryPort {
           title: l.title,
           isBestOffer: l.isBestOffer,
           seller: l.seller,
+          location: l.location,
           seenAt: l.seenAt,
           invalidatedAt: invalidatedAtByItem.get(l.itemId) ?? null,
         })),
@@ -48,10 +49,14 @@ export class ListingRepositoryPg implements ListingRepositoryPort {
 
   async getCardsListings(
     cardIds: string[],
-    since: Date
+    since: Date,
   ): Promise<Map<string, ListingEntity[]>> {
     const rows = await this.prisma.listing.findMany({
-      where: { cardId: { in: cardIds }, seenAt: { gte: since }, invalidatedAt: null },
+      where: {
+        cardId: { in: cardIds },
+        seenAt: { gte: since },
+        invalidatedAt: null,
+      },
     });
 
     const result = new Map<string, ListingEntity[]>();
@@ -72,13 +77,20 @@ export class ListingRepositoryPg implements ListingRepositoryPort {
   }
 
   async getListingById(listingId: string): Promise<ListingEntity | null> {
-    const row = await this.prisma.listing.findUnique({ where: { id: listingId } });
+    const row = await this.prisma.listing.findUnique({
+      where: { id: listingId },
+    });
     return row ? this.listingMapper.toEntity(row) : null;
   }
 
   async updateListingState(
     listingId: string,
-    state: { price: number; currency: string; isBestOffer: boolean; seenAt: Date }
+    state: {
+      price: number;
+      currency: string;
+      isBestOffer: boolean;
+      seenAt: Date;
+    },
   ): Promise<void> {
     await this.prisma.listing.update({
       where: { id: listingId },

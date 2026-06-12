@@ -31,7 +31,7 @@ const listing = (
   cardId: string,
   psaGrade: number,
   price: number,
-  overrides: Partial<ListingEntity> = {}
+  overrides: Partial<ListingEntity> = {},
 ): ListingEntity => {
   seq++;
   const platform: Platform = overrides.platform ?? "ebay";
@@ -46,6 +46,7 @@ const listing = (
     title: `Card ${cardId} PSA ${psaGrade}`,
     isBestOffer: false,
     seller: null,
+    location: platform === "cardmarket" ? null : "Allemagne",
     seenAt: NOW,
     invalidatedAt: null,
     createdAt: NOW,
@@ -59,7 +60,7 @@ const cm = (
   cardId: string,
   psaGrade: number,
   priceEur: number,
-  overrides: Partial<ListingEntity> = {}
+  overrides: Partial<ListingEntity> = {},
 ): ListingEntity =>
   listing(cardId, psaGrade, priceEur, { platform: "cardmarket", ...overrides });
 
@@ -70,7 +71,11 @@ const merge = (init: { cards: CardEntity[]; listings?: ListingEntity[] }) => {
     if (list) list.push(l);
     else listingsByCard.set(l.cardId, [l]);
   }
-  return mergeListingOffers({ cards: init.cards, listingsByCard, usdToEur: RATE });
+  return mergeListingOffers({
+    cards: init.cards,
+    listingsByCard,
+    usdToEur: RATE,
+  });
 };
 
 describe("mergeListingOffers", () => {

@@ -20,6 +20,7 @@ import {
   parseSellerFeedbackPct,
 } from "./saleRowExtractor";
 import { parseSellerSlug, qualifiesAsTrusted } from "./trustedSeller";
+import { isEuCountry, parseListingLocation } from "./euLocation";
 
 // Raw, untyped strings as read straight off an active result row's DOM.
 export type RawListingRow = {
@@ -32,6 +33,11 @@ export type RawListingRow = {
   // result rows carry no seller line at all, so this is null there and the
   // zero-feedback guard downstream is inert for the EU walk.
   sellerInfoText: string | null;
+  // The row's item-location line, e.g. "de Allemagne" / "de Japon". null when
+  // eBay renders no location (some store / free-shipping rows). eBay's EU
+  // search filter leaks non-EU items, so this is the only trustworthy
+  // provenance signal — see euLocation.ts.
+  locationText: string | null;
 };
 
 // A single active-ask candidate, before card/grade classification.
@@ -47,6 +53,12 @@ export type ListingCandidate = {
   // False when the row's seller line shows zero feedback — a fake-listing
   // signal; such asks must not feed the buy-side min price.
   sellerHasActivity: boolean;
+  // Parsed item-location country (e.g. "Allemagne"), or null when the row
+  // carried no location line.
+  location: string | null;
+  // True only when `location` is a confirmed EU member state. Unknown / null
+  // and non-EU provenance are both false; the use case drops those rows.
+  isEuLocation: boolean;
 };
 
 // eBay's carousel ad rows reuse this placeholder title.
@@ -103,6 +115,9 @@ export function extractListingRow(raw: RawListingRow): ListingCandidate | null {
   const sellerHasActivity = feedbackCount !== 0;
   const trustedSeller = qualifiesAsTrusted(feedbackCount, feedbackPct);
 
+  const location = parseListingLocation(raw.locationText);
+  const isEuLocation = isEuCountry(location);
+
   return {
     itemId: raw.listingId,
     title,
@@ -112,5 +127,7 @@ export function extractListingRow(raw: RawListingRow): ListingCandidate | null {
     seller,
     trustedSeller,
     sellerHasActivity,
+    location,
+    isEuLocation,
   };
 }

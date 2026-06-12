@@ -2,7 +2,10 @@ import { connect } from "puppeteer-real-browser";
 import type { Page } from "rebrowser-puppeteer-core";
 import { CardEntity } from "../../entities/card.entity";
 import { NewListing } from "../../entities/listing.entity";
-import { CardRepositoryPort, GetCardsFilter } from "../../repository/ports/card.repository.port";
+import {
+  CardRepositoryPort,
+  GetCardsFilter,
+} from "../../repository/ports/card.repository.port";
 import { ListingRepositoryPort } from "../../repository/ports/listing.repository.port";
 import { EbayListingsSource } from "./sources/ebayListings.source";
 import { parseListingTitle } from "./sources/listingTitleParser";
@@ -13,6 +16,7 @@ export type ListingSyncCounters = {
   stored: number; // candidates accepted by the parser and persisted
   skippedTitle: number; // candidates rejected by the parser (bundle / foreign / etc.)
   skippedSeller: number; // candidates dropped for a zero-activity seller
+  skippedLocation: number; // candidates dropped for non-EU / unknown provenance
 };
 
 export type BatchSyncListingsResult = ListingSyncCounters & {
@@ -25,6 +29,7 @@ const emptyCounters = (): ListingSyncCounters => ({
   stored: 0,
   skippedTitle: 0,
   skippedSeller: 0,
+  skippedLocation: 0,
 });
 
 // The buy-side sibling of the Sale Sync: walk each Card's active Buy-It-Now
@@ -35,11 +40,13 @@ export class SyncListingsUsecase {
   constructor(
     private readonly cardRepository: CardRepositoryPort,
     private readonly listingRepository: ListingRepositoryPort,
-    private readonly ebayListingsSource: EbayListingsSource
+    private readonly ebayListingsSource: EbayListingsSource,
   ) {}
 
   // Batch across Cards in one browser session, filterable like the price Sync.
-  async executeBatch(filter: GetCardsFilter = {}): Promise<BatchSyncListingsResult> {
+  async executeBatch(
+    filter: GetCardsFilter = {},
+  ): Promise<BatchSyncListingsResult> {
     const counters = emptyCounters();
     let cardsSynced = 0;
     let cardsSkipped = 0;
@@ -63,7 +70,7 @@ export class SyncListingsUsecase {
           await this.processCard(card, page, counters);
           cardsSynced++;
           await new Promise((resolve) =>
-            setTimeout(resolve, 4000 + Math.random() * 4000)
+            setTimeout(resolve, 4000 + Math.random() * 4000),
           );
         }
       }
@@ -101,7 +108,7 @@ export class SyncListingsUsecase {
   async syncCardOnPage(
     card: CardEntity,
     page: Page,
-    into: ListingSyncCounters = emptyCounters()
+    into: ListingSyncCounters = emptyCounters(),
   ): Promise<ListingSyncCounters> {
     if (!this.ebayListingsSource.appliesTo(card)) return into;
     await this.processCard(card, page, into);
@@ -111,7 +118,7 @@ export class SyncListingsUsecase {
   private async processCard(
     card: CardEntity,
     page: Page,
-    counters: ListingSyncCounters
+    counters: ListingSyncCounters,
   ): Promise<void> {
     const candidates = await this.ebayListingsSource.fetch(card, page);
     counters.scraped += candidates.length;
@@ -136,6 +143,14 @@ export class SyncListingsUsecase {
         continue;
       }
 
+      // eBay's EU search filter (LH_PrefLoc=3) renders as applied but leaks
+      // Japan/US/UK items, so trust the per-row location instead: drop anything
+      // that isn't a confirmed EU member state (unknown provenance included).
+      if (!candidate.isEuLocation) {
+        counters.skippedLocation++;
+        continue;
+      }
+
       listings.push({
         cardId: card.id,
         platform: "ebay",
@@ -146,13 +161,16 @@ export class SyncListingsUsecase {
         title: candidate.title,
         isBestOffer: candidate.isBestOffer,
         seller: candidate.seller,
+        location: candidate.location,
         seenAt,
       });
     }
 
     await this.listingRepository.replaceCardListings(card.id, "ebay", listings);
     counters.stored += listings.length;
-    console.log(`[SyncListings] ${card.name}: stored ${listings.length} listing(s)`);
+    console.log(
+      `[SyncListings] ${card.name}: stored ${listings.length} listing(s)`,
+    );
   }
 
   private async openBrowser() {

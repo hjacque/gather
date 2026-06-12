@@ -15,7 +15,7 @@ export const cardmarketListingItemId = (psaGrade: number): string =>
 export const cardmarketGradePricesToListings = (
   cardId: string,
   gradePrices: Map<number, number>,
-  seenAt: Date
+  seenAt: Date,
 ): NewListing[] => {
   const listings: NewListing[] = [];
   for (let grade = 1; grade <= 10; grade++) {
@@ -31,6 +31,9 @@ export const cardmarketGradePricesToListings = (
       title: `CardMarket PSA ${grade} lowest ask`,
       isBestOffer: false,
       seller: null,
+      // CardMarket is an EU marketplace; location only carries the eBay
+      // provenance check, so leave it null here.
+      location: null,
       seenAt,
     });
   }
@@ -45,7 +48,7 @@ export const mirrorCardmarketListings = async (
   listingRepository: ListingRepositoryPort,
   cardId: string,
   gradePrices: CardmarketGradePrices,
-  seenAt: Date
+  seenAt: Date,
 ): Promise<NewListing[]> => {
   const listings = cardmarketGradePricesToListings(cardId, gradePrices, seenAt);
   await listingRepository.replaceCardListings(cardId, "cardmarket", listings);

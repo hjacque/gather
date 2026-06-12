@@ -171,6 +171,9 @@ model Listing {
   title       String
   isBestOffer Boolean  @default(false)
   seller      String?
+  // Verified-EU item location (e.g. "Allemagne") for eBay asks; null for
+  // CardMarket and legacy rows scraped before location was captured.
+  location    String?
   seenAt      DateTime
   // User-flagged as not matching this card: excluded from reads, but kept and
   // carried forward by itemId on re-sync so the flag survives full replacement.
