@@ -10,6 +10,7 @@
 import { initRepository } from "../repository/init.repository";
 import { SyncListingsUsecase } from "../application/sync/syncListings.usecase";
 import { EbayListingsSource } from "../application/sync/sources/ebayListings.source";
+import { EbayItemPageSource } from "../application/sync/sources/ebayItemPage.source";
 
 const arg = (name: string): string | undefined =>
   process.argv.find((a) => a.startsWith(`--${name}=`))?.split("=")[1];
@@ -23,7 +24,8 @@ async function main() {
     const usecase = new SyncListingsUsecase(
       repositories.cardRepository,
       repositories.listingRepository,
-      new EbayListingsSource()
+      new EbayListingsSource(),
+      new EbayItemPageSource()
     );
     const result = await usecase.executeBatch({
       ...(set ? { set } : {}),

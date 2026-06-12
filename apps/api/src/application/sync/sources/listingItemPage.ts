@@ -18,6 +18,10 @@ export type RawItemPage = {
   primaryText: string; // .x-price-primary
   binText: string; // .x-bin-price__content (native + "Environ <eur> EUR")
   bodyText: string; // a slice of body innerText, for offer / ended markers
+  // Seller-card text, e.g. "vendeurpro (12 345) 99,2% d'évaluations positives".
+  // ebay.fr search rows carry no seller line, so the item page is the only place
+  // a listing's seller feedback is exposed (see parseItemPageSellerFeedback).
+  sellerInfoText: string;
 };
 
 export type ItemPageState =
@@ -52,4 +56,26 @@ export function parseItemPageState(raw: RawItemPage): ItemPageState {
   // (e.g. a transient load), so leave the stored listing untouched.
   if (ENDED.test(raw.bodyText)) return { status: "gone" };
   return { status: "unknown" };
+}
+
+// Parse the seller's feedback score from an item page's seller-card text, e.g.
+// "vendeurpro (12 345) 99,2% d'évaluations positives" -> 12345, "newbie (0)
+// Aucune évaluation" -> 0, "psa (580,2 k) ..." -> 580200. The score is the
+// parenthetical count next to the seller name; ebay.fr groups thousands with
+// (non-breaking) spaces and a "k"/"M" suffix uses a comma decimal. Returns null
+// when no score is present (unreadable page / not the seller card) — distinct
+// from a parsed 0, so a missing read never reads as a zero-reputation seller.
+export function parseItemPageSellerFeedback(text: string): number | null {
+  if (!text) return null;
+  const match = text.match(/\(\s*(\d[\d.,\s  ]*?)\s*([KkMm]?)\s*\)/);
+  if (!match) return null;
+  const grouped = match[1].replace(/[\s  ]/g, "");
+  const mult = /[Kk]/.test(match[2]) ? 1_000 : /[Mm]/.test(match[2]) ? 1_000_000 : 1;
+  // With a k/M suffix the separator is a decimal point ("580,2 k"); otherwise
+  // commas/dots are thousands separators in an integer count ("12,345").
+  const normalized =
+    mult > 1 ? grouped.replace(/\./g, "").replace(",", ".") : grouped.replace(/[.,]/g, "");
+  const n = parseFloat(normalized);
+  if (!Number.isFinite(n)) return null;
+  return Math.round(n * mult);
 }

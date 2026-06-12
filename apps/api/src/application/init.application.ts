@@ -80,7 +80,8 @@ export const initApplication = ({
   const syncListingsUsecase = new SyncListingsUsecase(
     cardRepository,
     listingRepository,
-    new EbayListingsSource()
+    new EbayListingsSource(),
+    new EbayItemPageSource()
   );
   const syncSingleListingUsecase = new SyncSingleListingUsecase(
     listingRepository,

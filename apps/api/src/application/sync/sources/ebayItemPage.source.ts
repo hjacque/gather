@@ -17,11 +17,19 @@ export class EbayItemPageSource {
     return page.evaluate(() => {
       const t = (sel: string) =>
         document.querySelector(sel)?.textContent?.trim() ?? "";
+      // Seller-card block carries the seller name, feedback score and positive
+      // rate. The ATF card is the current layout; fall back to the older
+      // seller-section across UI variants.
+      const sellerInfoText =
+        t(".x-sellercard-atf__info") ||
+        t(".x-sellercard-atf") ||
+        t(".ux-seller-section");
       return {
         title: document.title,
         primaryText: t(".x-price-primary"),
         binText: t(".x-bin-price__content"),
         bodyText: (document.body.innerText || "").slice(0, 4000),
+        sellerInfoText,
       };
     });
   }

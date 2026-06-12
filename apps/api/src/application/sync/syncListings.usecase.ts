@@ -8,6 +8,8 @@ import {
 } from "../../repository/ports/card.repository.port";
 import { ListingRepositoryPort } from "../../repository/ports/listing.repository.port";
 import { EbayListingsSource } from "./sources/ebayListings.source";
+import { EbayItemPageSource } from "./sources/ebayItemPage.source";
+import { parseItemPageSellerFeedback } from "./sources/listingItemPage";
 import { parseListingTitle } from "./sources/listingTitleParser";
 
 // Counters accumulated over one or many Cards in a single Listings Sync run.
@@ -41,6 +43,7 @@ export class SyncListingsUsecase {
     private readonly cardRepository: CardRepositoryPort,
     private readonly listingRepository: ListingRepositoryPort,
     private readonly ebayListingsSource: EbayListingsSource,
+    private readonly ebayItemPageSource: EbayItemPageSource,
   ) {}
 
   // Batch across Cards in one browser session, filterable like the price Sync.
@@ -137,7 +140,10 @@ export class SyncListingsUsecase {
 
       // A seller with zero feedback is a fake-listing signal (same bar the Sale
       // Sync auto-invalidates on). An ask nobody can safely buy must not set
-      // the per-grade minimum.
+      // the per-grade minimum. The row-level guard is inert on the EU walk
+      // (ebay.fr search rows carry no seller line), so the real check is the
+      // item-page one below; this stays as a cheap backstop for any row that
+      // does carry feedback.
       if (!candidate.sellerHasActivity) {
         counters.skippedSeller++;
         continue;
@@ -148,6 +154,16 @@ export class SyncListingsUsecase {
       // that isn't a confirmed EU member state (unknown provenance included).
       if (!candidate.isEuLocation) {
         counters.skippedLocation++;
+        continue;
+      }
+
+      // ebay.fr search rows expose no seller feedback, so confirm the seller off
+      // the listing's own item page — the buy-side analogue of the Sale Sync's
+      // zero-activity auto-invalidate. Only survivors of the title + EU filters
+      // are visited, to keep the extra page loads bounded. An unreadable page
+      // leaves the count null (never invalidating on a miss).
+      if (await this.sellerHasZeroFeedback(candidate.itemId, page)) {
+        counters.skippedSeller++;
         continue;
       }
 
@@ -171,6 +187,27 @@ export class SyncListingsUsecase {
     console.log(
       `[SyncListings] ${card.name}: stored ${listings.length} listing(s)`,
     );
+  }
+
+  // True only when the listing's item page confirms a zero-feedback seller. A
+  // failed / unreadable page yields a null count, which is treated as "not
+  // zero" so a transient miss never drops a real ask. A small jitter between
+  // visits mirrors the search walk's anti-rate-limit pacing.
+  private async sellerHasZeroFeedback(
+    itemId: string,
+    page: Page,
+  ): Promise<boolean> {
+    let feedbackCount: number | null = null;
+    try {
+      const raw = await this.ebayItemPageSource.fetchState(itemId, page);
+      feedbackCount = parseItemPageSellerFeedback(raw.sellerInfoText);
+    } catch (error) {
+      console.log(`[SyncListings] seller check failed for ${itemId}`, error);
+    }
+    await new Promise((resolve) =>
+      setTimeout(resolve, 1500 + Math.random() * 1500),
+    );
+    return feedbackCount === 0;
   }
 
   private async openBrowser() {

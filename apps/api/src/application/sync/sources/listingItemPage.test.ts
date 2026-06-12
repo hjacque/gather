@@ -1,10 +1,15 @@
-import { parseItemPageState, RawItemPage } from "./listingItemPage";
+import {
+  parseItemPageSellerFeedback,
+  parseItemPageState,
+  RawItemPage,
+} from "./listingItemPage";
 
 const raw = (over: Partial<RawItemPage> = {}): RawItemPage => ({
   title: "Some Pokemon Card PSA 10 | eBay",
   primaryText: "415,00 EUR",
   binText: "415,00 EUR",
   bodyText: "Achat immédiat",
+  sellerInfoText: "vendeurpro (12 345) 99,2% d'évaluations positives",
   ...over,
 });
 
@@ -50,5 +55,35 @@ describe("parseItemPageState", () => {
   it("returns unknown when no price and no ended marker (transient)", () => {
     expect(parseItemPageState(raw({ primaryText: "", binText: "", bodyText: "Chargement" })))
       .toEqual({ status: "unknown" });
+  });
+});
+
+describe("parseItemPageSellerFeedback", () => {
+  it("reads a zero-feedback seller as 0 (the fake-listing signal)", () => {
+    expect(
+      parseItemPageSellerFeedback("nouveauvendeur (0) Aucune évaluation"),
+    ).toBe(0);
+  });
+
+  it("parses a French space-grouped feedback score", () => {
+    expect(
+      parseItemPageSellerFeedback("vendeurpro (12 345) 99,2% d'évaluations positives"),
+    ).toBe(12345);
+    // Non-breaking space grouping, as eBay actually renders it.
+    expect(
+      parseItemPageSellerFeedback("vendeurpro (1 234) 100% d'évaluations positives"),
+    ).toBe(1234);
+  });
+
+  it("parses an English comma-grouped score and a k/M suffix", () => {
+    expect(
+      parseItemPageSellerFeedback("seller (1,234) 99.5% positive feedback"),
+    ).toBe(1234);
+    expect(parseItemPageSellerFeedback("psa (580,2 k) ...")).toBe(580200);
+  });
+
+  it("returns null when no score is present, so a miss never reads as zero", () => {
+    expect(parseItemPageSellerFeedback("")).toBeNull();
+    expect(parseItemPageSellerFeedback("vendeurpro évaluations positives")).toBeNull();
   });
 });
