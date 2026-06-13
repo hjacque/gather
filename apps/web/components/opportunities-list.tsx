@@ -36,6 +36,7 @@ import {
 import { CardNoteSection } from '@/components/card-note-section';
 import { getCard } from '@/app/actions/getCard';
 import { invalidateListing } from '@/app/actions/invalidateListing';
+import { invalidateSale } from '@/app/actions/invalidateSale';
 import { syncCardListings, syncListing, syncCardCardMarket } from '@/app/actions/syncCard';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -112,6 +113,14 @@ export function OpportunitiesList({ opportunities }: Props) {
     const opp = activeOppRef.current;
     if (!opp) return;
     await invalidateListing(listingId);
+    const data = await getCard(opp.id);
+    if (activeOppRef.current?.id === opp.id) setDisplayedCard(data);
+  }, []);
+
+  const handleRemoveSale = useCallback(async (saleId: string) => {
+    const opp = activeOppRef.current;
+    if (!opp) return;
+    await invalidateSale(saleId);
     const data = await getCard(opp.id);
     if (activeOppRef.current?.id === opp.id) setDisplayedCard(data);
   }, []);
@@ -226,6 +235,7 @@ export function OpportunitiesList({ opportunities }: Props) {
                       <EbaySalesChart
                         sales={displayedCard.sales}
                         cardId={displayedOpp.id}
+                        onRemoveSale={handleRemoveSale}
                       />
                     </div>
                   </div>
