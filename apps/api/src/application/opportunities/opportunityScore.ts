@@ -181,8 +181,14 @@ export function computeScoreLevel(score: number): SignalLevel {
   return 'red-strong';
 }
 
-// How desirable the card itself is, independent of today's listing: the old
-// additive quality weights renormalized to [0,1].
+// How desirable the card itself is, independent of today's listing.
+// The PSA 10 premium weight scales with modernity: vintage cards tolerate PSA 9
+// (weight stays near 0.05), modern cards strongly prefer PSA 10 (weight → 0.35).
+// All other weights are fixed; the denominator adjusts so the result stays in [0,1].
+export const PREMIUM_WEIGHT_VINTAGE = 0.05;
+export const PREMIUM_WEIGHT_MODERN  = 0.35;
+const QUALITY_FIXED_WEIGHTS = 0.18 + 0.20 + 0.08 + 0.08; // 0.54
+
 export function computeQualitySignal(
   populationSignal: number,
   gradeSignal: number,
@@ -190,13 +196,16 @@ export function computeQualitySignal(
   premiumSignal: number,
   liquiditySignal: number
 ): number {
+  const premiumWeight =
+    PREMIUM_WEIGHT_VINTAGE +
+    (PREMIUM_WEIGHT_MODERN - PREMIUM_WEIGHT_VINTAGE) * (1 - ageSignal);
   return (
     (populationSignal * 0.18 +
       gradeSignal     * 0.20 +
       ageSignal       * 0.08 +
-      premiumSignal   * 0.05 +
+      premiumSignal   * premiumWeight +
       liquiditySignal * 0.08) /
-    0.59
+    (QUALITY_FIXED_WEIGHTS + premiumWeight)
   );
 }
 

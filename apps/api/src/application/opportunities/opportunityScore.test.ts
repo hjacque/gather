@@ -119,4 +119,21 @@ describe("computeQualitySignal", () => {
     expect(computeQualitySignal(0, 0, 0, 0, 0)).toBe(0);
     expect(computeQualitySignal(1, 1, 1, 1, 1)).toBeCloseTo(1);
   });
+
+  it("penalizes PSA 9 much more on modern cards than on vintage cards", () => {
+    // Mid-quality non-premium signals to isolate the premium effect.
+    const pop = 0.5, grade = 0.5, liq = 0.5;
+    const modernAge = 0, vintageAge = 1;
+
+    const modernPsa10  = computeQualitySignal(pop, grade, modernAge,  1, liq);
+    const modernPsa9   = computeQualitySignal(pop, grade, modernAge,  0, liq);
+    const vintagePsa10 = computeQualitySignal(pop, grade, vintageAge, 1, liq);
+    const vintagePsa9  = computeQualitySignal(pop, grade, vintageAge, 0, liq);
+
+    const modernGap  = modernPsa10  - modernPsa9;
+    const vintageGap = vintagePsa10 - vintagePsa9;
+
+    // Modern gap should be ~4× the vintage gap.
+    expect(modernGap).toBeGreaterThan(vintageGap * 3);
+  });
 });
