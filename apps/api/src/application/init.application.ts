@@ -22,6 +22,7 @@ import { ReviewSaleUsecase } from "./sale/reviewSale.usecase";
 import { GetUnreviewedSalesUsecase } from "./sale/getUnreviewedSales.usecase";
 import { CardMarketGradedSource } from "./sync/sources/cardmarketGraded.source";
 import { EbaySalesSource } from "./sync/sources/ebaySales.source";
+import { TerapeakSalesSource } from "./sync/sources/terapeakSales.source";
 import { EbayListingsSource } from "./sync/sources/ebayListings.source";
 import { EbayItemPageSource } from "./sync/sources/ebayItemPage.source";
 import { MarketSalePriceSnapshotService } from "./sale/marketSalePriceSnapshot";
@@ -75,6 +76,7 @@ export const initApplication = ({
     cardRepository,
     saleRepository,
     new EbaySalesSource(),
+    new TerapeakSalesSource(),
     snapshotService
   );
   const syncListingsUsecase = new SyncListingsUsecase(

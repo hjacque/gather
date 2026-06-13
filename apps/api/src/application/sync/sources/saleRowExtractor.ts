@@ -45,8 +45,9 @@ export type SaleCandidate = {
 const AD_TITLE = "Shop on eBay";
 
 // Currency symbols eBay renders, mapped to ISO codes. "$" defaults to USD
-// (eBay.com); a "C $" / "A $" prefix narrows it to the local dollar.
-function detectCurrency(priceText: string): string | null {
+// (eBay.com); a "C $" / "A $" prefix narrows it to the local dollar. Shared
+// with the Terapeak extractor, which reads the same eBay-formatted price text.
+export function detectCurrency(priceText: string): string | null {
   if (priceText.includes("€")) return "EUR";
   if (priceText.includes("£")) return "GBP";
   if (/C\s*\$/.test(priceText)) return "CAD";
@@ -56,8 +57,9 @@ function detectCurrency(priceText: string): string | null {
 }
 
 // Parse the numeric amount from eBay's US-formatted price text ("1,009.00").
-// Commas are thousands separators; the last dot is the decimal point.
-function parseAmount(priceText: string): number | null {
+// Commas are thousands separators; the last dot is the decimal point. Shared
+// with the Terapeak extractor.
+export function parseAmount(priceText: string): number | null {
   const match = priceText.match(/[\d][\d.,]*/);
   if (!match) return null;
   const normalized = match[0].replace(/,/g, "");

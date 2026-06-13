@@ -1,7 +1,23 @@
 import type { Page } from "rebrowser-puppeteer-core";
 import { CardEntity } from "../../../entities/card.entity";
-import { RawSaleRow, SaleCandidate, extractSaleRow } from "./saleRowExtractor";
+import {
+  RawSaleRow,
+  SaleCandidate,
+  extractSaleRow,
+  parseSellerFeedbackCount,
+  parseSellerFeedbackPct,
+} from "./saleRowExtractor";
+import { parseSellerSlug, qualifiesAsTrusted } from "./trustedSeller";
 import { ItemPageState } from "./reverificationClassifier";
+
+// Seller-quality verdict for one listing, read from its eBay item page. The
+// Terapeak-sourced Sale Sync uses this to auto-confirm / auto-invalidate sales
+// whose price comes from Terapeak (which carries no seller info).
+export type SellerQuality = {
+  seller: string | null; // parsed store slug, e.g. "psa"; null for non-stores
+  trustedSeller: boolean; // clears the reputation bar
+  sellerHasActivity: boolean; // false only when feedback count is exactly 0
+};
 
 // Visible text that marks an item page as still showing a completed sale.
 const SOLD_SIGNAL = /item sold on|already sold|this listing sold/i;
@@ -100,6 +116,55 @@ export class EbaySalesSource {
     }
     if (SOLD_SIGNAL.test(body)) return "sold";
     return "active";
+  }
+
+  // Verify a seller's quality by visiting the listing's eBay item page and
+  // reading its seller card — the eBay side of the Terapeak-sourced Sale Sync,
+  // where prices come from Terapeak (no seller) but trust still gates auto-
+  // confirm / auto-invalidate. Degrades safely: a navigation failure or an
+  // unparseable seller card yields "not trusted, has activity", which routes the
+  // sale to manual review rather than wrongly confirming or invalidating it.
+  async fetchSellerQuality(itemId: string, page: Page): Promise<SellerQuality> {
+    const safe: SellerQuality = {
+      seller: null,
+      trustedSeller: false,
+      sellerHasActivity: true,
+    };
+
+    const url = `https://www.ebay.com/itm/${itemId}`;
+    try {
+      await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
+    } catch (error) {
+      console.log(`[EbaySales] seller-quality navigation failed for ${itemId}`, error);
+      return safe;
+    }
+
+    await this.sleep(2500);
+    await this.handleInterstitials(page);
+
+    const { infoText, sellerHref } = await page.evaluate(() => {
+      const t = (sel: string) =>
+        document.querySelector(sel)?.textContent?.trim() ?? "";
+      const infoText =
+        t(".x-sellercard-atf__info") ||
+        t(".x-sellercard-atf") ||
+        t(".ux-seller-section");
+      const sellerHref =
+        document
+          .querySelector(
+            ".x-sellercard-atf__info a, .x-sellercard-atf a, .ux-seller-section a"
+          )
+          ?.getAttribute("href") ?? null;
+      return { infoText, sellerHref };
+    });
+
+    const feedbackCount = parseSellerFeedbackCount(infoText);
+    const feedbackPct = parseSellerFeedbackPct(infoText);
+    return {
+      seller: parseSellerSlug(sellerHref),
+      trustedSeller: qualifiesAsTrusted(feedbackCount, feedbackPct),
+      sellerHasActivity: feedbackCount !== 0,
+    };
   }
 
   private withPage(ebayLink: string, pageNum: number): string {

@@ -1,9 +1,14 @@
+import { mkdirSync } from "node:fs";
 import { connect } from "puppeteer-real-browser";
 import type { Page } from "rebrowser-puppeteer-core";
 import { CardEntity } from "../../entities/card.entity";
 import { CardRepositoryPort, GetCardsFilter } from "../../repository/ports/card.repository.port";
 import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
 import { EbaySalesSource } from "./sources/ebaySales.source";
+import {
+  TerapeakSalesSource,
+  TerapeakAuthError,
+} from "./sources/terapeakSales.source";
 import { parseListingTitle } from "./sources/listingTitleParser";
 import { classifyReverification } from "./sources/reverificationClassifier";
 import { MarketSalePriceSnapshotService } from "../sale/marketSalePriceSnapshot";
@@ -14,9 +19,9 @@ const WINDOW_DAYS = 30;
 
 // Counters accumulated over one or many Cards in a single Sale Sync run.
 export type SaleSyncCounters = {
-  scraped: number; // candidates returned by the source
-  withinWindow: number; // candidates inside the trailing 30-day window
-  upserted: number; // candidates accepted by the parser and persisted
+  scraped: number; // Terapeak sale rows returned by the source
+  withinWindow: number; // sales inside the trailing 30-day window
+  upserted: number; // sales accepted by the parser and persisted
   skipped: number; // candidates rejected by the parser (bundle / foreign / etc.)
   autoValidated: number; // upserted Sales auto-validated by trusted seller
   autoInvalidated: number; // upserted Sales auto-invalidated for a 0-activity seller
@@ -44,11 +49,31 @@ const emptyCounters = (): SaleSyncCounters => ({
   invalidated: 0,
 });
 
+// A Terapeak sale persisted (as pending) in the authenticated Phase 1, carried
+// into the no-auth Phase 2 for seller verification. Grade is already parsed.
+type IngestedSale = {
+  itemId: string;
+  grade: number;
+  price: number;
+  currency: string;
+  title: string;
+  soldAt: Date;
+};
+
+// Per-Card outcome of Phase 2, for progress logging.
+type VerifyResult = {
+  checked: number; // ingested sales seller-verified (not already decided)
+  confirmed: number; // auto-confirmed this Card
+  invalid: number; // auto-invalidated this Card
+  reverified: number; // due sales revisited at their 7d/30d checkpoint
+};
+
 export class SyncSalesUsecase {
   constructor(
     private readonly cardRepository: CardRepositoryPort,
     private readonly saleRepository: SaleRepositoryPort,
     private readonly ebaySalesSource: EbaySalesSource,
+    private readonly terapeakSource: TerapeakSalesSource,
     private readonly snapshotService: MarketSalePriceSnapshotService
   ) {}
 
@@ -76,6 +101,13 @@ export class SyncSalesUsecase {
   }
 
   // Batch across Cards in one browser session, filterable like the price Sync.
+  //
+  // Split into two phases so a full all-Cards run survives eBay's short seller
+  // session: Phase 1 does only the *authenticated* Terapeak fetches (fast — ~1
+  // page/Card), persisting sales as pending; Phase 2 does the *slow, public*
+  // eBay seller verification + re-verification, which needs no login. The
+  // authenticated window is therefore bounded to Phase 1. If the session expires
+  // mid-Phase-1 we stop fetching but still finalize everything ingested so far.
   async executeBatch(filter: GetCardsFilter = {}): Promise<BatchSyncSalesResult> {
     const counters = emptyCounters();
     let cardsSynced = 0;
@@ -83,26 +115,48 @@ export class SyncSalesUsecase {
 
     const { browser, page } = await this.openBrowser();
     try {
-      let paginationPage = 1;
-      while (true) {
-        const cards = await this.cardRepository.getCards(filter, {
-          take: 4,
-          page: paginationPage,
-        });
-        if (!cards?.length) break;
-        paginationPage++;
+      const cards = await this.collectCards(filter);
+      const applicable = cards.filter((c) => this.ebaySalesSource.appliesTo(c));
+      cardsSkipped = cards.length - applicable.length;
 
-        for (const card of cards) {
-          if (!this.ebaySalesSource.appliesTo(card)) {
-            cardsSkipped++;
-            continue;
-          }
-          await this.processCard(card, page, counters);
-          cardsSynced++;
-          await new Promise((resolve) =>
-            setTimeout(resolve, 4000 + Math.random() * 4000)
+      // Phase 1 — authenticated Terapeak ingest. Persist each Card's sales as
+      // pending. A session expiry aborts the loop (no point fetching more), but
+      // whatever was ingested still flows to Phase 2.
+      const ingestedByCard = new Map<string, IngestedSale[]>();
+      const ingestOrder: CardEntity[] = [];
+      try {
+        for (const card of applicable) {
+          ingestedByCard.set(
+            card.id,
+            await this.ingestTerapeakSales(card, page, counters)
           );
+          ingestOrder.push(card);
+          await this.sleep(4000 + Math.random() * 4000);
         }
+      } catch (error) {
+        if (!(error instanceof TerapeakAuthError)) throw error;
+        console.error(
+          `[SyncSales] Terapeak session expired after ${ingestOrder.length}/${applicable.length} Cards — ` +
+            "finalizing what was ingested; re-run terapeakLogin.ts to sync the rest."
+        );
+      }
+
+      // Phase 2 — public eBay seller verification + re-verification (no auth).
+      // This is the slow stretch with no per-sale source output, so log a per-
+      // Card progress line to make it visibly advance rather than look stalled.
+      for (const card of ingestOrder) {
+        const r = await this.verifyIngestedSales(
+          card,
+          ingestedByCard.get(card.id) ?? [],
+          page,
+          counters
+        );
+        cardsSynced++;
+        console.log(
+          `[SyncSales] verify ${cardsSynced}/${ingestOrder.length} ${card.name}: ` +
+            `${r.checked} checked → ${r.confirmed} confirmed, ${r.invalid} invalid` +
+            (r.reverified ? `, ${r.reverified} re-verified` : "")
+        );
       }
     } finally {
       await page.close();
@@ -123,64 +177,166 @@ export class SyncSalesUsecase {
     into: SaleSyncCounters = emptyCounters()
   ): Promise<SaleSyncCounters> {
     if (!this.ebaySalesSource.appliesTo(card)) return into;
-    await this.processCard(card, page, into);
+    try {
+      await this.processCard(card, page, into);
+    } catch (error) {
+      // The Sale Sync is folded into the larger price Sync here, so a lapsed
+      // Terapeak session must not crash the run — skip this Card's sales and let
+      // prices / listings continue. Re-throw anything else.
+      if (!(error instanceof TerapeakAuthError)) throw error;
+      console.warn(`[SyncSales] Terapeak session expired — skipping sales for ${card.name}`);
+    }
     return into;
   }
 
-  // Scrape pass + folded-in re-verification pass for one Card on a shared page.
+  // Page through the Card repository into a single list, so the two phases can
+  // each iterate the full set.
+  private async collectCards(filter: GetCardsFilter): Promise<CardEntity[]> {
+    const all: CardEntity[] = [];
+    for (let paginationPage = 1; ; paginationPage++) {
+      const cards = await this.cardRepository.getCards(filter, {
+        take: 4,
+        page: paginationPage,
+      });
+      if (!cards?.length) break;
+      all.push(...cards);
+    }
+    return all;
+  }
+
+  // Both phases for one Card (single-Card paths, where one Card always fits in a
+  // session). Phase 1's Terapeak fetch may throw TerapeakAuthError.
   private async processCard(
     card: CardEntity,
     page: Page,
     counters: SaleSyncCounters
   ): Promise<void> {
-    const candidates = await this.ebaySalesSource.fetch(card, page);
-    counters.scraped += candidates.length;
+    const ingested = await this.ingestTerapeakSales(card, page, counters);
+    await this.verifyIngestedSales(card, ingested, page, counters);
+  }
+
+  // Phase 1 (authenticated): fetch the Card's Terapeak sales — the authoritative
+  // transaction prices the public completed-search hides — parse grade + card
+  // attribution from each title, and persist the in-window ones as pending.
+  // Returns them for Phase 2. Throws TerapeakAuthError if the session has lapsed.
+  private async ingestTerapeakSales(
+    card: CardEntity,
+    page: Page,
+    counters: SaleSyncCounters
+  ): Promise<IngestedSale[]> {
+    const sales = await this.terapeakSource.fetch(card, page);
+    counters.scraped += sales.length;
 
     const cutoff = new Date();
     cutoff.setUTCDate(cutoff.getUTCDate() - WINDOW_DAYS);
 
-    for (const candidate of candidates) {
-      if (candidate.soldAt < cutoff) continue;
+    const ingested: IngestedSale[] = [];
+    for (const sale of sales) {
+      if (sale.soldAt < cutoff) continue;
       counters.withinWindow++;
 
-      const parsed = parseListingTitle(candidate.title, {
-        number: card.number,
-      });
+      const parsed = parseListingTitle(sale.title, { number: card.number });
       if (parsed.kind === "skipped") {
         counters.skipped++;
         continue;
       }
 
-      // Auto-confirm (skip the manual review queue) sales from sellers we trust:
-      // PSA's own store as the grading authority, plus any seller clearing the
-      // reputation bar (5000+ feedback at 99.5%+ positive). trustedSeller is
-      // derived from the row's seller line for store and non-store sellers alike.
-      const autoConfirm = candidate.seller === "psa" || candidate.trustedSeller;
-
-      // A seller with zero sale activity (zero feedback on the row's seller
-      // line) is a fake-listing signal: auto-invalidate rather than queue for
-      // review. PSA always wins the tie.
-      const autoInvalidate = !autoConfirm && !candidate.sellerHasActivity;
-
-      const decided = autoConfirm || autoInvalidate;
+      // Persist as pending; seller is filled in by Phase 2. Terapeak's price is
+      // the true accepted price, never an unresolved asking price.
       await this.saleRepository.upsert({
         cardId: card.id,
         platform: "ebay",
-        itemId: candidate.itemId,
+        itemId: sale.itemId,
         psaGrade: parsed.grade,
-        price: candidate.price,
-        currency: candidate.currency,
-        title: candidate.title,
-        isBestOffer: candidate.isBestOffer,
-        seller: candidate.seller,
-        soldAt: candidate.soldAt,
+        price: sale.price,
+        currency: sale.currency,
+        title: sale.title,
+        isBestOffer: false,
+        seller: null,
+        soldAt: sale.soldAt,
+        reviewedAt: null,
+      });
+      counters.upserted++;
+      ingested.push({
+        itemId: sale.itemId,
+        grade: parsed.grade,
+        price: sale.price,
+        currency: sale.currency,
+        title: sale.title,
+        soldAt: sale.soldAt,
+      });
+    }
+    return ingested;
+  }
+
+  // Phase 2 (no auth): for each ingested sale not already decided, read seller
+  // quality from the public eBay item page and auto-confirm / auto-invalidate
+  // (undecided ones stay pending for human review). Then run the 7d/30d re-
+  // verification pass (catches cancellations / refunds) and recompute the
+  // Card's snapshot.
+  private async verifyIngestedSales(
+    card: CardEntity,
+    ingested: IngestedSale[],
+    page: Page,
+    counters: SaleSyncCounters
+  ): Promise<VerifyResult> {
+    const result: VerifyResult = {
+      checked: 0,
+      confirmed: 0,
+      invalid: 0,
+      reverified: 0,
+    };
+    const existing = new Map(
+      (await this.saleRepository.getCardSales(card.id)).map((s) => [s.itemId, s])
+    );
+
+    for (const sale of ingested) {
+      // Skip sales already decided (terminal) or human-reviewed.
+      const current = existing.get(sale.itemId);
+      if (current && (current.status !== "pending" || current.reviewedAt)) {
+        continue;
+      }
+
+      // Seller quality from the listing's eBay item page (Terapeak has none).
+      const sellerQ = await this.ebaySalesSource.fetchSellerQuality(
+        sale.itemId,
+        page
+      );
+
+      // Auto-confirm (skip review) sales from sellers we trust: PSA's own store
+      // as the grading authority, plus any seller clearing the reputation bar
+      // (5000+ feedback at 99.5%+ positive). A zero-activity seller is a fake-
+      // listing signal — auto-invalidate. Undecided sales enter the review queue.
+      const autoConfirm = sellerQ.seller === "psa" || sellerQ.trustedSeller;
+      const autoInvalidate = !autoConfirm && !sellerQ.sellerHasActivity;
+      const decided = autoConfirm || autoInvalidate;
+
+      await this.saleRepository.upsert({
+        cardId: card.id,
+        platform: "ebay",
+        itemId: sale.itemId,
+        psaGrade: sale.grade,
+        price: sale.price,
+        currency: sale.currency,
+        title: sale.title,
+        isBestOffer: false,
+        seller: sellerQ.seller,
+        soldAt: sale.soldAt,
         reviewedAt: decided ? new Date() : null,
         status: autoConfirm ? "confirmed" : autoInvalidate ? "invalid" : undefined,
         verificationStage: decided ? "complete" : undefined,
       });
-      counters.upserted++;
-      if (autoConfirm) counters.autoValidated++;
-      if (autoInvalidate) counters.autoInvalidated++;
+      result.checked++;
+      if (autoConfirm) {
+        counters.autoValidated++;
+        result.confirmed++;
+      }
+      if (autoInvalidate) {
+        counters.autoInvalidated++;
+        result.invalid++;
+      }
+
+      await this.sleep(2000 + Math.random() * 2000);
     }
 
     // Re-verification pass: revisit this Card's due pending Sales at their
@@ -196,25 +352,38 @@ export class SyncSalesUsecase {
       await this.saleRepository.updateVerification(sale.id, outcome);
 
       counters.reverified++;
+      result.reverified++;
       if (outcome.status === "confirmed") counters.confirmed++;
       if (outcome.status === "invalid") counters.invalidated++;
 
-      await new Promise((resolve) =>
-        setTimeout(resolve, 2000 + Math.random() * 2000)
-      );
+      await this.sleep(2000 + Math.random() * 2000);
     }
 
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
     await this.snapshotService.recompute(card.id, today, today);
+    return result;
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private async openBrowser() {
+    // Persistent Chrome profile: Terapeak is seller-only, so the eBay login
+    // cookie must survive between runs. Log in by hand once in this profile and
+    // every later session reuses it. Override the location with EBAY_PROFILE_DIR.
+    const userDataDir =
+      process.env.EBAY_PROFILE_DIR ??
+      `${process.env.HOME ?? "."}/.gather/ebay-profile`;
+    // chrome-launcher writes chrome-out.log into the profile dir on launch and
+    // does not create it, so ensure it exists first.
+    mkdirSync(userDataDir, { recursive: true });
     const { browser, page } = await connect({
       headless: false,
       disableXvfb: false,
       args: [],
-      customConfig: {},
+      customConfig: { userDataDir },
       turnstile: true,
       connectOption: { defaultViewport: null },
       ignoreAllFlags: false,
