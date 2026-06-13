@@ -10,21 +10,17 @@ type DanglingConnections = {
 let danglingConnections: DanglingConnections[] = [];
 
 const run = async () => {
-  // repositories
   const { close: repositoryClose, repositories } = await initRepository();
   danglingConnections.push({ close: repositoryClose });
 
-  // application
   const usecases = initApplication(repositories);
 
-  // services
   const services = initServices({
     syncUsecase: usecases.syncUsecase,
     syncPsaPopReportsUsecase: usecases.syncPsaPopReportsUsecase,
   });
   // await services.syncSchedulerService.execute();
 
-  // transport
   const { close: transportClose } = await initTransport(usecases);
   danglingConnections.push({ close: transportClose });
 

@@ -29,10 +29,7 @@ export const http = async ({
   deleteCollectionEntryUsecase,
   getOpportunitiesUsecase,
 }: Usecases) => {
-  // middlewares
   app.use(express.json());
-
-  // error handling
   app.use(errorHandler);
 
   app.get("/sync/set/:set", async (req, res) => {
