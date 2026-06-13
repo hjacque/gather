@@ -7,7 +7,7 @@ A price aggregation tool for Pokémon exclusive promo cards (Japanese, Korean, a
 ## What it does
 
 - **Syncs** CardMarket prices across PSA grades 1–10 for each card, on a rolling schedule
-- **Prices eBay sold history** — scrapes completed listings into Sales and derives a per-grade **Market Sale Price** (what a card actually sells for), flagging listings priced below it
+- **Prices eBay sold history** — sources sold transactions from Terapeak (eBay Seller Hub research, with true accepted prices) into Sales and derives a per-grade **Market Sale Price** (what a card actually sells for), flagging listings priced below it
 - **Tracks PSA population** — graded card counts per grade via PSA pop reports
 - **Manages a collection** — mark cards as owned or on the wantlist
 
@@ -103,8 +103,8 @@ npm run build
 | `GET` | `/sync/card/:cardid/psa` | Trigger a PSA pop report sync for a single card |
 | `GET` | `/sync/set/:set` | Trigger a CardMarket sync for an entire Card Set |
 | `GET` | `/sync/psa` | Trigger a full PSA pop report sync |
-| `GET` | `/sync/sales/card/:cardid` | Scrape a single card's eBay sold listings into Sales |
-| `GET` | `/sync/sales` | Trigger an eBay Sale Sync (filter by set / tags) |
+| `GET` | `/sync/sales/card/:cardid` | Sync a single card's eBay sales (via Terapeak) into Sales |
+| `GET` | `/sync/sales` | Trigger an eBay Sale Sync via Terapeak (filter by set / tags) |
 | `PATCH` | `/sales/:saleid` | Flag a Sale invalid (manual moderation) |
 | `PUT` | `/collection/:cardid` | Upsert a collection entry (owned / wanted flags) |
 | `DELETE` | `/collection/:cardid` | Remove a card from the collection |
@@ -131,7 +131,7 @@ Repositories are injected into use cases via port interfaces — concrete Prisma
 | Source | Type |
 |---|---|
 | CardMarket | PSA grade sell listings (grades 1–10) |
-| eBay | Completed (sold) listings per PSA grade → Sales → Market Sale Price |
+| eBay (Terapeak) | Sold transactions per PSA grade (true accepted prices) → Sales → Market Sale Price |
 | PSA | Pop report (graded card counts per grade) |
 
 All Raw Prices are stored in EUR. eBay Sales are stored in their original currency and converted to EUR on read.

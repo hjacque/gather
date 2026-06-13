@@ -1,7 +1,13 @@
 # ADR 0002 — Scrape eBay sold listings instead of using the eBay API
 
-**Status:** Accepted  
+**Status:** Superseded by [ADR 0007](0007-source-ebay-sales-from-terapeak.md)  
 **Date:** 2026-06-01
+
+> **Superseded 2026-06-14.** The Sale source moved from eBay's public
+> completed-listings search to Terapeak (Seller Hub research), which reports the
+> true accepted price — resolving the "no accepted-offer price" trade-off below.
+> The API analysis here remains accurate; only the chosen scraping surface
+> changed. See ADR 0007.
 
 ## Context
 
