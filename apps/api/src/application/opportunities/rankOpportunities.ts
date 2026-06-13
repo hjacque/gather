@@ -12,6 +12,7 @@ import type { PsaPopReportEntity } from "../../repository/ports/psaPopReport.rep
 import { computeMarketPrices } from "../sale/marketPrice";
 import type { ListingOffer } from "./mergeListingOffers";
 import {
+  BEST_OFFER_BOOST,
   computeListingConfidence,
   computeListingSignal,
   computeLiquidityLevel,
@@ -168,12 +169,19 @@ export const rankOpportunities = ({
         now
       );
 
+      // Best-offer listings are negotiable: treat them as if they were cheaper
+      // by BEST_OFFER_BOOST for scoring purposes only (display price unchanged).
+      const effectiveListingPrice =
+        listingOffer.isBestOffer && listingPrice !== null
+          ? listingPrice * (1 - BEST_OFFER_BOOST)
+          : listingPrice;
+
       rawEntries.push({
         cardIdx,
         grade: psaGrade,
         marketSalePrice,
         listingSignal:
-          computeListingSignal(marketSalePrice, listingPrice) *
+          computeListingSignal(marketSalePrice, effectiveListingPrice) *
           listingConfidence,
         listingConfidence,
         sampleSize,
@@ -239,7 +247,6 @@ export const rankOpportunities = ({
       e.gradeSignal,
       ageSignal,
       premiumSignal,
-      e.liquiditySignal
     );
     const score = computeScore(e.listingSignal, qualitySignal);
     const roundedScore = Math.round(score * 10) / 10;

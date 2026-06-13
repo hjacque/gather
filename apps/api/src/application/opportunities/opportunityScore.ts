@@ -1,11 +1,10 @@
 import type { SignalLevel } from "@gather/api-contract";
 import type { PsaPopReportEntity } from "../../repository/ports/psaPopReport.repository.port";
 
-// Discounts inside the dead zone score 0: the Market Sale Price is a median
-// over scattered comps, so a few percent "below market" is estimation noise —
-// a fair price, not a deal. Sized for collecting; a flipper would raise this
-// to the ~13–15% sell-side fee hurdle.
-export const DISCOUNT_DEAD_ZONE = 0.03;
+// Best-offer listings are soft asks: the buyer can negotiate below the stated
+// price, so the effective deal is better than the raw discount. We model this
+// as a fixed reduction applied before computing the listing signal.
+export const BEST_OFFER_BOOST = 0.09;
 
 export function computeListingSignal(
   marketSale: number,
@@ -15,12 +14,9 @@ export function computeListingSignal(
   const linear = (marketSale - listing) / marketSale;
   // negative side: linear penalty, clamped at -1 (listing 2× market)
   if (linear <= 0) return Math.max(-1, linear);
-  if (linear <= DISCOUNT_DEAD_ZONE) return 0;
-  // sqrt re-anchored at the dead zone: smooth from zero, still amplifies
-  // modest discounts (10% → 0.27, 20% → 0.42, 50% → 0.70)
-  return Math.sqrt(
-    Math.min(1, (linear - DISCOUNT_DEAD_ZONE) / (1 - DISCOUNT_DEAD_ZONE))
-  );
+  // sqrt scaling: smooth from zero, amplifies modest discounts
+  // (10% → 0.32, 20% → 0.45, 50% → 0.71)
+  return Math.sqrt(Math.min(1, linear));
 }
 
 // Confidence in a grade's Market Sale Price, used to scale the listing signal:
@@ -185,16 +181,17 @@ export function computeScoreLevel(score: number): SignalLevel {
 // The PSA 10 premium weight scales with modernity: vintage cards tolerate PSA 9
 // (weight stays near 0.05), modern cards strongly prefer PSA 10 (weight → 0.35).
 // All other weights are fixed; the denominator adjusts so the result stays in [0,1].
+// Liquidity is intentionally excluded: for a collector buying to hold, low trade
+// frequency on a rare promo is a sign of desirability, not a flaw.
 export const PREMIUM_WEIGHT_VINTAGE = 0.05;
 export const PREMIUM_WEIGHT_MODERN  = 0.35;
-const QUALITY_FIXED_WEIGHTS = 0.18 + 0.20 + 0.08 + 0.08; // 0.54
+const QUALITY_FIXED_WEIGHTS = 0.18 + 0.20 + 0.08; // 0.46
 
 export function computeQualitySignal(
   populationSignal: number,
   gradeSignal: number,
   ageSignal: number,
   premiumSignal: number,
-  liquiditySignal: number
 ): number {
   const premiumWeight =
     PREMIUM_WEIGHT_VINTAGE +
@@ -203,17 +200,16 @@ export function computeQualitySignal(
     (populationSignal * 0.18 +
       gradeSignal     * 0.20 +
       ageSignal       * 0.08 +
-      premiumSignal   * premiumWeight +
-      liquiditySignal * 0.08) /
+      premiumSignal   * premiumWeight) /
     (QUALITY_FIXED_WEIGHTS + premiumWeight)
   );
 }
 
 // Quality modulates the deal instead of substituting for it: a card at market
 // price is not an opportunity no matter how desirable it is. The floor caps
-// quality's leverage — it scales a given discount by 0.4×–1×, so a grail can
-// outrank a junk card with up to 2.5× its deal signal, never "no deal".
-export const QUALITY_FLOOR = 0.4;
+// quality's leverage — it scales a given discount by 0.25×–1×, so a grail can
+// outrank a junk card with up to 4× its deal signal, never "no deal".
+export const QUALITY_FLOOR = 0.25;
 
 export function computeScore(
   listingSignal: number,

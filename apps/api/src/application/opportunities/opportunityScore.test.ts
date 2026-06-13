@@ -12,17 +12,17 @@ const daysAgo = (days: number): Date =>
   new Date(NOW.getTime() - days * 24 * 60 * 60 * 1000);
 
 describe("computeListingSignal", () => {
-  it("scores 0 inside the 3% dead zone — noise, not a deal", () => {
+  it("scores 0 at market price, positive for any discount however small", () => {
     expect(computeListingSignal(100, 100)).toBe(0);
-    expect(computeListingSignal(100, 98)).toBe(0);
-    expect(computeListingSignal(100, 97)).toBe(0);
+    expect(computeListingSignal(100, 99)).toBeGreaterThan(0);
+    expect(computeListingSignal(100, 97)).toBeGreaterThan(0);
   });
 
-  it("rises smoothly from the dead zone with sqrt amplification", () => {
-    // 10% off: sqrt((0.10 − 0.03) / 0.97) ≈ 0.27
-    expect(computeListingSignal(100, 90)).toBeCloseTo(0.269, 2);
-    // 20% off ≈ 0.42
-    expect(computeListingSignal(100, 80)).toBeCloseTo(0.419, 2);
+  it("rises smoothly with sqrt amplification", () => {
+    // 10% off: sqrt(0.10) ≈ 0.316
+    expect(computeListingSignal(100, 90)).toBeCloseTo(0.316, 2);
+    // 20% off: sqrt(0.20) ≈ 0.447
+    expect(computeListingSignal(100, 80)).toBeCloseTo(0.447, 2);
     // free card caps at 1
     expect(computeListingSignal(100, 0)).toBe(1);
   });
@@ -101,34 +101,34 @@ describe("computeScore (multiplicative)", () => {
     expect(computeScore(-0.5, 1)).toBeLessThan(0);
   });
 
-  it("applies the quality floor: worst-quality card keeps 40% of the deal", () => {
-    expect(computeScore(0.5, 0)).toBeCloseTo(20);
+  it("applies the quality floor: worst-quality card keeps 25% of the deal", () => {
+    expect(computeScore(0.5, 0)).toBeCloseTo(12.5);
   });
 
   it("passes the deal through fully at maximum quality", () => {
     expect(computeScore(0.5, 1)).toBeCloseTo(50);
   });
 
-  it("lets quality leverage a deal by at most 2.5×", () => {
-    expect(computeScore(0.4, 1)).toBeCloseTo(computeScore(1, 0));
+  it("lets quality leverage a deal by at most 4×", () => {
+    expect(computeScore(0.25, 1)).toBeCloseTo(computeScore(1, 0));
   });
 });
 
 describe("computeQualitySignal", () => {
   it("is 0 when every component is at its worst and 1 when all are at their best", () => {
-    expect(computeQualitySignal(0, 0, 0, 0, 0)).toBe(0);
-    expect(computeQualitySignal(1, 1, 1, 1, 1)).toBeCloseTo(1);
+    expect(computeQualitySignal(0, 0, 0, 0)).toBe(0);
+    expect(computeQualitySignal(1, 1, 1, 1)).toBeCloseTo(1);
   });
 
   it("penalizes PSA 9 much more on modern cards than on vintage cards", () => {
     // Mid-quality non-premium signals to isolate the premium effect.
-    const pop = 0.5, grade = 0.5, liq = 0.5;
+    const pop = 0.5, grade = 0.5;
     const modernAge = 0, vintageAge = 1;
 
-    const modernPsa10  = computeQualitySignal(pop, grade, modernAge,  1, liq);
-    const modernPsa9   = computeQualitySignal(pop, grade, modernAge,  0, liq);
-    const vintagePsa10 = computeQualitySignal(pop, grade, vintageAge, 1, liq);
-    const vintagePsa9  = computeQualitySignal(pop, grade, vintageAge, 0, liq);
+    const modernPsa10  = computeQualitySignal(pop, grade, modernAge,  1);
+    const modernPsa9   = computeQualitySignal(pop, grade, modernAge,  0);
+    const vintagePsa10 = computeQualitySignal(pop, grade, vintageAge, 1);
+    const vintagePsa9  = computeQualitySignal(pop, grade, vintageAge, 0);
 
     const modernGap  = modernPsa10  - modernPsa9;
     const vintageGap = vintagePsa10 - vintagePsa9;

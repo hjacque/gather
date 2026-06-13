@@ -247,21 +247,23 @@ describe("rankOpportunities", () => {
     }
   });
 
-  it("excludes listings inside the 3% discount dead zone", () => {
+  it("scores any listing below market, no dead zone", () => {
     const a = card("a");
-    const inDeadZone = inputs({
+    // Even a 1% discount should surface as an opportunity.
+    const slightDiscount = inputs({
       cards: [a],
       sales: [sale("a", 10, 100)],
-      listings: { a: { 10: 97 } },
+      listings: { a: { 10: 99 } },
     });
-    expect(rankOpportunities(inDeadZone)).toEqual([]);
+    expect(rankOpportunities(slightDiscount)).toHaveLength(1);
 
-    const pastDeadZone = inputs({
+    // Exactly at market still scores 0 and is excluded.
+    const atMarket = inputs({
       cards: [a],
       sales: [sale("a", 10, 100)],
-      listings: { a: { 10: 96 } },
+      listings: { a: { 10: 100 } },
     });
-    expect(rankOpportunities(pastDeadZone)).toHaveLength(1);
+    expect(rankOpportunities(atMarket)).toEqual([]);
   });
 
   it("excludes a card listed at market even when the card itself is excellent", () => {
@@ -304,19 +306,17 @@ describe("rankOpportunities", () => {
     expect(result[1].bestGrade.listingConfidence).toBeLessThan(0.1);
   });
 
-  it("ranks a fast-trading grade above one with the same discount but months between sales", () => {
-    // Both market prices are fully confident (5 sales, newest within days) and
-    // both listings sit 20% under market — only sale velocity differs.
+  it("exposes liquiditySignal for context but does not use it in ranking", () => {
+    // Both listings sit 20% under market with full confidence — only velocity differs.
+    // Liquidity is excluded from quality (collector use case), so scores must be equal.
     const cards = [card("slowmover"), card("fastmover")];
     const result = rankOpportunities(
       inputs({
         cards,
         sales: [
-          // 5 sales spread over ~a year: trustworthy price, hard exit.
           ...[3, 80, 160, 240, 320].map((d) =>
             sale("slowmover", 10, 100, { soldAt: daysAgo(d) })
           ),
-          // 5 sales inside a week: same price, liquid market.
           ...[1, 2, 3, 4, 5].map((d) =>
             sale("fastmover", 10, 100, { soldAt: daysAgo(d) })
           ),
@@ -324,11 +324,13 @@ describe("rankOpportunities", () => {
         listings: { slowmover: { 10: 80 }, fastmover: { 10: 80 } },
       })
     );
-    expect(result.map((r) => r.id)).toEqual(["fastmover", "slowmover"]);
-    expect(result[0].bestGrade.listingConfidence).toBe(1);
-    expect(result[1].bestGrade.listingConfidence).toBe(1);
-    expect(result[0].bestGrade.liquiditySignal).toBe(1);
-    expect(result[1].bestGrade.liquiditySignal).toBe(0);
+    expect(result).toHaveLength(2);
+    // Scores are equal — liquidity does not drive ranking.
+    expect(result[0].bestGrade.score).toBeCloseTo(result[1].bestGrade.score, 5);
+    // liquiditySignal is still surfaced for display.
+    const fast = result.find((r) => r.id === "fastmover")!;
+    const slow = result.find((r) => r.id === "slowmover")!;
+    expect(fast.bestGrade.liquiditySignal).toBeGreaterThan(slow.bestGrade.liquiditySignal);
   });
 
   it("normalizes the population signal across the full collection, not just gated cards", () => {

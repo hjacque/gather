@@ -8,7 +8,6 @@
  *   lost to PSA x        another grade of the same card scored higher
  *   no listing           no buy-side offer (CardMarket today / live eBay ask) for this grade
  *   overpriced           listed above market
- *   dead zone            listed <3% below market — fair price, not a deal
  *   conf-killed          would clear today's cutoff if confidence were 1
  *   below cutoff         not competitive even with full confidence
  *
@@ -36,7 +35,6 @@ import {
   computeQualitySignal,
   computeScore,
   normalizeInverted,
-  DISCOUNT_DEAD_ZONE,
 } from "../application/opportunities/opportunityScore";
 
 const VINTAGE_YEAR = Number(
@@ -55,7 +53,6 @@ type Verdict =
   | "lost to sibling"
   | "no listing"
   | "overpriced"
-  | "dead zone"
   | "conf-killed"
   | "below cutoff";
 
@@ -213,7 +210,6 @@ async function main() {
         gradeSignal,
         ageSignals[cardIdx],
         computePremiumSignal(mp.psaGrade),
-        liquiditySignal
       );
       const score = computeScore(rawDeal * confidence, qualitySignal);
       const scoreIfConf1 = computeScore(rawDeal, qualitySignal);
@@ -221,8 +217,6 @@ async function main() {
       let verdict: Verdict;
       if (listingEur === null) verdict = "no listing";
       else if (discountPct !== null && discountPct <= 0) verdict = "overpriced";
-      else if (discountPct !== null && discountPct <= DISCOUNT_DEAD_ZONE * 100)
-        verdict = "dead zone";
       else if (shown.get(card.id) === mp.psaGrade) verdict = "in top 20";
       else if (shown.has(card.id)) verdict = "lost to sibling";
       else if (scoreIfConf1 > cutoff && score <= cutoff) verdict = "conf-killed";
