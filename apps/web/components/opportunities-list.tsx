@@ -445,9 +445,9 @@ function ScoreBadge({ g }: { g: GradeOpportunity }) {
         <p>
           The deal ({Math.round(g.listingSignal * 100)}) is the confidence-weighted
           discount vs market — the base of the score. Card quality
-          ({Math.round(g.qualitySignal * 100)}) scales it between 0.4× and 1×: a
-          great card amplifies a discount but never replaces one. 35+ is strong,
-          20+ good. Cards without a real discount are not shown at all.
+          ({Math.round(g.qualitySignal * 100)}) scales it between 0.25× and 1×: a
+          great card can amplify a discount up to 4× but never replaces one. 35+
+          is strong, 20+ good. Cards at or above market are not shown at all.
         </p>
       </TooltipContent>
     </Tooltip>
@@ -511,13 +511,13 @@ function DiscountCell({ g }: { g: GradeOpportunity }) {
       <p className="font-semibold mb-1">Discount — the base of the score</p>
       <p>
         Today&apos;s cheapest listing vs the Market Sale Price (recency-weighted
-        median of eBay sold prices for this grade). Discounts under 3% score
-        zero — that&apos;s within the median&apos;s noise, a fair price rather
-        than a deal. Above that, the discount counts to the extent the market
-        price is trustworthy: {conf}% confidence here, from {g.sampleSize}{' '}
-        eligible sale{g.sampleSize === 1 ? '' : 's'} (5+ = full credit) and the
-        last sale being {lastSoldDays}d ago (full credit within 14d, halving
-        every 30d after).
+        median of eBay sold prices for this grade). Any listing below market
+        scores positive. Best-offer listings get a 9% effective discount applied
+        to reflect the ability to negotiate below the ask. The discount counts to
+        the extent the market price is trustworthy: {conf}% confidence here, from{' '}
+        {g.sampleSize} eligible sale{g.sampleSize === 1 ? '' : 's'} (5+ = full
+        credit) and the last sale being {lastSoldDays}d ago (full credit within
+        14d, halving every 30d after).
       </p>
     </>
   );
@@ -619,12 +619,12 @@ function LiquidityCell({ g }: { g: GradeOpportunity }) {
       highlight={g.liquidityLevel}
       tooltip={
         <>
-          <p className="font-semibold mb-1">Liquidity — 14% of card quality</p>
+          <p className="font-semibold mb-1">Liquidity — informational</p>
           <p>
-            How fast this grade trades, i.e. how easily you could exit the
-            position. Log-scaled from one sale a month (0) to one sale a day
-            (full marks). Distinct from price confidence: a handful of lifetime
-            sales can price a card reliably yet still take months to resell.
+            How fast this grade trades. Shown for context only — not part of the
+            score. For a collector buying to hold, a rare promo that trades once
+            a year is a trophy, not a liability. Log-scaled from one sale a month
+            (0) to one sale a day (1).
           </p>
         </>
       }
@@ -635,7 +635,7 @@ function LiquidityCell({ g }: { g: GradeOpportunity }) {
 function PopCell({ g }: { g: GradeOpportunity }) {
   const tooltip = (
     <>
-      <p className="font-semibold mb-1">Population — 31% of card quality</p>
+      <p className="font-semibold mb-1">Population — ~22–35% of card quality</p>
       <p>
         Total PSA-graded copies of this card, percentile-ranked against the
         whole collection: the scarcer the card, the higher it scores. A missing
@@ -660,11 +660,11 @@ function PopCell({ g }: { g: GradeOpportunity }) {
 function GradeCell({ g }: { g: GradeOpportunity }) {
   const tooltip = (
     <>
-      <p className="font-semibold mb-1">Grade rarity — 34% of card quality</p>
+      <p className="font-semibold mb-1">Grade rarity — ~25–39% of card quality</p>
       <p>
-        The largest quality factor: the share of this card&apos;s graded copies
-        at PSA {g.psaGrade} or higher. The smaller that share, the harder this
-        grade is to pull and the higher it scores.
+        The share of this card&apos;s graded copies at PSA {g.psaGrade} or
+        higher. The smaller that share, the harder this grade is to pull and the
+        higher it scores.
       </p>
     </>
   );
@@ -694,7 +694,7 @@ function AgeCell({ g, releaseDate }: { g: GradeOpportunity; releaseDate: Date | 
       highlight={g.ageLevel}
       tooltip={
         <>
-          <p className="font-semibold mb-1">Age — 14% of card quality</p>
+          <p className="font-semibold mb-1">Age — ~10–16% of card quality</p>
           <p>
             Release date ranked across the collection: older cards score
             higher, on the thesis that vintage value is more established and
@@ -715,10 +715,13 @@ function PremiumCell({ g }: { g: GradeOpportunity }) {
       highlight={g.premiumLevel}
       tooltip={
         <>
-          <p className="font-semibold mb-1">Gem mint — 8% of card quality</p>
+          <p className="font-semibold mb-1">Gem mint — 10% (vintage) to 43% (modern)</p>
           <p>
-            A flat bonus for PSA 10, the most sought-after and most liquid
-            grade. All-or-nothing: any other grade gets no premium.
+            PSA 10 is the de facto standard for modern cards, so the premium
+            weight scales up with recency: for a modern card it&apos;s the
+            dominant quality factor, for a vintage card where PSA 10 is
+            genuinely rare it tapers off. All-or-nothing: any other grade gets
+            no premium.
           </p>
         </>
       }
