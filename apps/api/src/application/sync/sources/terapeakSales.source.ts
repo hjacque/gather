@@ -12,6 +12,11 @@ import {
 const PAGE_SIZE = 50;
 const MAX_OFFSET = 500; // up to 10 pages / 500 rows per Card
 
+// The command to refresh an expired eBay seller session. Surfaced verbatim in
+// the Sale Sync's auth-expiry logs so the operator can copy-paste the fix.
+export const TERAPEAK_REAUTH_CMD =
+  "cd apps/api && npx ts-node src/scripts/terapeakLogin.ts";
+
 // Thrown when Terapeak bounces to sign-in: the seller session expired. The Sale
 // Sync catches this to abort the authenticated ingest phase loudly rather than
 // silently ingesting nothing for the rest of a long run.

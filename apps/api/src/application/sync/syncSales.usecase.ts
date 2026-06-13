@@ -8,6 +8,7 @@ import { EbaySalesSource } from "./sources/ebaySales.source";
 import {
   TerapeakSalesSource,
   TerapeakAuthError,
+  TERAPEAK_REAUTH_CMD,
 } from "./sources/terapeakSales.source";
 import { parseListingTitle } from "./sources/listingTitleParser";
 import { classifyReverification } from "./sources/reverificationClassifier";
@@ -90,6 +91,12 @@ export class SyncSalesUsecase {
     const { browser, page } = await this.openBrowser();
     try {
       await this.processCard(card, page, counters);
+    } catch (error) {
+      if (!(error instanceof TerapeakAuthError)) throw error;
+      console.error(
+        `[SyncSales] Terapeak session expired — could not sync ${card.name}. ` +
+          `Re-authenticate and retry:\n  ${TERAPEAK_REAUTH_CMD}`
+      );
     } finally {
       await page.close();
       await browser.close();
@@ -137,7 +144,7 @@ export class SyncSalesUsecase {
         if (!(error instanceof TerapeakAuthError)) throw error;
         console.error(
           `[SyncSales] Terapeak session expired after ${ingestOrder.length}/${applicable.length} Cards — ` +
-            "finalizing what was ingested; re-run terapeakLogin.ts to sync the rest."
+            `finalizing what was ingested. Re-authenticate and re-run:\n  ${TERAPEAK_REAUTH_CMD}`
         );
       }
 
@@ -184,7 +191,10 @@ export class SyncSalesUsecase {
       // Terapeak session must not crash the run — skip this Card's sales and let
       // prices / listings continue. Re-throw anything else.
       if (!(error instanceof TerapeakAuthError)) throw error;
-      console.warn(`[SyncSales] Terapeak session expired — skipping sales for ${card.name}`);
+      console.warn(
+        `[SyncSales] Terapeak session expired — skipping sales for ${card.name}. ` +
+          `Re-authenticate:\n  ${TERAPEAK_REAUTH_CMD}`
+      );
     }
     return into;
   }

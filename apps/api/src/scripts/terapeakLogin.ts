@@ -1,37 +1,27 @@
 import { connect } from "puppeteer-real-browser";
 import * as fs from "fs";
-import * as path from "path";
 import * as readline from "readline";
 
 /**
- * One-off HITL login + capture tool for the Terapeak sales source.
+ * Terapeak re-authentication helper.
  *
- * The real Sale Sync runs Chrome inside Xvfb (an invisible virtual display), so
- * there is no window to sign into. This script opens the SAME persistent Chrome
- * profile the sync uses (userDataDir) but on your real display, so you can:
- *
- *   1. sign into your eBay *seller* account by hand (cookie persists to the
- *      profile, so every later headless sync reuses it), and
- *   2. land on the Terapeak research results page and dump its HTML into
- *      __fixtures__/terapeak-research.html, which the readRows selectors are
- *      tuned against.
+ * The Sale Sync runs Chrome inside Xvfb (an invisible virtual display) and only
+ * reuses an existing eBay seller session — it never logs in. eBay's seller
+ * session is short-lived, so when a sync logs "Terapeak session not
+ * authenticated" you run this to refresh it: it opens the SAME persistent Chrome
+ * profile the sync uses (userDataDir), but on your real display, so you can sign
+ * in by hand. The cookie persists to the profile and the next sync reuses it.
  *
  * Must run on a machine with a real display (DISPLAY set). The profile dir is
  * shared with SyncSalesUsecase.openBrowser — override both with EBAY_PROFILE_DIR.
  *
  * Usage:
- *   ts-node src/scripts/terapeakLogin.ts ["<terapeak research URL>"]
+ *   cd apps/api && npx ts-node src/scripts/terapeakLogin.ts
  */
 
-const FIXTURES_DIR = path.resolve(
-  __dirname,
-  "../application/sync/sources/__fixtures__"
-);
-
-// Default landing page: Sold research for a query we know returns best-offer
-// rows. Pass your own URL as argv[2] to capture a different card.
-const DEFAULT_URL =
-  "https://www.ebay.com/sh/research?marketplace=EBAY-US&tabName=SOLD&dayRange=30&keywords=pokemon%20charizard%20psa%2010";
+// Terapeak research home — landing here confirms the session is good (a logged-
+// out profile bounces to sign-in instead).
+const RESEARCH_URL = "https://www.ebay.com/sh/research";
 
 function prompt(question: string): Promise<void> {
   const rl = readline.createInterface({
@@ -47,7 +37,6 @@ function prompt(question: string): Promise<void> {
 }
 
 async function main() {
-  const url = process.argv[2] ?? DEFAULT_URL;
   const userDataDir =
     process.env.EBAY_PROFILE_DIR ??
     `${process.env.HOME ?? "."}/.gather/ebay-profile`;
@@ -56,7 +45,7 @@ async function main() {
   console.log(`[terapeak-login] Using persistent profile:\n  ${userDataDir}`);
   const { browser, page } = await connect({
     headless: false,
-    disableXvfb: true, // real display, so you can actually see + use the window
+    disableXvfb: true, // real display, so you can see + use the window
     args: [],
     customConfig: { userDataDir },
     turnstile: true,
@@ -69,35 +58,40 @@ async function main() {
     height: Math.floor(768 + Math.random() * 100),
   });
 
-  console.log(`[terapeak-login] Navigating to:\n  ${url}`);
-  await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
+  console.log(`[terapeak-login] Opening ${RESEARCH_URL}`);
+  await page.goto(RESEARCH_URL, { waitUntil: "networkidle2", timeout: 60000 });
 
   console.log(
     "\n[terapeak-login] In the browser window:\n" +
       "  - sign into your eBay SELLER account (tick 'stay signed in')\n" +
       "  - clear any Cloudflare / 'verify you are human' check\n" +
-      "  - make sure the Terapeak SOLD results table is showing rows\n"
+      "  - make sure the Terapeak research page is showing (not sign-in)\n"
   );
-  await prompt("[terapeak-login] Press Enter to capture the rendered HTML... ");
+  await prompt("[terapeak-login] Press Enter once you're signed in... ");
 
-  const html = await page.content();
-  const htmlPath = path.join(FIXTURES_DIR, "terapeak-research.html");
-  fs.mkdirSync(FIXTURES_DIR, { recursive: true });
-  fs.writeFileSync(htmlPath, html, "utf-8");
-  await page.screenshot({
-    path: path.join(FIXTURES_DIR, "terapeak-research.png"),
-    fullPage: true,
-  });
+  // Verify the session took: a logged-out profile redirects to sign-in.
+  await page.goto(RESEARCH_URL, { waitUntil: "networkidle2", timeout: 60000 });
+  const url = page.url();
+  const body = await page
+    .evaluate(() => document.body.innerText)
+    .catch(() => "");
+  const loggedOut =
+    /signin\.ebay\./i.test(url) ||
+    /sign in to (?:your account|continue)|access denied/i.test(body);
 
-  console.log(`\n[terapeak-login] Saved HTML:       ${htmlPath}`);
-  console.log(`[terapeak-login] Final URL:        ${page.url()}`);
-  console.log(`[terapeak-login] HTML size:        ${(html.length / 1024).toFixed(1)} KB`);
-  console.log(
-    "[terapeak-login] Login cookie is now persisted; the headless sync will reuse it."
-  );
+  if (loggedOut) {
+    console.error(
+      "[terapeak-login] Still not authenticated — the session did not persist. " +
+        "Re-run and complete sign-in (including any 2FA) before pressing Enter."
+    );
+  } else {
+    console.log(
+      "[terapeak-login] Authenticated — the cookie is persisted; the next sync will reuse it."
+    );
+  }
 
   await browser.close();
-  process.exit(0);
+  process.exit(loggedOut ? 1 : 0);
 }
 
 main().catch((err) => {
