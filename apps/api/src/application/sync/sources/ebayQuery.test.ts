@@ -74,22 +74,22 @@ describe("stripSetWords (the 'strip-set' strategy)", () => {
 });
 
 describe("buildEbayQuery", () => {
-  it("renders pokemon <core> <number> psa <year>", () => {
+  it("renders <core> <number> psa <year>", () => {
     expect(buildEbayQuery("Full Art/Cramorant Pokemon Stamp Box", "226", 2021)).toBe(
-      "pokemon cramorant 226 psa 2021"
+      "cramorant 226 psa 2021"
     );
   });
 
   it("honors a non-default strategy", () => {
     expect(buildEbayQuery("Full Art/Cramorant Pokemon Stamp Box", "226", 2021, "full")).toBe(
-      "pokemon cramorant stamp box 226 psa 2021"
+      "cramorant stamp box 226 psa 2021"
     );
   });
 
   it("omits a missing number and year without leaving gaps", () => {
     expect(buildEbayQuery("Pikachu-Holo Illustrator", null, 1998)).toBe(
-      "pokemon pikachu psa 1998"
+      "pikachu psa 1998"
     );
-    expect(buildEbayQuery("Mysterious Pearl", null, null)).toBe("pokemon mysterious pearl psa");
+    expect(buildEbayQuery("Mysterious Pearl", null, null)).toBe("mysterious pearl psa");
   });
 });

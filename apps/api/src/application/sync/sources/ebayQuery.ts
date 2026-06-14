@@ -4,13 +4,13 @@
  * Turns a Card's messy display name into a clean eBay completed-listings search
  * term of the shape:
  *
- *   pokemon <core-name> <number> psa <year>
- *   "Full Art/Cramorant Pokemon Stamp Box" #226 (2021) -> "pokemon cramorant 226 psa 2021"
+ *   <core-name> <number> psa <year>
+ *   "Full Art/Cramorant Pokemon Stamp Box" #226 (2021) -> "cramorant 226 psa 2021"
  *
  * The query is deliberately broad on the name (the card-aware Listing Title
- * Parser filters results down by collector number); the `pokemon` prefix and
- * release `year` are precision anchors that cut cross-franchise and cross-era
- * noise out of the result set.
+ * Parser filters results down by collector number); the collector `number`,
+ * `psa` grade marker and release `year` are the precision anchors that cut
+ * cross-era and non-graded noise out of the result set.
  *
  * Core-name reduction: Card names embed the specific promo/box/store the card
  * came from ("Pokemon Stamp Box", "Pokemon Center Yokohama Special Box", ...),
@@ -114,8 +114,8 @@ export function applyStrategy(name: string, strategy: QueryStrategy): string {
 }
 
 /**
- * Build the raw `_nkw` search term: `pokemon <name> <number> psa <year>`, where
- * the name part is produced by `strategy` (default `core`).
+ * Build the raw `_nkw` search term: `<name> <number> psa <year>`, where the name
+ * part is produced by `strategy` (default `core`).
  */
 export function buildEbayQuery(
   name: string,
@@ -124,7 +124,7 @@ export function buildEbayQuery(
   strategy: QueryStrategy = "core"
 ): string {
   return collapse(
-    ["pokemon", applyStrategy(name, strategy), number ?? "", "psa", year ?? ""]
+    [applyStrategy(name, strategy), number ?? "", "psa", year ?? ""]
       .filter(Boolean)
       .join(" ")
   );
