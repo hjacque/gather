@@ -124,7 +124,6 @@ export type SaleEntity = {
   price: number;
   currency: string;
   title: string;
-  isBestOffer: boolean;
   // eBay store slug of the seller, when the listing came from a store
   // (e.g. "psa"); null otherwise.
   seller: string | null;

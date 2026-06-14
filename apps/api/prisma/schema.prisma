@@ -143,7 +143,6 @@ model Sale {
   price             Float
   currency          String
   title             String
-  isBestOffer       Boolean           @default(false)
   seller            String?
   status            SaleStatus        @default(pending)
   verificationStage VerificationStage @default(unverified)

@@ -38,7 +38,6 @@ export class GetUnreviewedSalesUsecase {
             currency: sale.currency,
             priceEur: convertToEur(sale.price, sale.currency, usdToEur),
             soldAt: sale.soldAt,
-            isBestOffer: sale.isBestOffer,
             status: sale.status,
             url: `https://www.ebay.com/itm/${sale.itemId}`,
           })

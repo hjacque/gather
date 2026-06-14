@@ -20,7 +20,6 @@ const sale = (
     itemId: `item-${seq}`,
     currency: "EUR",
     title: "test listing",
-    isBestOffer: false,
     seller: null,
     status: "confirmed",
     verificationStage: "complete",
@@ -170,66 +169,6 @@ describe("computeMarketPrices", () => {
       const sales = [
         sale({ psaGrade: 10, price: 500, soldAt: now, status: "invalid" }),
         sale({ psaGrade: 10, price: 480, soldAt: now, currency: "JPY" }),
-      ];
-      expect(computeMarketPrices(sales, RATE, now)).toEqual([]);
-    });
-  });
-
-  describe("Best-Offer / review gating", () => {
-    it("excludes an unreviewed Best-Offer (inflated ask, not a realized price)", () => {
-      const sales = [
-        sale({ psaGrade: 10, price: 500, soldAt: now }),
-        sale({
-          psaGrade: 10,
-          price: 9999,
-          soldAt: now,
-          isBestOffer: true,
-          reviewedAt: null,
-        }),
-      ];
-      const record = computeMarketPrices(sales, RATE, now)[0];
-      // The 9999 Best-Offer ask is ignored; only the 500 realized sale counts.
-      expect(record.priceEur).toBe(500);
-      expect(record.sampleSize).toBe(1);
-    });
-
-    it("includes a reviewed Best-Offer (true price entered)", () => {
-      const sales = [
-        sale({
-          psaGrade: 10,
-          price: 480,
-          soldAt: now,
-          isBestOffer: true,
-          reviewedAt: now,
-        }),
-      ];
-      const record = computeMarketPrices(sales, RATE, now)[0];
-      expect(record.priceEur).toBe(480);
-      expect(record.sampleSize).toBe(1);
-    });
-
-    it("includes non-Best-Offer sales regardless of review state", () => {
-      const sales = [
-        sale({
-          psaGrade: 10,
-          price: 300,
-          soldAt: now,
-          isBestOffer: false,
-          reviewedAt: null,
-        }),
-      ];
-      expect(computeMarketPrices(sales, RATE, now)[0].sampleSize).toBe(1);
-    });
-
-    it("yields no estimate for a grade whose only sale is an unreviewed Best-Offer", () => {
-      const sales = [
-        sale({
-          psaGrade: 9,
-          price: 250,
-          soldAt: now,
-          isBestOffer: true,
-          reviewedAt: null,
-        }),
       ];
       expect(computeMarketPrices(sales, RATE, now)).toEqual([]);
     });

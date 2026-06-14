@@ -24,7 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Check, ExternalLink, X } from 'lucide-react';
 
 const GRADES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -220,17 +219,10 @@ function SaleReviewRow({
   onInvalidate: () => void;
 }) {
   const [grade, setGrade] = React.useState(sale.psaGrade);
-  // Best-Offer sales need their true accepted price entered before they count;
-  // the field starts blank so the listing price isn't mistaken for the real one.
-  const [priceText, setPriceText] = React.useState('');
-
-  const parsedPrice = priceText.trim() === '' ? null : Number(priceText);
-  const priceInvalid = parsedPrice !== null && !(parsedPrice > 0);
 
   const handleApprove = () => {
     const edits: SaleEdits = {};
     if (grade !== sale.psaGrade) edits.psaGrade = grade;
-    if (sale.isBestOffer && parsedPrice !== null) edits.price = parsedPrice;
     onApprove(edits);
   };
 
@@ -263,47 +255,20 @@ function SaleReviewRow({
         <ExternalLink className="h-3 w-3 shrink-0" />
       </a>
 
-      {sale.isBestOffer ? (
-        <div className="w-36 shrink-0">
-          <div className="flex items-center gap-1">
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              inputMode="decimal"
-              placeholder={sale.price.toFixed(2)}
-              value={priceText}
-              onChange={(e) => setPriceText(e.target.value)}
-              aria-invalid={priceInvalid}
-              className="h-8"
-            />
-            <span className="text-muted-foreground text-xs">{sale.currency}</span>
-          </div>
-          <div className="text-muted-foreground text-right text-xs">
-            listed {sale.price.toFixed(2)}
-          </div>
+      <div className="w-36 shrink-0 text-right tabular-nums">
+        <div>
+          {sale.price.toFixed(2)} {sale.currency}
         </div>
-      ) : (
-        <div className="w-36 shrink-0 text-right tabular-nums">
-          <div>
-            {sale.price.toFixed(2)} {sale.currency}
-          </div>
-          <div className="text-muted-foreground text-xs">
-            {formatEur(sale.priceEur)}
-          </div>
+        <div className="text-muted-foreground text-xs">
+          {formatEur(sale.priceEur)}
         </div>
-      )}
+      </div>
 
       <span className="text-muted-foreground w-24 shrink-0 text-right text-xs">
         {dateFmt.format(new Date(sale.soldAt))}
       </span>
 
       <div className="flex w-28 shrink-0 justify-end gap-1">
-        {sale.isBestOffer ? (
-          <Badge variant="outline" className="text-xs">
-            Best Offer
-          </Badge>
-        ) : null}
         {sale.status === 'pending' ? (
           <Badge variant="outline" className="text-xs">
             pending
@@ -315,7 +280,7 @@ function SaleReviewRow({
         size="sm"
         variant="outline"
         className="shrink-0"
-        disabled={busy || priceInvalid}
+        disabled={busy}
         onClick={handleApprove}
       >
         <Check className="h-4 w-4" />

@@ -68,7 +68,6 @@ const sale = (
     price,
     currency: "EUR",
     title: "test listing",
-    isBestOffer: false,
     seller: null,
     status: "confirmed",
     verificationStage: "complete",
@@ -194,15 +193,12 @@ describe("rankOpportunities", () => {
     expect(result[0].bestGrade.listingIsBestOffer).toBe(true);
   });
 
-  it("gates on a Market Sale Price: ineligible sales (invalid, unreviewed Best-Offer) cannot qualify a grade", () => {
+  it("gates on a Market Sale Price: ineligible sales (invalid) cannot qualify a grade", () => {
     const a = card("a");
     const result = rankOpportunities(
       inputs({
         cards: [a],
-        sales: [
-          sale("a", 10, 100, { status: "invalid" }),
-          sale("a", 10, 9999, { isBestOffer: true, reviewedAt: null }),
-        ],
+        sales: [sale("a", 10, 100, { status: "invalid" })],
         listings: { a: { 10: 80 } },
       })
     );

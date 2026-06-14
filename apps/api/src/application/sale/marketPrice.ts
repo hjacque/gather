@@ -17,10 +17,6 @@ type SaleForPricing = {
   psaGrade: number;
   priceEur: number;
   soldAt: Date;
-  // A Best-Offer's scraped price is the listing price, not the realized one, so
-  // it only counts once Sale Review has enriched it (reviewedAt set).
-  isBestOffer: boolean;
-  reviewedAt: Date | null;
 };
 
 // Eligibility: moderated-out Sales (status invalid) are dropped, and prices
@@ -39,17 +35,9 @@ const toSalesForPricing = (
         psaGrade: sale.psaGrade,
         priceEur,
         soldAt: sale.soldAt,
-        isBestOffer: sale.isBestOffer,
-        reviewedAt: sale.reviewedAt,
       },
     ];
   });
-
-// A sale contributes to Market Sale Price only if it is not a Best-Offer, or it
-// is a Best-Offer that has been reviewed (its true price entered). See Market
-// Sale Price in CONTEXT.md.
-const countsTowardMarketPrice = (sale: SaleForPricing): boolean =>
-  !sale.isBestOffer || sale.reviewedAt != null;
 
 export type GradeMarketPrice = {
   psaGrade: number;
@@ -83,8 +71,6 @@ const computeFromEligible = (
     // Ignore sales after `now` so callers can reconstruct the price as of a past
     // date (used for the 7-day trend baseline).
     if (sale.soldAt > now) continue;
-    // Unreviewed Best-Offers carry an inflated ask, not a realized price.
-    if (!countsTowardMarketPrice(sale)) continue;
     const list = byGrade.get(sale.psaGrade);
     if (list) list.push(sale);
     else byGrade.set(sale.psaGrade, [sale]);

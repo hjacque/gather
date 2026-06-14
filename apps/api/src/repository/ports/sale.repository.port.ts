@@ -69,8 +69,7 @@ export abstract class SaleRepositoryPort {
   ): Promise<{ cards: UnreviewedSalesCard[]; totalCards: number }>;
 
   // Record a Sale Review: stamp reviewedAt and apply any admin corrections
-  // (a misparsed grade, a Best-Offer's true price). Edits left undefined are
-  // untouched.
+  // (a misparsed grade, a wrong price). Edits left undefined are untouched.
   abstract markReviewed(
     saleId: string,
     edits: { psaGrade?: number; price?: number }

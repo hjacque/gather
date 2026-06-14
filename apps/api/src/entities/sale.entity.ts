@@ -18,7 +18,6 @@ export type NewSale = {
   price: number;
   currency: string;
   title: string;
-  isBestOffer: boolean;
   // eBay store slug of the seller, or null for non-store listings.
   seller: string | null;
   reviewedAt: Date | null;

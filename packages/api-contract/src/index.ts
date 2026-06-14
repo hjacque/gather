@@ -29,7 +29,6 @@ export type SaleRecord = {
   priceEur: number;
   soldAt: Date;
   status: SaleStatus;
-  isBestOffer: boolean;
   // Link to the original marketplace listing (eBay item page).
   url: string;
 };
@@ -178,7 +177,6 @@ export type ReviewSaleRecord = {
   currency: string;
   priceEur: number | null;
   soldAt: Date;
-  isBestOffer: boolean;
   status: SaleStatus;
   url: string;
 };

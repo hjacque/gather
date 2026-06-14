@@ -12,7 +12,6 @@ const fakeSale = {
   price: 100,
   currency: "EUR",
   title: "",
-  isBestOffer: false,
   seller: null,
   status: "pending" as const,
   verificationStage: "unverified" as const,

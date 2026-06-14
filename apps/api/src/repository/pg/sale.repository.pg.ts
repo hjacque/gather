@@ -45,7 +45,6 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
           price: sale.price,
           currency: sale.currency,
           title: sale.title,
-          isBestOffer: sale.isBestOffer,
           seller: sale.seller,
           soldAt: sale.soldAt,
           ...trustedFields,
@@ -56,8 +55,8 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
 
     // Reviewed Sales are frozen against re-scrape: their scraped fields are
     // settled history, and the daily Sale Sync must not clobber an admin's grade
-    // correction or entered Best-Offer price. Re-verification still runs (it
-    // updates status/verificationStage, not scraped fields). See Sale Review.
+    // or price correction. Re-verification still runs (it updates
+    // status/verificationStage, not scraped fields). See Sale Review.
     if (existing.reviewedAt) return false;
 
     await this.prisma.sale.update({
@@ -67,7 +66,6 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
         price: sale.price,
         currency: sale.currency,
         title: sale.title,
-        isBestOffer: sale.isBestOffer,
         seller: sale.seller,
         soldAt: sale.soldAt,
         ...trustedFields,
@@ -193,9 +191,7 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
           reviewedAt: null,
           status: "pending",
         },
-        // Best-Offers last (they need manual price entry) so the easy
-        // pricing-relevant sales clear first.
-        orderBy: [{ isBestOffer: "asc" }, { soldAt: "asc" }],
+        orderBy: { soldAt: "asc" },
       }),
     ]);
 
