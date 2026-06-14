@@ -15,7 +15,7 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
     this.saleMapper = new SaleMapper();
   }
 
-  async upsert(sale: NewSale): Promise<void> {
+  async upsert(sale: NewSale): Promise<boolean> {
     const { platform, itemId, cardId } = sale;
     const existing = await this.prisma.sale.findUnique({
       where: { platform_itemId_cardId: { platform, itemId, cardId } },
@@ -51,14 +51,14 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
           ...trustedFields,
         },
       });
-      return;
+      return true;
     }
 
     // Reviewed Sales are frozen against re-scrape: their scraped fields are
     // settled history, and the daily Sale Sync must not clobber an admin's grade
     // correction or entered Best-Offer price. Re-verification still runs (it
     // updates status/verificationStage, not scraped fields). See Sale Review.
-    if (existing.reviewedAt) return;
+    if (existing.reviewedAt) return false;
 
     await this.prisma.sale.update({
       where: { id: existing.id },
@@ -73,6 +73,7 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
         ...trustedFields,
       },
     });
+    return false;
   }
 
   async getSaleById(saleId: string) {
@@ -119,11 +120,11 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
         status: "pending",
         ...(cardId ? { cardId } : {}),
         OR: [
-          { verificationStage: "unverified", createdAt: { lte: sevenDaysAgo } },
-          { verificationStage: "checked_7d", createdAt: { lte: thirtyDaysAgo } },
+          { verificationStage: "unverified", soldAt: { lte: sevenDaysAgo } },
+          { verificationStage: "checked_7d", soldAt: { lte: thirtyDaysAgo } },
         ],
       },
-      orderBy: { createdAt: "asc" },
+      orderBy: { soldAt: "asc" },
     });
 
     return sales.map((s) => this.saleMapper.toEntity(s));

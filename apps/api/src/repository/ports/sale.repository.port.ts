@@ -22,7 +22,10 @@ export abstract class SaleRepositoryPort {
   // because they are owned by the re-verification pass. Reviewed Sales
   // (reviewedAt set) are frozen — their scraped fields are not touched, so an
   // admin's grade/price corrections survive the daily re-scrape.
-  abstract upsert(sale: NewSale): Promise<void>;
+  // Returns true when a new row was created, false when an existing one was
+  // refreshed (or left frozen) — so callers can tell a first-time scrape from a
+  // re-scrape and skip work already done for known Sales (e.g. seller checks).
+  abstract upsert(sale: NewSale): Promise<boolean>;
 
   abstract getSaleById(saleId: string): Promise<SaleEntity>;
 
@@ -35,10 +38,12 @@ export abstract class SaleRepositoryPort {
   abstract getCardsSales(cardIds: string[]): Promise<Map<string, SaleEntity[]>>;
 
   // Sales due for a re-verification checkpoint, relative to `now`:
-  //   - pending + unverified, first scraped ≥ 7 days ago  (7-day check)
-  //   - pending + checked_7d, first scraped ≥ 30 days ago (30-day check)
-  // Age keys off createdAt (when first scraped), not soldAt. Terminal Sales
-  // (confirmed/invalid) are never returned. Optionally scoped to one Card.
+  //   - pending + unverified, sold ≥ 7 days ago  (7-day check)
+  //   - pending + checked_7d, sold ≥ 30 days ago (30-day check)
+  // Age keys off soldAt, since the eBay cancellation window runs from the sale
+  // date, not from when we first scraped it (Terapeak surfaces sales already
+  // days old). Terminal Sales (confirmed/invalid) are never returned.
+  // Optionally scoped to one Card.
   abstract getSalesDueForVerification(
     now: Date,
     cardId?: string

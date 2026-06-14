@@ -59,6 +59,7 @@ type IngestedSale = {
   currency: string;
   title: string;
   soldAt: Date;
+  isNew: boolean; // first time this (listing, card) was scraped this run
 };
 
 // Per-Card outcome of Phase 2, for progress logging.
@@ -253,7 +254,7 @@ export class SyncSalesUsecase {
 
       // Persist as pending; seller is filled in by Phase 2. Terapeak's price is
       // the true accepted price, never an unresolved asking price.
-      await this.saleRepository.upsert({
+      const isNew = await this.saleRepository.upsert({
         cardId: card.id,
         platform: "ebay",
         itemId: sale.itemId,
@@ -274,6 +275,7 @@ export class SyncSalesUsecase {
         currency: sale.currency,
         title: sale.title,
         soldAt: sale.soldAt,
+        isNew,
       });
     }
     return ingested;
@@ -296,16 +298,14 @@ export class SyncSalesUsecase {
       invalid: 0,
       reverified: 0,
     };
-    const existing = new Map(
-      (await this.saleRepository.getCardSales(card.id)).map((s) => [s.itemId, s])
-    );
 
     for (const sale of ingested) {
-      // Skip sales already decided (terminal) or human-reviewed.
-      const current = existing.get(sale.itemId);
-      if (current && (current.status !== "pending" || current.reviewedAt)) {
-        continue;
-      }
+      // Only verify the seller for first-time scrapes. A sale already in the DB
+      // had its seller checked when it was first scraped; the seller's standing
+      // won't have meaningfully shifted, and the sale's lifecycle from here is
+      // owned by the re-verification pass below. Re-checking it every run is the
+      // costliest no-op in this Sync (one eBay item-page load per known sale).
+      if (!sale.isNew) continue;
 
       // Seller quality from the listing's eBay item page (Terapeak has none).
       const sellerQ = await this.ebaySalesSource.fetchSellerQuality(
