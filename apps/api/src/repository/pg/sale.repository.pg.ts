@@ -19,7 +19,7 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
     const { platform, itemId, cardId } = sale;
     const existing = await this.prisma.sale.findUnique({
       where: { platform_itemId_cardId: { platform, itemId, cardId } },
-      select: { id: true, reviewedAt: true },
+      select: { id: true, reviewedAt: true, source: true },
     });
 
     // Trusted-seller auto-validation: when reviewedAt is set the Sale is
@@ -46,6 +46,7 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
           currency: sale.currency,
           title: sale.title,
           seller: sale.seller,
+          source: sale.source,
           soldAt: sale.soldAt,
           ...trustedFields,
         },
@@ -59,6 +60,14 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
     // status/verificationStage, not scraped fields). See Sale Review.
     if (existing.reviewedAt) return false;
 
+    // Provenance guard (ADR 0008): the real-time public-search price may be a
+    // Best-Offer asking amount, so it must never overwrite Terapeak's
+    // authoritative accepted price. Terapeak always wins and upgrades the
+    // source; an ebay_search re-scrape of a terapeak row is a no-op.
+    if (sale.source === "ebay_search" && existing.source === "terapeak") {
+      return false;
+    }
+
     await this.prisma.sale.update({
       where: { id: existing.id },
       data: {
@@ -67,6 +76,7 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
         currency: sale.currency,
         title: sale.title,
         seller: sale.seller,
+        source: sale.source,
         soldAt: sale.soldAt,
         ...trustedFields,
       },

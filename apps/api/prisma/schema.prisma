@@ -61,6 +61,16 @@ enum VerificationStage {
   complete
 }
 
+// Which scraper a Sale's price came from. `terapeak` is eBay's authoritative
+// transaction price (accepted Best Offers included) but lags ~3 days; the public
+// completed-listings search (`ebay_search`) is real-time but lists Best-Offer
+// prices at the asking amount. The Sale upsert never lets an ebay_search price
+// overwrite a terapeak one — see ADR 0008.
+enum SaleSource {
+  terapeak
+  ebay_search
+}
+
 model Card {
   id                        String        @id @default(uuid())
   name                      String
@@ -146,6 +156,7 @@ model Sale {
   seller            String?
   status            SaleStatus        @default(pending)
   verificationStage VerificationStage @default(unverified)
+  source            SaleSource        @default(terapeak)
   reviewedAt        DateTime?
   soldAt            DateTime
 

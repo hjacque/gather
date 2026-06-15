@@ -43,6 +43,12 @@ export type SaleStatus = typeof SALE_STATUSES[number];
 export const VERIFICATION_STAGES = ['unverified', 'checked_7d', 'complete'] as const;
 export type VerificationStage = typeof VERIFICATION_STAGES[number];
 
+// Which scraper supplied a Sale's price. `terapeak` is eBay's authoritative sold
+// price (lags ~3 days); `ebay_search` is the real-time public completed-listings
+// search used to fill that fresh gap. Terapeak prices always win on conflict.
+export const SALE_SOURCES = ['terapeak', 'ebay_search'] as const;
+export type SaleSource = typeof SALE_SOURCES[number];
+
 export type CollectionEntryEntity = {
   id: string;
   cardId: string;
@@ -129,6 +135,8 @@ export type SaleEntity = {
   seller: string | null;
   status: SaleStatus;
   verificationStage: VerificationStage;
+  // Which scraper supplied this Sale's price. See SaleSource.
+  source: SaleSource;
   // Manual adjudication marker: null = unreviewed. Orthogonal to status and
   // verificationStage. See Sale Review in CONTEXT.md.
   reviewedAt: Date | null;

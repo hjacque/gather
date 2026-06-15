@@ -1,3 +1,4 @@
+import { mkdirSync } from "node:fs";
 import { connect } from "puppeteer-real-browser";
 import { CardEntity, Set } from "../../entities/card.entity";
 import { CardRepositoryPort } from "../../repository/ports/card.repository.port";
@@ -46,6 +47,8 @@ export class SyncUsecase {
       reverified: 0,
       confirmed: 0,
       invalidated: 0,
+      ebayScraped: 0,
+      ebayIngested: 0,
     };
     const listingCounters: ListingSyncCounters = {
       scraped: 0,
@@ -59,11 +62,20 @@ export class SyncUsecase {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 
+    // Persistent Chrome profile: the folded-in Sale Sync drives Terapeak, which
+    // is seller-only, so this browser must carry the eBay seller login cookie.
+    // Use the same profile dir SyncSalesUsecase.openBrowser uses (refreshed by
+    // scripts/terapeakLogin.ts); an empty customConfig launches a cookieless
+    // profile and every Terapeak fetch bounces to sign-in.
+    const userDataDir =
+      process.env.EBAY_PROFILE_DIR ??
+      `${process.env.HOME ?? "."}/.gather/ebay-profile`;
+    mkdirSync(userDataDir, { recursive: true });
     const { browser, page } = await connect({
       headless: false,
       disableXvfb: !mode.headless,
       args: [],
-      customConfig: {},
+      customConfig: { userDataDir },
       turnstile: true,
       connectOption: { defaultViewport: null },
       ignoreAllFlags: false,

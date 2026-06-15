@@ -23,6 +23,7 @@ const sale = (
     seller: null,
     status: "confirmed",
     verificationStage: "complete",
+    source: "terapeak",
     reviewedAt: null,
     createdAt: overrides.soldAt,
     updatedAt: overrides.soldAt,

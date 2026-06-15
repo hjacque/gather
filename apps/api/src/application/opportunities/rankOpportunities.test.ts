@@ -71,6 +71,7 @@ const sale = (
     seller: null,
     status: "confirmed",
     verificationStage: "complete",
+    source: "terapeak",
     reviewedAt: null,
     soldAt: daysAgo(5),
     createdAt: daysAgo(5),

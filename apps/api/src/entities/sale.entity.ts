@@ -1,6 +1,6 @@
 export { SaleEntity } from "@gather/types";
 
-import { Platform, SaleStatus, VerificationStage } from "@gather/types";
+import { Platform, SaleSource, SaleStatus, VerificationStage } from "@gather/types";
 
 // Outcome of a re-verification checkpoint applied to a Sale.
 export type SaleVerification = {
@@ -20,6 +20,9 @@ export type NewSale = {
   title: string;
   // eBay store slug of the seller, or null for non-store listings.
   seller: string | null;
+  // Which scraper supplied this price. The repository uses it to keep a
+  // real-time ebay_search price from overwriting an authoritative terapeak one.
+  source: SaleSource;
   reviewedAt: Date | null;
   status?: SaleStatus;
   verificationStage?: VerificationStage;

@@ -18,6 +18,13 @@ import { MarketSalePriceSnapshotService } from "../sale/marketSalePriceSnapshot"
 // re-running is idempotent over a fixed recent window (see #84).
 const WINDOW_DAYS = 30;
 
+// Trailing window the real-time public completed-listings search backfills:
+// just the most recent days Terapeak hasn't indexed yet (~3-day lag). Kept
+// narrow so this source covers the freshest sales without broadly re-introducing
+// Best-Offer asking-price bias on days Terapeak already reports accurately.
+// See ADR 0008.
+const EBAY_SEARCH_GAP_DAYS = 4;
+
 // Counters accumulated over one or many Cards in a single Sale Sync run.
 export type SaleSyncCounters = {
   scraped: number; // Terapeak sale rows returned by the source
@@ -29,6 +36,8 @@ export type SaleSyncCounters = {
   reverified: number; // pending Sales revisited at a checkpoint this run
   confirmed: number; // reverified Sales that survived to 30 days
   invalidated: number; // reverified Sales found gone / relisted
+  ebayScraped: number; // public completed-listings candidates returned
+  ebayIngested: number; // in-gap, parsed candidates upserted as ebay_search
 };
 
 export type SyncSalesResult = SaleSyncCounters & { cardId: string };
@@ -48,6 +57,8 @@ const emptyCounters = (): SaleSyncCounters => ({
   reverified: 0,
   confirmed: 0,
   invalidated: 0,
+  ebayScraped: 0,
+  ebayIngested: 0,
 });
 
 // A Terapeak sale persisted (as pending) in the authenticated Phase 1, carried
@@ -149,10 +160,13 @@ export class SyncSalesUsecase {
         );
       }
 
-      // Phase 2 — public eBay seller verification + re-verification (no auth).
-      // This is the slow stretch with no per-sale source output, so log a per-
-      // Card progress line to make it visibly advance rather than look stalled.
+      // Phase 2 — public eBay work (no auth): backfill the fresh-gap sales from
+      // the real-time completed-listings search, then seller-verify +
+      // re-verify. This is the slow stretch with no per-sale source output, so
+      // log a per-Card progress line to make it visibly advance rather than look
+      // stalled.
       for (const card of ingestOrder) {
+        await this.ingestEbaySearchSales(card, page, counters);
         const r = await this.verifyIngestedSales(
           card,
           ingestedByCard.get(card.id) ?? [],
@@ -223,6 +237,9 @@ export class SyncSalesUsecase {
     counters: SaleSyncCounters
   ): Promise<void> {
     const ingested = await this.ingestTerapeakSales(card, page, counters);
+    // Backfill the fresh days Terapeak lags behind from the real-time public
+    // search. Runs before verify so the re-verification pass sees these too.
+    await this.ingestEbaySearchSales(card, page, counters);
     await this.verifyIngestedSales(card, ingested, page, counters);
   }
 
@@ -263,6 +280,7 @@ export class SyncSalesUsecase {
         currency: sale.currency,
         title: sale.title,
         seller: null,
+        source: "terapeak",
         soldAt: sale.soldAt,
         reviewedAt: null,
       });
@@ -278,6 +296,59 @@ export class SyncSalesUsecase {
       });
     }
     return ingested;
+  }
+
+  // Fresh-gap backfill (public, no auth): pull the most recent sales from the
+  // real-time eBay completed-listings search for the days Terapeak hasn't
+  // indexed yet. Each public row carries its own seller / trust / activity, so
+  // these are seller-decided here at ingest (no extra item-page visit) — unlike
+  // Terapeak rows, which have no seller and need Phase 2's item page.
+  //
+  // Stored with source `ebay_search`: the repository will not let this price
+  // overwrite a Terapeak one, and Terapeak upgrades the row (and corrects any
+  // Best-Offer asking-price overstatement) once it catches up. Only sales inside
+  // the trailing gap are kept; older ones are Terapeak's to report.
+  private async ingestEbaySearchSales(
+    card: CardEntity,
+    page: Page,
+    counters: SaleSyncCounters
+  ): Promise<void> {
+    const candidates = await this.ebaySalesSource.fetch(card, page);
+    counters.ebayScraped += candidates.length;
+
+    const cutoff = new Date();
+    cutoff.setUTCDate(cutoff.getUTCDate() - EBAY_SEARCH_GAP_DAYS);
+
+    for (const candidate of candidates) {
+      if (candidate.soldAt < cutoff) continue;
+
+      const parsed = parseListingTitle(candidate.title, { number: card.number });
+      if (parsed.kind === "skipped") continue;
+
+      // Same trust gate as Terapeak's Phase 2, but the verdict is already in the
+      // row: trusted seller (or PSA's store) auto-confirms; a zero-activity
+      // seller auto-invalidates; everything else stays pending for review.
+      const autoConfirm = candidate.seller === "psa" || candidate.trustedSeller;
+      const autoInvalidate = !autoConfirm && !candidate.sellerHasActivity;
+      const decided = autoConfirm || autoInvalidate;
+
+      await this.saleRepository.upsert({
+        cardId: card.id,
+        platform: "ebay",
+        itemId: candidate.itemId,
+        psaGrade: parsed.grade,
+        price: candidate.price,
+        currency: candidate.currency,
+        title: candidate.title,
+        seller: candidate.seller,
+        source: "ebay_search",
+        soldAt: candidate.soldAt,
+        reviewedAt: decided ? new Date() : null,
+        status: autoConfirm ? "confirmed" : autoInvalidate ? "invalid" : undefined,
+        verificationStage: decided ? "complete" : undefined,
+      });
+      counters.ebayIngested++;
+    }
   }
 
   // Phase 2 (no auth): for each ingested sale not already decided, read seller
@@ -329,6 +400,7 @@ export class SyncSalesUsecase {
         currency: sale.currency,
         title: sale.title,
         seller: sellerQ.seller,
+        source: "terapeak",
         soldAt: sale.soldAt,
         reviewedAt: decided ? new Date() : null,
         status: autoConfirm ? "confirmed" : autoInvalidate ? "invalid" : undefined,
