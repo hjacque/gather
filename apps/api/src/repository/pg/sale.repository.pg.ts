@@ -45,6 +45,7 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
           price: sale.price,
           currency: sale.currency,
           title: sale.title,
+          isBestOffer: sale.isBestOffer,
           seller: sale.seller,
           source: sale.source,
           soldAt: sale.soldAt,
@@ -54,12 +55,6 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
       return true;
     }
 
-    // Reviewed Sales are frozen against re-scrape: their scraped fields are
-    // settled history, and the daily Sale Sync must not clobber an admin's grade
-    // or price correction. Re-verification still runs (it updates
-    // status/verificationStage, not scraped fields). See Sale Review.
-    if (existing.reviewedAt) return false;
-
     // Provenance guard (ADR 0008): the real-time public-search price may be a
     // Best-Offer asking amount, so it must never overwrite Terapeak's
     // authoritative accepted price. Terapeak always wins and upgrades the
@@ -68,6 +63,19 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
       return false;
     }
 
+    // A Terapeak upgrade of an ebay_search row corrects a Best-Offer ask with the
+    // realized price. It must win even when the ebay_search row was auto-confirmed
+    // at ingest (reviewedAt set) — that stamp is a trust shortcut, not a human
+    // correction, so it must not freeze the row against this upgrade (ADR 0009).
+    const terapeakUpgrade =
+      sale.source === "terapeak" && existing.source === "ebay_search";
+
+    // Reviewed Sales are otherwise frozen against re-scrape: their scraped fields
+    // are settled history, and the daily Sale Sync must not clobber an admin's
+    // grade correction. Re-verification still runs (it updates
+    // status/verificationStage, not scraped fields). See Sale Review.
+    if (existing.reviewedAt && !terapeakUpgrade) return false;
+
     await this.prisma.sale.update({
       where: { id: existing.id },
       data: {
@@ -75,6 +83,7 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
         price: sale.price,
         currency: sale.currency,
         title: sale.title,
+        isBestOffer: sale.isBestOffer,
         seller: sale.seller,
         source: sale.source,
         soldAt: sale.soldAt,

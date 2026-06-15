@@ -18,6 +18,9 @@ export type NewSale = {
   price: number;
   currency: string;
   title: string;
+  // True for a Best-Offer listing (scraped price is the ask, not the realized
+  // price). Only the eBay-search source sets this; Terapeak rows are false.
+  isBestOffer: boolean;
   // eBay store slug of the seller, or null for non-store listings.
   seller: string | null;
   // Which scraper supplied this price. The repository uses it to keep a

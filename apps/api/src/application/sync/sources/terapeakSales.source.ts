@@ -29,12 +29,14 @@ export class TerapeakAuthError extends Error {
 
 /**
  * Terapeak sales source — drives Seller Hub → Research (Terapeak) for one Card's
- * curated query and returns `itemId → true sold price`. eBay hides the actual
- * accepted price of a sale on the public completed-listings search and item
- * pages; Terapeak reports eBay's authoritative transaction price. The
- * SyncSalesUsecase keeps EbaySalesSource as the candidate + seller/trust source
- * and overlays these prices onto its candidates, joining on the shared 12-digit
- * eBay item id.
+ * curated query and returns its sold rows with eBay's authoritative transaction
+ * price (the public completed-listings search and item pages hide the accepted
+ * price of a Best-Offer sale). This is the *primary* Sale source: SyncSalesUsecase
+ * ingests these rows directly, then verifies seller trust on the eBay item page
+ * (Terapeak rows carry no seller). The eBay-search source runs alongside it only
+ * to fill the fresh days Terapeak lags behind (ADR 0008); the two are independent
+ * ingest paths into the same Sale table, not an overlay joined by item id — that
+ * join was abandoned (~2% overlap, see ADR 0007).
  *
  * Auth: Terapeak is seller-only. This source assumes the shared browser session
  * is already logged in via a persistent Chrome profile (see openBrowser's

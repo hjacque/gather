@@ -29,6 +29,9 @@ export type SaleRecord = {
   priceEur: number;
   soldAt: Date;
   status: SaleStatus;
+  // True for a Best-Offer sale: its price is the ask, not the realized amount,
+  // so it is excluded from Market Sale Price until Terapeak corrects it.
+  isBestOffer: boolean;
   // Link to the original marketplace listing (eBay item page).
   url: string;
 };
@@ -178,6 +181,9 @@ export type ReviewSaleRecord = {
   priceEur: number | null;
   soldAt: Date;
   status: SaleStatus;
+  // True for a Best-Offer sale: the scraped price is the ask, not the realized
+  // amount. Surfaced so the review queue can mark it (excluded from pricing).
+  isBestOffer: boolean;
   url: string;
 };
 

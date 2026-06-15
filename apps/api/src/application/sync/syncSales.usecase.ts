@@ -279,6 +279,8 @@ export class SyncSalesUsecase {
         price: sale.price,
         currency: sale.currency,
         title: sale.title,
+        // Terapeak reports the realized price, never a Best-Offer ask.
+        isBestOffer: false,
         seller: null,
         source: "terapeak",
         soldAt: sale.soldAt,
@@ -340,6 +342,9 @@ export class SyncSalesUsecase {
         price: candidate.price,
         currency: candidate.currency,
         title: candidate.title,
+        // A Best-Offer row's price is the ask, not the realized amount; flag it
+        // so pricing excludes it until Terapeak upgrades the row (ADR 0009).
+        isBestOffer: candidate.isBestOffer,
         seller: candidate.seller,
         source: "ebay_search",
         soldAt: candidate.soldAt,
@@ -399,6 +404,9 @@ export class SyncSalesUsecase {
         price: sale.price,
         currency: sale.currency,
         title: sale.title,
+        // Terapeak-sourced realized price (this re-upsert carries the verified
+        // seller), never a Best-Offer ask.
+        isBestOffer: false,
         seller: sellerQ.seller,
         source: "terapeak",
         soldAt: sale.soldAt,

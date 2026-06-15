@@ -49,6 +49,7 @@ export class GetCardUsecase {
           priceEur,
           soldAt: sale.soldAt,
           status: sale.status,
+          isBestOffer: sale.isBestOffer,
           url: `https://www.ebay.com/itm/${sale.itemId}`,
         },
       ];

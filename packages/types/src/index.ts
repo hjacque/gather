@@ -130,6 +130,11 @@ export type SaleEntity = {
   price: number;
   currency: string;
   title: string;
+  // True when the sale came from a Best-Offer listing, where the scraped price
+  // is the *asking* amount, not the realized one. Only the real-time eBay-search
+  // source sets this; Terapeak rows are realized prices (always false). Pricing
+  // excludes these until Terapeak upgrades the row. See ADR 0009.
+  isBestOffer: boolean;
   // eBay store slug of the seller, when the listing came from a store
   // (e.g. "psa"); null otherwise.
   seller: string | null;

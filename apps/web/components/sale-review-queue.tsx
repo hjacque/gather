@@ -269,6 +269,15 @@ function SaleReviewRow({
       </span>
 
       <div className="flex w-28 shrink-0 justify-end gap-1">
+        {sale.isBestOffer ? (
+          <Badge
+            variant="outline"
+            className="text-xs"
+            title="Best-Offer ask, not the realized price — excluded from market price until Terapeak corrects it"
+          >
+            Best Offer
+          </Badge>
+        ) : null}
         {sale.status === 'pending' ? (
           <Badge variant="outline" className="text-xs">
             pending

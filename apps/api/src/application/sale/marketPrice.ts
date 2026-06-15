@@ -19,15 +19,19 @@ type SaleForPricing = {
   soldAt: Date;
 };
 
-// Eligibility: moderated-out Sales (status invalid) are dropped, and prices
-// convert to EUR at read time — Sales in currencies we cannot convert yet are
-// excluded rather than shown wrong (see ADR 0004).
+// Eligibility: moderated-out Sales (status invalid) are dropped; Best-Offer
+// sales are dropped because their scraped price is the ask, not the realized
+// amount — they count only once Terapeak upgrades the row with the true price
+// (clearing the flag), see ADR 0009; and prices convert to EUR at read time —
+// Sales in currencies we cannot convert yet are excluded rather than shown wrong
+// (see ADR 0004).
 const toSalesForPricing = (
   sales: SaleEntity[],
   usdToEur: number
 ): SaleForPricing[] =>
   sales.flatMap((sale) => {
     if (sale.status === "invalid") return [];
+    if (sale.isBestOffer) return [];
     const priceEur = convertToEur(sale.price, sale.currency, usdToEur);
     if (priceEur === null) return [];
     return [
