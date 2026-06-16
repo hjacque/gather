@@ -48,6 +48,7 @@ type Point = {
   x: number; // soldAt epoch ms
   y: number; // price in EUR
   pending: boolean;
+  bestOffer: boolean;
 };
 
 type PinnedPoint = Point & { grade: number };
@@ -98,6 +99,7 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
         x,
         y: sale.priceEur,
         pending: sale.status === 'pending',
+        bestOffer: sale.isBestOffer,
       });
     }
 
@@ -346,6 +348,9 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
                 {new Date(pinned.point.x).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                 {pinned.point.pending ? ' · pending' : ''}
               </div>
+              {pinned.point.bestOffer && (
+                <div className="text-muted-foreground">Best Offer accepted</div>
+              )}
               <div className="mt-2 flex items-center justify-between gap-2">
                 <a
                   href={pinned.point.url}
