@@ -188,9 +188,9 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
                     className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
                   >
                     <ToggleGroupItem value="all">All</ToggleGroupItem>
-                    <ToggleGroupItem value="360d">Last year</ToggleGroupItem>
-                    <ToggleGroupItem value="90d">Last 3 months</ToggleGroupItem>
-                    <ToggleGroupItem value="30d">Last 30 days</ToggleGroupItem>
+                    <ToggleGroupItem value="360d">1 year</ToggleGroupItem>
+                    <ToggleGroupItem value="90d">3 months</ToggleGroupItem>
+                    <ToggleGroupItem value="30d">30 days</ToggleGroupItem>
                   </ToggleGroup>
                   <Select value={timeRange} onValueChange={handleTimeRangeChange}>
                     <SelectTrigger
@@ -198,13 +198,13 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
                       size="sm"
                       aria-label="Select a value"
                     >
-                      <SelectValue placeholder="Last 3 months" />
+                      <SelectValue placeholder="3 months" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
                       <SelectItem value="all" className="rounded-lg">All</SelectItem>
-                      <SelectItem value="360d" className="rounded-lg">Last year</SelectItem>
-                      <SelectItem value="90d" className="rounded-lg">Last 3 months</SelectItem>
-                      <SelectItem value="30d" className="rounded-lg">Last 30 days</SelectItem>
+                      <SelectItem value="360d" className="rounded-lg">1 year</SelectItem>
+                      <SelectItem value="90d" className="rounded-lg">3 months</SelectItem>
+                      <SelectItem value="30d" className="rounded-lg">30 days</SelectItem>
                     </SelectContent>
                   </Select>
                 </>
