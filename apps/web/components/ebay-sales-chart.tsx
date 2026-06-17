@@ -290,6 +290,7 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
               {gradesWithData.map((grade) => (
                 <Scatter
                   key={grade}
+                  isAnimationActive={false}
                   name={`PSA ${grade}`}
                   data={pointsByGrade[grade].map((p) => ({ ...p, grade }))}
                   fill={GRADE_COLORS[grade]}
