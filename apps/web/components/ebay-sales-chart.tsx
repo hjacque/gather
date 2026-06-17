@@ -75,7 +75,9 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
     []
   );
 
+  // 'all' keeps every Sale; otherwise drop anything older than the window.
   const cutoff = React.useMemo(() => {
+    if (timeRange === 'all') return 0;
     const days = timeRange === '30d' ? 30 : timeRange === '90d' ? 90 : 360;
     const d = new Date();
     d.setDate(d.getDate() - days);
@@ -83,13 +85,15 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
   }, [timeRange]);
 
   // Group Sales into one point series per grade, within the selected window.
-  const { pointsByGrade, gradesWithData } = React.useMemo(() => {
+  const { pointsByGrade, gradesWithData, earliest } = React.useMemo(() => {
     const byGrade: Record<number, Point[]> = {};
     const gradeSet = new Set<number>();
+    let earliest = Infinity;
 
     for (const sale of sales) {
       const x = new Date(sale.soldAt).getTime();
       if (x < cutoff) continue;
+      if (x < earliest) earliest = x;
       const grade = sale.psaGrade;
       gradeSet.add(grade);
       if (!byGrade[grade]) byGrade[grade] = [];
@@ -106,8 +110,14 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
     return {
       pointsByGrade: byGrade,
       gradesWithData: Array.from(gradeSet).sort((a, b) => a - b),
+      earliest,
     };
   }, [sales, cutoff]);
+
+  // For a fixed window the axis starts at the cutoff; for 'all' it hugs the
+  // oldest Sale so the points aren't squashed against a 1970 origin.
+  const domainStart =
+    timeRange === 'all' && Number.isFinite(earliest) ? earliest : cutoff;
 
   // Both the time range and grade visibility reflow the chart, so any pinned
   // infobox's pixel coordinates go stale — close it on either change.
@@ -177,6 +187,7 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
                     variant="outline"
                     className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
                   >
+                    <ToggleGroupItem value="all">All</ToggleGroupItem>
                     <ToggleGroupItem value="360d">Last year</ToggleGroupItem>
                     <ToggleGroupItem value="90d">Last 3 months</ToggleGroupItem>
                     <ToggleGroupItem value="30d">Last 30 days</ToggleGroupItem>
@@ -190,6 +201,7 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
                       <SelectValue placeholder="Last 3 months" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
+                      <SelectItem value="all" className="rounded-lg">All</SelectItem>
                       <SelectItem value="360d" className="rounded-lg">Last year</SelectItem>
                       <SelectItem value="90d" className="rounded-lg">Last 3 months</SelectItem>
                       <SelectItem value="30d" className="rounded-lg">Last 30 days</SelectItem>
@@ -214,7 +226,7 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
               <XAxis
                 type="number"
                 dataKey="x"
-                domain={[cutoff, Date.now()]}
+                domain={[domainStart, Date.now()]}
                 tickLine={false}
                 axisLine={false}
                 tickMargin={12}
