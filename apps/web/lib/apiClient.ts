@@ -159,7 +159,6 @@ export async function getOpportunities(): Promise<GetOpportunitiesResponse> {
 export type GetAuctionsParams = {
   grade?: number;
   sort?: 'ending' | 'bid' | 'bids';
-  minBids?: number;
 };
 
 export async function getAuctions(

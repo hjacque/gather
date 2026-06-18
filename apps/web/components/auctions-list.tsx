@@ -48,26 +48,21 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
   const [sort, setSort] = useState<NonNullable<GetAuctionsParams['sort']>>(
     'ending',
   );
-  const [hideZeroBid, setHideZeroBid] = useState(false);
   const [loading, setLoading] = useState(false);
   const [syncingAll, setSyncingAll] = useState(false);
 
   const applyFilters = async (next: {
     grade?: string;
     sort?: NonNullable<GetAuctionsParams['sort']>;
-    hideZeroBid?: boolean;
   }) => {
     const g = next.grade ?? grade;
     const s = next.sort ?? sort;
-    const hz = next.hideZeroBid ?? hideZeroBid;
     setGrade(g);
     setSort(s);
-    setHideZeroBid(hz);
     setLoading(true);
     try {
       const params: GetAuctionsParams = { sort: s };
       if (g !== 'all') params.grade = Number(g);
-      if (hz) params.minBids = 1;
       setRows(await getAuctions(params));
     } finally {
       setLoading(false);
@@ -148,14 +143,6 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
           <option value="bid">Highest bid</option>
           <option value="bids">Most bids</option>
         </select>
-      </label>
-      <label className="text-muted-foreground flex items-center gap-1.5 text-sm">
-        <input
-          type="checkbox"
-          checked={hideZeroBid}
-          onChange={(e) => applyFilters({ hideZeroBid: e.target.checked })}
-        />
-        Hide zero-bid
       </label>
       <Button
         variant="outline"

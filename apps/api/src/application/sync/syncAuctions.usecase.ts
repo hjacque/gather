@@ -18,6 +18,7 @@ export type AuctionSyncCounters = {
   scraped: number; // candidates returned by the source
   stored: number; // candidates accepted by the parser and persisted
   skippedTitle: number; // candidates rejected by the parser (bundle / foreign / etc.)
+  skippedNoBids: number; // candidates with no bids yet (the feed tracks bid auctions only)
   skippedLocation: number; // candidates dropped for non-EU / unknown provenance
   skippedSeller: number; // candidates dropped for a zero-feedback seller
   skippedEnded: number; // candidates that ended between search and item-page visit
@@ -32,6 +33,7 @@ const emptyCounters = (): AuctionSyncCounters => ({
   scraped: 0,
   stored: 0,
   skippedTitle: 0,
+  skippedNoBids: 0,
   skippedLocation: 0,
   skippedSeller: 0,
   skippedEnded: 0,
@@ -133,6 +135,15 @@ export class SyncAuctionsUsecase {
       });
       if (parsed.kind === "skipped") {
         counters.skippedTitle++;
+        continue;
+      }
+
+      // The Live Auctions feed tracks auctions with active bidding only. Drop
+      // zero-bid (and unparsed-bid) candidates off the search row, before the
+      // item-page visit — most auctions have no bids, so this also spares the
+      // bulk of the per-item page loads.
+      if (candidate.bidCount < 1) {
+        counters.skippedNoBids++;
         continue;
       }
 
