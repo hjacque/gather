@@ -95,21 +95,25 @@ const formatAsOf = (iso: string | Date) => {
 function SortHeader({
   label,
   onClick,
-  className,
+  align = 'left',
 }: {
   label: string;
   onClick: () => void;
-  className?: string;
+  align?: 'left' | 'right';
 }) {
+  // Ghost button pulls its own padding out so the label aligns with the cell
+  // text edge: left columns hug the left padding, right columns the right.
   return (
-    <Button
-      variant="ghost"
-      className={`-ml-3 h-8 ${className ?? ''}`}
-      onClick={onClick}
-    >
-      {label}
-      <ArrowUpDown className="ml-1.5 size-3.5" />
-    </Button>
+    <div className={align === 'right' ? 'flex justify-end' : ''}>
+      <Button
+        variant="ghost"
+        className={`h-8 ${align === 'right' ? '-mr-3' : '-ml-3'}`}
+        onClick={onClick}
+      >
+        {label}
+        <ArrowUpDown className="ml-1.5 size-3.5" />
+      </Button>
+    </div>
   );
 }
 
@@ -276,6 +280,7 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           />
         ),
+        meta: { fill: true },
         cell: ({ row }) => {
           const a = row.original;
           return (
@@ -296,10 +301,10 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
             </div>
           );
         },
-        meta: { fill: true },
       },
       {
         accessorKey: 'psaGrade',
+        size: 110,
         header: ({ column }) => (
           <SortHeader
             label="Grade"
@@ -312,10 +317,11 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
       },
       {
         accessorKey: 'currentBidEur',
+        size: 150,
         header: ({ column }) => (
           <SortHeader
             label="Current bid"
-            className="ml-auto"
+            align="right"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           />
         ),
@@ -333,10 +339,11 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
       },
       {
         accessorKey: 'bidCount',
+        size: 90,
         header: ({ column }) => (
           <SortHeader
             label="Bids"
-            className="ml-auto"
+            align="right"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           />
         ),
@@ -346,6 +353,7 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
       },
       {
         accessorKey: 'endTime',
+        size: 130,
         header: ({ column }) => (
           <SortHeader
             label="Ends"
@@ -360,6 +368,7 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
       },
       {
         accessorKey: 'location',
+        size: 150,
         header: 'Location',
         cell: ({ row }) => (
           <span className="text-muted-foreground">{row.original.location ?? '—'}</span>
@@ -367,6 +376,7 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
       },
       {
         id: 'actions',
+        size: 56,
         header: () => null,
         cell: ({ row }) => {
           const a = row.original;
@@ -472,16 +482,27 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
           <TableHeader className="from-primary/5 to-card dark:bg-card sticky top-0 z-10 bg-gradient-to-t shadow-xs backdrop-blur-md">
             {table.getHeaderGroups().map((hg) => (
               <TableRow key={hg.id}>
-                {hg.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableHead>
-                ))}
+                {hg.headers.map((header) => {
+                  const fill = (
+                    header.column.columnDef.meta as
+                      | { fill?: boolean }
+                      | undefined
+                  )?.fill;
+                  const size = header.getSize();
+                  return (
+                    <TableHead
+                      key={header.id}
+                      style={fill ? undefined : { width: size }}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
             ))}
           </TableHeader>
@@ -493,11 +514,25 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
                   className="cursor-pointer"
                   onClick={() => openPanel(row.original)}
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
+                  {row.getVisibleCells().map((cell) => {
+                    const fill = (
+                      cell.column.columnDef.meta as
+                        | { fill?: boolean }
+                        | undefined
+                    )?.fill;
+                    const size = cell.column.getSize();
+                    return (
+                      <TableCell
+                        key={cell.id}
+                        style={fill ? undefined : { width: size, maxWidth: size }}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               ))
             ) : (
