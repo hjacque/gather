@@ -100,7 +100,8 @@ export const initApplication = ({
   const syncAuctionsUsecase = new SyncAuctionsUsecase(
     cardRepository,
     auctionRepository,
-    new EbayAuctionsSource()
+    new EbayAuctionsSource(),
+    new EbayItemPageSource()
   );
   const getAuctionsUsecase = new GetAuctionsUsecase(
     cardRepository,
