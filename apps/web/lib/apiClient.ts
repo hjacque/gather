@@ -112,6 +112,14 @@ export async function invalidateListing(listingId: string): Promise<void> {
   } satisfies UpdateListingStatusRequest);
 }
 
+export async function invalidateListingByItem(
+  listingId: string,
+): Promise<void> {
+  return apiPatch(`/listings/${listingId}`, {
+    action: 'invalidateByItem',
+  } satisfies UpdateListingStatusRequest);
+}
+
 export async function getUnreviewedSales(
   page: number,
   pageSize: number,

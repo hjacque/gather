@@ -35,7 +35,10 @@ import {
 } from '@/components/ui/card';
 import { CardNoteSection } from '@/components/card-note-section';
 import { getCard } from '@/app/actions/getCard';
-import { invalidateListing } from '@/app/actions/invalidateListing';
+import {
+  invalidateListing,
+  invalidateListingByItem,
+} from '@/app/actions/invalidateListing';
 import { invalidateSale } from '@/app/actions/invalidateSale';
 import { syncCardListings, syncListing, syncCardCardMarket } from '@/app/actions/syncCard';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -116,6 +119,17 @@ export function OpportunitiesList({ opportunities }: Props) {
     const data = await getCard(opp.id);
     if (activeOppRef.current?.id === opp.id) setDisplayedCard(data);
   }, []);
+
+  const handleInvalidateListingByItem = useCallback(
+    async (listingId: string) => {
+      const opp = activeOppRef.current;
+      if (!opp) return;
+      await invalidateListingByItem(listingId);
+      const data = await getCard(opp.id);
+      if (activeOppRef.current?.id === opp.id) setDisplayedCard(data);
+    },
+    [],
+  );
 
   const handleRemoveSale = useCallback(async (saleId: string) => {
     const opp = activeOppRef.current;
@@ -249,6 +263,7 @@ export function OpportunitiesList({ opportunities }: Props) {
                   <CardListingsTable
                     listings={displayedCard.listings}
                     onInvalidate={handleInvalidateListing}
+                    onInvalidateByItem={handleInvalidateListingByItem}
                     onSyncListing={handleSyncListing}
                     onSyncAll={handleSyncCardListings}
                     isSyncingAll={isSyncingListings}

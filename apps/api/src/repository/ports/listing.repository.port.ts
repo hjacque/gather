@@ -23,6 +23,14 @@ export abstract class ListingRepositoryPort {
   // re-sync so a refresh that still sees the item keeps it hidden.
   abstract markListingInvalid(listingId: string): Promise<void>;
 
+  // Flag every listing sharing one eBay listing id (across all cards) as
+  // invalid. The same listing can surface under several cards' panels; this
+  // drops it from all of them at once. Returns the number of rows flagged.
+  abstract markListingsInvalidByItemId(
+    platform: Platform,
+    itemId: string
+  ): Promise<number>;
+
   // One listing by id, or null. Used by the single-listing refresh.
   abstract getListingById(listingId: string): Promise<ListingEntity | null>;
 

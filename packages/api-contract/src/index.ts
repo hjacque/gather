@@ -183,11 +183,13 @@ export type UpdateSaleStatusRequest = {
   status: 'invalid';
 };
 
-// User-driven Listing moderation. Currently only invalidation: flag a listing
-// that doesn't match the card so it drops out of the panel + opportunities.
-export type UpdateListingStatusRequest = {
-  action: 'invalidate';
-};
+// User-driven Listing moderation: flag a listing that doesn't match the card so
+// it drops out of the panel + opportunities, either just this row or every
+// listing sharing its eBay listing id (the same listing can surface under
+// several cards' panels — drop it from all of them at once).
+export type UpdateListingStatusRequest =
+  | { action: 'invalidate' }
+  | { action: 'invalidateByItem' };
 
 // Result of re-walking one card's live listings (panel "Sync listings").
 export type SyncCardListingsResponse = {

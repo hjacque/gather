@@ -76,6 +76,17 @@ export class ListingRepositoryPg implements ListingRepositoryPort {
     });
   }
 
+  async markListingsInvalidByItemId(
+    platform: Platform,
+    itemId: string,
+  ): Promise<number> {
+    const { count } = await this.prisma.listing.updateMany({
+      where: { platform, itemId, invalidatedAt: null },
+      data: { invalidatedAt: new Date() },
+    });
+    return count;
+  }
+
   async getListingById(listingId: string): Promise<ListingEntity | null> {
     const row = await this.prisma.listing.findUnique({
       where: { id: listingId },

@@ -18,7 +18,10 @@ import {
   SheetTitle,
 } from './ui/sheet';
 import { getCard } from '@/app/actions/getCard';
-import { invalidateListing } from '@/app/actions/invalidateListing';
+import {
+  invalidateListing,
+  invalidateListingByItem,
+} from '@/app/actions/invalidateListing';
 import { syncAllPromos, syncAllListings, syncAllSales, syncAllPop, syncCardCardMarket, syncCardPsa, syncCardSales, syncCardListings, syncListing } from '@/app/actions/syncCard';
 import { invalidateSale } from '@/app/actions/invalidateSale';
 import { CardNoteSection } from '@/components/card-note-section';
@@ -739,6 +742,16 @@ export function PokemonExclusivePromosTable({
     }
   };
 
+  const handleInvalidateListingByItem = async (listingId: string) => {
+    const id = displayedItem?.id;
+    if (!id) return;
+    await invalidateListingByItem(listingId);
+    if (activeItemRef.current?.id === id) {
+      const data = await getCard(id);
+      if (activeItemRef.current?.id === id) setDisplayedCard(data);
+    }
+  };
+
   const psaReport = displayedCard?.psaPopReport ?? null;
   const grades = psaReport
     ? [
@@ -854,6 +867,7 @@ export function PokemonExclusivePromosTable({
                 <CardListingsTable
                   listings={displayedCard.listings}
                   onInvalidate={handleInvalidateListing}
+                  onInvalidateByItem={handleInvalidateListingByItem}
                   onSyncListing={handleSyncListing}
                   onSyncAll={handleSyncCardListings}
                   isSyncingAll={isSyncingListings}

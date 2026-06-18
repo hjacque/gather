@@ -233,11 +233,19 @@ export const http = async ({
 
   app.patch("/listings/:listingid", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
-    // Currently only invalidation: flag a listing that does not match the card
-    // so it drops out of the panel + opportunities buy-side.
-    const bodySchema = z.object({ action: z.literal("invalidate") });
-    bodySchema.parse(req.body);
-    await invalidateListingUsecase.execute(req.params.listingid);
+    // Flag a listing that does not match the card so it drops out of the panel +
+    // opportunities buy-side: just this row, or every listing sharing its eBay
+    // listing id (drops it from all cards' panels at once).
+    const bodySchema = z.discriminatedUnion("action", [
+      z.object({ action: z.literal("invalidate") }),
+      z.object({ action: z.literal("invalidateByItem") }),
+    ]);
+    const body = bodySchema.parse(req.body);
+    if (body.action === "invalidate") {
+      await invalidateListingUsecase.execute(req.params.listingid);
+    } else {
+      await invalidateListingUsecase.executeByItem(req.params.listingid);
+    }
     res.status(204).end();
   });
 

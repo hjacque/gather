@@ -60,12 +60,14 @@ const PANEL_CARD_CLASS =
 export function CardListingsTable({
   listings,
   onInvalidate,
+  onInvalidateByItem,
   onSyncListing,
   onSyncAll,
   isSyncingAll = false,
 }: {
   listings: GetCardResponse['listings'];
   onInvalidate?: (listingId: string) => void | Promise<void>;
+  onInvalidateByItem?: (listingId: string) => void | Promise<void>;
   onSyncListing?: (listingId: string) => void | Promise<void>;
   onSyncAll?: () => void | Promise<void>;
   isSyncingAll?: boolean;
@@ -89,7 +91,7 @@ export function CardListingsTable({
     }
   };
 
-  const hasRowActions = !!onInvalidate || !!onSyncListing;
+  const hasRowActions = !!onInvalidate || !!onInvalidateByItem || !!onSyncListing;
 
   return (
     <Card className={PANEL_CARD_CLASS}>
@@ -190,17 +192,27 @@ export function CardListingsTable({
                                 Sync
                               </DropdownMenuItem>
                             )}
+                            {(onInvalidate || onInvalidateByItem) &&
+                              onSyncListing && <DropdownMenuSeparator />}
                             {onInvalidate && (
-                              <>
-                                {onSyncListing && <DropdownMenuSeparator />}
-                                <DropdownMenuItem
-                                  variant="destructive"
-                                  onSelect={() => runRowAction(listing.id, onInvalidate)}
-                                >
-                                  <Ban className="w-3.5 h-3.5" />
-                                  Delete
-                                </DropdownMenuItem>
-                              </>
+                              <DropdownMenuItem
+                                variant="destructive"
+                                onSelect={() => runRowAction(listing.id, onInvalidate)}
+                              >
+                                <Ban className="w-3.5 h-3.5" />
+                                Delete
+                              </DropdownMenuItem>
+                            )}
+                            {onInvalidateByItem && (
+                              <DropdownMenuItem
+                                variant="destructive"
+                                onSelect={() =>
+                                  runRowAction(listing.id, onInvalidateByItem)
+                                }
+                              >
+                                <Ban className="w-3.5 h-3.5" />
+                                Delete all
+                              </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>

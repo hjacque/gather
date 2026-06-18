@@ -10,4 +10,16 @@ export class InvalidateListingUsecase {
   async execute(listingId: string): Promise<void> {
     await this.listingRepository.markListingInvalid(listingId);
   }
+
+  // Flag every listing sharing this listing's eBay listing id (the listing may
+  // appear under several cards' panels). Resolves the listing id off the row so
+  // the caller only needs the listing id; a missing row is a no-op.
+  async executeByItem(listingId: string): Promise<void> {
+    const listing = await this.listingRepository.getListingById(listingId);
+    if (!listing) return;
+    await this.listingRepository.markListingsInvalidByItemId(
+      listing.platform,
+      listing.itemId,
+    );
+  }
 }
