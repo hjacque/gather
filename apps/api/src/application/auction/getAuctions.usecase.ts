@@ -3,6 +3,7 @@ import { CardRepositoryPort } from "../../repository/ports/card.repository.port"
 import { AuctionRepositoryPort } from "../../repository/ports/auction.repository.port";
 import { getEurToUsdRate } from "../sync/helper";
 import { convertToEur } from "../sale/eurConverter";
+import { toEnglishCountry } from "../sync/sources/euLocation";
 
 // Feed sort orders. Default is ending-soonest; the others let the user scan by
 // price or traction. "ending" never inverts — it is the live feed's spine.
@@ -60,7 +61,7 @@ export class GetAuctionsUsecase {
             bidCount: auction.bidCount,
             endTime: auction.endTime,
             bidCheckedAt: auction.bidCheckedAt,
-            location: auction.location,
+            location: toEnglishCountry(auction.location),
             url: `https://www.ebay.fr/itm/${auction.itemId}`,
           },
         ];

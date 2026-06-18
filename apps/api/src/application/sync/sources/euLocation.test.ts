@@ -2,6 +2,7 @@ import {
   isEuCountry,
   isEuLocationText,
   parseListingLocation,
+  toEnglishCountry,
 } from "./euLocation";
 
 describe("parseListingLocation", () => {
@@ -45,6 +46,25 @@ describe("isEuCountry", () => {
     expect(isEuCountry(null)).toBe(false);
     expect(isEuCountry("")).toBe(false);
     expect(isEuCountry("Mars")).toBe(false);
+  });
+});
+
+describe("toEnglishCountry", () => {
+  it("translates French country names to English", () => {
+    expect(toEnglishCountry("Allemagne")).toBe("Germany");
+    expect(toEnglishCountry("Espagne")).toBe("Spain");
+    expect(toEnglishCountry("Pays-Bas")).toBe("Netherlands");
+  });
+
+  it("matches regardless of accents/case and maps both Czechia spellings", () => {
+    expect(toEnglishCountry("grèce")).toBe("Greece");
+    expect(toEnglishCountry("République tchèque")).toBe("Czechia");
+    expect(toEnglishCountry("Tchéquie")).toBe("Czechia");
+  });
+
+  it("passes unknown names through and null along", () => {
+    expect(toEnglishCountry("Mars")).toBe("Mars");
+    expect(toEnglishCountry(null)).toBeNull();
   });
 });
 

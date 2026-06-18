@@ -54,6 +54,48 @@ const normalize = (s: string): string =>
 
 const EU_NORMALIZED = new Set(EU_COUNTRIES_FR.map(normalize));
 
+// French → English country names for display: locations are parsed off eBay.fr
+// in French, but the app is English-only. Keyed by the normalized French name
+// so the lookup is accent- and case-insensitive. Both French spellings of
+// Czechia map to the single English name.
+const EN_BY_NORMALIZED_FR: Record<string, string> = {
+  allemagne: "Germany",
+  autriche: "Austria",
+  belgique: "Belgium",
+  bulgarie: "Bulgaria",
+  chypre: "Cyprus",
+  croatie: "Croatia",
+  danemark: "Denmark",
+  espagne: "Spain",
+  estonie: "Estonia",
+  finlande: "Finland",
+  france: "France",
+  grece: "Greece",
+  hongrie: "Hungary",
+  irlande: "Ireland",
+  italie: "Italy",
+  lettonie: "Latvia",
+  lituanie: "Lithuania",
+  luxembourg: "Luxembourg",
+  malte: "Malta",
+  "pays-bas": "Netherlands",
+  pologne: "Poland",
+  portugal: "Portugal",
+  "republique tcheque": "Czechia",
+  tchequie: "Czechia",
+  roumanie: "Romania",
+  slovaquie: "Slovakia",
+  slovenie: "Slovenia",
+  suede: "Sweden",
+};
+
+// Translate a (French) country name to English for display. Falls back to the
+// input unchanged when unrecognised, and passes null through.
+export function toEnglishCountry(country: string | null): string | null {
+  if (!country) return null;
+  return EN_BY_NORMALIZED_FR[normalize(country)] ?? country;
+}
+
 /**
  * Pull the country out of a result row's location line. Accepts the raw
  * "de <Pays>" attribute text (the article "de"/"du"/"des"/"d'" is dropped), or
