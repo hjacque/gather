@@ -18,6 +18,7 @@ const run = async () => {
   const services = initServices({
     syncUsecase: usecases.syncUsecase,
     syncPsaPopReportsUsecase: usecases.syncPsaPopReportsUsecase,
+    syncAuctionsUsecase: usecases.syncAuctionsUsecase,
   });
   // await services.syncSchedulerService.execute();
 

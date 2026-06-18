@@ -1,17 +1,20 @@
 import { SyncUsecase } from "application/sync/sync.usecase";
 import { SyncPsaPopReportsUsecase } from "application/sync/syncPsaPopReports.usecase";
+import { SyncAuctionsUsecase } from "application/sync/syncAuctions.usecase";
 import { Set } from "../entities/card.entity";
 import cron from "node-cron";
 
 export class SyncSchedulerService {
   constructor(
     private readonly syncUsecase: SyncUsecase,
-    private readonly syncPsaPopReportsUsecase: SyncPsaPopReportsUsecase
+    private readonly syncPsaPopReportsUsecase: SyncPsaPopReportsUsecase,
+    private readonly syncAuctionsUsecase: SyncAuctionsUsecase
   ) {}
 
   async execute() {
     await this.scheduleSingles();
     await this.schedulePsaPopReports();
+    await this.scheduleAuctions();
   }
 
   async sync(
@@ -62,6 +65,30 @@ export class SyncSchedulerService {
       }
     );
     console.log("PSA pop report scheduler started (runs daily at 03:00 UTC)");
+  }
+
+  // Discover ongoing EU auctions on the same two-hour cadence as the price /
+  // listings sync, as its own job (its own browser session — ADR 0010). Offset
+  // to :15 of even hours so it doesn't collide with the price sync at :00.
+  async scheduleAuctions() {
+    for (let hours = 0; hours < 24; hours += 2) {
+      cron.schedule(
+        `15 ${hours} * * *`,
+        async () => {
+          try {
+            console.log("[Auction Sync] Starting scheduled auction sync...");
+            await this.syncAuctionsUsecase.executeBatch();
+            console.log("[Auction Sync] Scheduled auction sync complete");
+          } catch (error) {
+            console.error("[Auction Sync] Error in scheduled auction sync:", error);
+          }
+        },
+        {
+          timezone: "UTC",
+        }
+      );
+    }
+    console.log("📅 Auction scheduler started (runs every two hours)");
   }
 
 }
