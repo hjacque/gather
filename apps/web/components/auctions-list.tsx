@@ -67,6 +67,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { CardImage } from '@/components/card-image';
 import { AuctionCountdown } from '@/components/auction-countdown';
 import { EbaySalesChart } from '@/components/ebay-sales-chart';
@@ -108,15 +113,11 @@ function SortHeader({
   onClick: () => void;
   align?: 'left' | 'right';
 }) {
-  // Ghost button pulls its own padding out so the label aligns with the cell
-  // text edge: left columns hug the left padding, right columns the right.
+  // Plain ghost button, matching the exclusive-promos table: default padding
+  // sets the column rhythm; right-aligned columns just flip the justify.
   return (
     <div className={align === 'right' ? 'flex justify-end' : ''}>
-      <Button
-        variant="ghost"
-        className={`h-8 ${align === 'right' ? '-mr-3' : '-ml-3'}`}
-        onClick={onClick}
-      >
+      <Button variant="ghost" onClick={onClick}>
         {label}
         <ArrowUpDown className="ml-1.5 size-3.5" />
       </Button>
@@ -298,31 +299,54 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
   const columns = React.useMemo<ColumnDef<Auction>[]>(
     () => [
       {
+        id: 'image',
+        size: 44,
+        header: () => null,
+        cell: ({ row }) => {
+          const a = row.original;
+          if (!a.imageUrl) return null;
+          return (
+            <Tooltip disableHoverableContent>
+              <TooltipTrigger asChild>
+                <div className="flex justify-center">
+                  <img
+                    src={a.imageUrl}
+                    alt=""
+                    className="h-10 w-auto rounded object-contain"
+                  />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent
+                side="right"
+                className="pointer-events-none border-none bg-transparent p-1 shadow-none"
+              >
+                <img
+                  src={a.imageUrl}
+                  alt={a.cardName}
+                  className="h-64 w-auto rounded-lg object-contain shadow-xl"
+                />
+              </TooltipContent>
+            </Tooltip>
+          );
+        },
+      },
+      {
         accessorKey: 'cardName',
+        meta: { fill: true },
         header: ({ column }) => (
           <SortHeader
-            label="Card"
+            label="Name"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           />
         ),
-        meta: { fill: true },
         cell: ({ row }) => {
           const a = row.original;
           return (
-            <div className="flex items-center gap-3">
-              {a.imageUrl ? (
-                <div className="h-12 w-9 shrink-0">
-                  <CardImage src={a.imageUrl} alt={a.cardName} />
-                </div>
-              ) : (
-                <div className="bg-muted h-12 w-9 shrink-0 rounded" />
-              )}
-              <div className="flex min-w-0 flex-col">
-                <span className="truncate font-medium">{a.cardName}</span>
-                <span className="text-muted-foreground truncate text-xs">
-                  {a.cardSetName}
-                </span>
-              </div>
+            <div className="flex min-w-0 flex-col">
+              <span className="truncate font-medium">{a.cardName}</span>
+              <span className="text-muted-foreground truncate text-xs">
+                {a.cardSetName}
+              </span>
             </div>
           );
         },
