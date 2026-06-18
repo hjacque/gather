@@ -468,7 +468,7 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
+                    <DropdownMenuSubTrigger className="gap-2">
                       <Pencil className="size-3.5" />
                       Edit grade
                     </DropdownMenuSubTrigger>
@@ -489,7 +489,7 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
                     onSelect={() => onInvalidate(a.id)}
                   >
                     <Trash2 className="size-3.5" />
-                    Remove (invalid)
+                    Remove
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
