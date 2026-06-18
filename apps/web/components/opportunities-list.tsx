@@ -2,6 +2,8 @@
 
 import type {
   GetOpportunitiesResponse,
+  GetAuctionsResponse,
+  AuctionRecord,
   GradeOpportunity,
   OpportunityEntry,
   GetCardResponse,
@@ -34,6 +36,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { CardNoteSection } from '@/components/card-note-section';
+import { AuctionCountdown } from '@/components/auction-countdown';
 import { getCard } from '@/app/actions/getCard';
 import {
   invalidateListing,
@@ -73,9 +76,11 @@ const PANEL_CARD_CLASS =
 
 // ── list ─────────────────────────────────────────────────────────────────────
 
-type Props = { opportunities: GetOpportunitiesResponse };
+const ENDS_SOON_MS = 24 * 60 * 60 * 1000;
 
-export function OpportunitiesList({ opportunities }: Props) {
+type Props = { opportunities: GetOpportunitiesResponse; auctions: GetAuctionsResponse };
+
+export function OpportunitiesList({ opportunities, auctions }: Props) {
   const isMobile = useIsMobile();
   const [panelOpen, setPanelOpen] = useState(false);
   const [displayedOpp, setDisplayedOpp] = useState<OpportunityEntry | null>(null);
@@ -202,6 +207,18 @@ export function OpportunitiesList({ opportunities }: Props) {
       loadingIdRef.current = null;
     }
   };
+
+  // Index auctions ending within 24 h by cardId, sorted soonest-first.
+  const soonByCard = new Map<string, AuctionRecord[]>();
+  const now = Date.now();
+  for (const a of auctions) {
+    const ms = new Date(a.endTime).getTime() - now;
+    if (ms > 0 && ms < ENDS_SOON_MS) {
+      const list = soonByCard.get(a.cardId) ?? [];
+      list.push(a);
+      soonByCard.set(a.cardId, list);
+    }
+  }
 
   if (opportunities.length === 0) {
     return (
@@ -359,6 +376,7 @@ export function OpportunitiesList({ opportunities }: Props) {
             opportunity={opp}
             rank={i + 1}
             onOpen={openPanel}
+            liveAuctions={soonByCard.get(opp.id) ?? []}
           />
         ))}
       </div>
@@ -372,12 +390,22 @@ function OpportunityCard({
   opportunity,
   rank,
   onOpen,
+  liveAuctions,
 }: {
   opportunity: GetOpportunitiesResponse[number];
   rank: number;
   onOpen: (opp: OpportunityEntry) => void;
+  liveAuctions: AuctionRecord[];
 }) {
   const { bestGrade: g } = opportunity;
+
+  // Auctions for the same PSA grade where the current bid is below market price,
+  // sorted by soonest-ending first.
+  const matched = liveAuctions
+    .filter(a => a.psaGrade === g.psaGrade && a.currentBidEur < g.marketSalePrice)
+    .sort((a, b) => new Date(a.endTime).getTime() - new Date(b.endTime).getTime());
+
+  const topAuction = matched[0];
 
   return (
     <div
@@ -428,8 +456,51 @@ function OpportunityCard({
           <LiquidityCell g={g} />
           <WeekCell g={g} />
         </div>
+
+        {topAuction && (
+          <LiveAuctionRow auction={topAuction} extra={matched.length - 1} marketSalePrice={g.marketSalePrice} />
+        )}
       </div>
     </div>
+  );
+}
+
+// ── live auction row ──────────────────────────────────────────────────────────
+
+function LiveAuctionRow({
+  auction,
+  extra,
+  marketSalePrice,
+}: {
+  auction: AuctionRecord;
+  extra: number;
+  marketSalePrice: number;
+}) {
+  const discount = Math.round((1 - auction.currentBidEur / marketSalePrice) * 100);
+
+  return (
+    <a
+      href={auction.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(e) => e.stopPropagation()}
+      className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-950/20 px-3 py-1.5 text-xs text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-950/40 transition-colors"
+    >
+      <Gavel className="h-3.5 w-3.5 shrink-0" />
+      <span className="font-medium">Live</span>
+      <span className="text-amber-600/70 dark:text-amber-500/60">·</span>
+      <span className="font-semibold tabular-nums">€{auction.currentBidEur.toFixed(0)}</span>
+      <span className="text-amber-600/70 dark:text-amber-500/60 tabular-nums">−{discount}%</span>
+      <span className="text-amber-600/70 dark:text-amber-500/60">·</span>
+      <AuctionCountdown endTime={auction.endTime} />
+      {extra > 0 && (
+        <>
+          <span className="text-amber-600/70 dark:text-amber-500/60">·</span>
+          <span>+{extra} more</span>
+        </>
+      )}
+      <ExternalLink className="h-3 w-3 ml-auto shrink-0 opacity-50" />
+    </a>
   );
 }
 
