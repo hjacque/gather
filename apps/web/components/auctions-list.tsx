@@ -90,7 +90,11 @@ import { getCard } from '@/app/actions/getCard';
 import { invalidateListing } from '@/app/actions/invalidateListing';
 import { invalidateSale } from '@/app/actions/invalidateSale';
 import { syncCardListings, syncListing, syncCardSales } from '@/app/actions/syncCard';
-import { invalidateAuction, editAuctionGrade } from '@/app/actions/moderateAuction';
+import {
+  invalidateAuction,
+  invalidateAuctionByItem,
+  editAuctionGrade,
+} from '@/app/actions/moderateAuction';
 
 type Auction = GetAuctionsResponse[number];
 
@@ -179,6 +183,18 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
     setData((prev) => prev.filter((a) => a.id !== id));
     try {
       await invalidateAuction(id);
+    } catch {
+      await reload(); // restore on failure
+    }
+  };
+
+  // Remove every row sharing this auction's eBay listing id (the same listing
+  // can surface under several cards). Optimistically drop them all, then flag
+  // them server-side by listing id.
+  const onInvalidateAll = async (id: string, itemId: string) => {
+    setData((prev) => prev.filter((a) => a.itemId !== itemId));
+    try {
+      await invalidateAuctionByItem(id);
     } catch {
       await reload(); // restore on failure
     }
@@ -490,6 +506,13 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
                   >
                     <Trash2 className="size-3.5" />
                     Remove
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onSelect={() => onInvalidateAll(a.id, a.itemId)}
+                  >
+                    <Trash2 className="size-3.5" />
+                    Remove all
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

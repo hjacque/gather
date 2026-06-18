@@ -52,6 +52,7 @@ export class GetAuctionsUsecase {
         return [
           {
             id: auction.id,
+            itemId: auction.itemId,
             cardId: auction.cardId,
             cardName: card.name,
             cardSetName: card.cardSet.name,

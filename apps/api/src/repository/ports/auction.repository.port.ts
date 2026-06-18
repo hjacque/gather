@@ -37,6 +37,14 @@ export abstract class AuctionRepositoryPort {
   // flag is carried forward by itemId on re-sync.
   abstract markAuctionInvalid(auctionId: string): Promise<void>;
 
+  // Flag every auction sharing one eBay listing id (across all cards) as
+  // invalid. The same listing can surface under several cards' feeds; this drops
+  // it from all of them at once. Returns the number of rows flagged.
+  abstract markAuctionsInvalidByItemId(
+    platform: Platform,
+    itemId: string
+  ): Promise<number>;
+
   // Correct an auction's scraped PSA grade. The fix is carried forward by itemId
   // on re-sync so the re-parsed grade doesn't overwrite it.
   abstract updateAuctionGrade(auctionId: string, psaGrade: number): Promise<void>;

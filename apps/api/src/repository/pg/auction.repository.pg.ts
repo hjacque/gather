@@ -106,6 +106,17 @@ export class AuctionRepositoryPg implements AuctionRepositoryPort {
     });
   }
 
+  async markAuctionsInvalidByItemId(
+    platform: Platform,
+    itemId: string,
+  ): Promise<number> {
+    const { count } = await this.prisma.auction.updateMany({
+      where: { platform, itemId, invalidatedAt: null },
+      data: { invalidatedAt: new Date() },
+    });
+    return count;
+  }
+
   async updateAuctionGrade(auctionId: string, psaGrade: number): Promise<void> {
     await this.prisma.auction.update({
       where: { id: auctionId },

@@ -184,6 +184,14 @@ export async function invalidateAuction(auctionId: string): Promise<void> {
   } satisfies UpdateAuctionRequest);
 }
 
+export async function invalidateAuctionByItem(
+  auctionId: string,
+): Promise<void> {
+  return apiPatch(`/auctions/${auctionId}`, {
+    action: 'invalidateByItem',
+  } satisfies UpdateAuctionRequest);
+}
+
 export async function editAuctionGrade(
   auctionId: string,
   psaGrade: number,

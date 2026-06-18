@@ -143,12 +143,14 @@ export const http = async ({
     res.status(200).json(result);
   });
 
-  // Moderate one auction: flag it invalid (drops it from the feed) or correct
-  // its scraped PSA grade. Both edits survive the full-replacement Auction Sync.
+  // Moderate one auction: flag it invalid (drops it from the feed), flag every
+  // auction sharing its eBay listing id (drops the listing from all feeds), or
+  // correct its scraped PSA grade. All edits survive the full-replacement sync.
   app.patch("/auctions/:auctionid", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
     const bodySchema = z.discriminatedUnion("action", [
       z.object({ action: z.literal("invalidate") }),
+      z.object({ action: z.literal("invalidateByItem") }),
       z.object({
         action: z.literal("editGrade"),
         psaGrade: z.number().int().min(1).max(10),
@@ -157,6 +159,8 @@ export const http = async ({
     const body = bodySchema.parse(req.body);
     if (body.action === "invalidate") {
       await moderateAuctionUsecase.invalidate(req.params.auctionid);
+    } else if (body.action === "invalidateByItem") {
+      await moderateAuctionUsecase.invalidateByItem(req.params.auctionid);
     } else {
       await moderateAuctionUsecase.editGrade(req.params.auctionid, body.psaGrade);
     }

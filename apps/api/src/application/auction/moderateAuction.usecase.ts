@@ -12,6 +12,18 @@ export class ModerateAuctionUsecase {
     return this.auctionRepository.markAuctionInvalid(auctionId);
   }
 
+  // Flag every auction sharing this auction's eBay listing id (the listing may
+  // appear under several cards' feeds). Resolves the listing id off the row so
+  // the caller only needs the auction id; a missing row is a no-op.
+  async invalidateByItem(auctionId: string): Promise<void> {
+    const auction = await this.auctionRepository.getAuctionById(auctionId);
+    if (!auction) return;
+    await this.auctionRepository.markAuctionsInvalidByItemId(
+      auction.platform,
+      auction.itemId,
+    );
+  }
+
   editGrade(auctionId: string, psaGrade: number): Promise<void> {
     return this.auctionRepository.updateAuctionGrade(auctionId, psaGrade);
   }

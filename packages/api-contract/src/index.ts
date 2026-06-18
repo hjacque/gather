@@ -60,6 +60,9 @@ export type ListingRecord = {
 // immutable), so it stays accurate even when `bidCheckedAt` is stale.
 export type AuctionRecord = {
   id: string;
+  // eBay listing id. The same listing can surface under several cards' feeds, so
+  // the UI uses this to remove every row sharing it in one action.
+  itemId: string;
   cardId: string;
   cardName: string;
   cardSetName: string;
@@ -81,9 +84,12 @@ export type AuctionRecord = {
 export type GetAuctionsResponse = AuctionRecord[];
 
 // User moderation of an auction from the Live Auctions feed: flag it as not
-// matching the card (drops it from the feed), or correct its scraped PSA grade.
+// matching the card (drops it from the feed), flag every auction sharing its
+// eBay listing id (drops the listing from all cards' feeds at once), or correct
+// its scraped PSA grade.
 export type UpdateAuctionRequest =
   | { action: 'invalidate' }
+  | { action: 'invalidateByItem' }
   | { action: 'editGrade'; psaGrade: number };
 
 // Result of a per-row bid refresh: removed when the auction has ended, otherwise
