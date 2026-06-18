@@ -14,8 +14,12 @@
  *   - set `LH_Auction=1` — auctions only (the mirror of the Listings Sync's
  *     `LH_BIN=1`). An auction's current bid is a moving asking price, which is
  *     exactly why auctions live in their own table and never feed a price.
- *   - set `_sop=1` — sort by "ending soonest", so the bounded page walk sees the
- *     auctions closest to closing first (the feed's default order).
+ *   - set `_sop=44` — eBay's "Durée : ventes se terminant en premier + avec
+ *     enchères" (ending soonest *with bids*). This is both the feed's default
+ *     order (ending soonest) and a server-side zero-bid filter: a live probe of
+ *     ebay.fr showed `_sop=44` returns no zero-bid rows (797 vs 975 results,
+ *     0/62 zero-bid on the page), so the sync never ingests bid-less auctions
+ *     and no per-row bid parsing is needed to exclude them.
  *
  * Derived on the fly from `ebayLink` (no stored column): the transform is purely
  * mechanical and there is nothing to hand-curate that isn't already in
@@ -34,7 +38,7 @@ export function auctionsLinkFromEbayLink(
     url.searchParams.delete("_fcid");
     url.searchParams.set("LH_Auction", "1");
     url.searchParams.set("LH_PrefLoc", "3");
-    url.searchParams.set("_sop", "1");
+    url.searchParams.set("_sop", "44");
     return url.toString();
   } catch {
     return null;

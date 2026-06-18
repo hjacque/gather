@@ -4,13 +4,15 @@ const SOLD_LINK =
   "https://www.ebay.com/sch/i.html?_from=R40&_nkw=pokemon+cramorant+226+psa+2021&_sacat=0&_fcid=1&rt=nc&LH_Sold=1&LH_Complete=1";
 
 describe("auctionsLinkFromEbayLink", () => {
-  it("drops the completed filters and pins auctions sorted ending-soonest", () => {
+  it("drops the completed filters and pins auctions to ending-soonest + with-bids", () => {
     const link = auctionsLinkFromEbayLink(SOLD_LINK)!;
     const params = new URL(link).searchParams;
     expect(params.get("LH_Sold")).toBeNull();
     expect(params.get("LH_Complete")).toBeNull();
     expect(params.get("LH_Auction")).toBe("1");
-    expect(params.get("_sop")).toBe("1");
+    // _sop=44 is eBay's "ending soonest + with bids" — sorts and filters out
+    // zero-bid auctions server-side (verified by live probe).
+    expect(params.get("_sop")).toBe("44");
   });
 
   it("never pins Buy-It-Now (auctions are the opposite of the Listings Sync)", () => {
