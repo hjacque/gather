@@ -53,6 +53,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -135,7 +141,7 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 50 });
   const [refreshing, setRefreshing] = useState<Record<string, boolean>>({});
   const [syncingAll, setSyncingAll] = useState(false);
-  const [grade, setGrade] = useState('all');
+  const [grades, setGrades] = useState<number[]>([]);
 
   // ── side panel ──────────────────────────────────────────────────────────
   const [panelOpen, setPanelOpen] = useState(false);
@@ -361,8 +367,8 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
           />
         ),
         cell: ({ row }) => <Badge variant="secondary">PSA {row.original.psaGrade}</Badge>,
-        filterFn: (row, id, value) =>
-          value === 'all' || row.getValue(id) === Number(value),
+        filterFn: (row, id, value: number[]) =>
+          !value || value.length === 0 || value.includes(row.getValue(id)),
       },
       {
         accessorKey: 'currentBidEur',
@@ -514,30 +520,66 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
     rows: table.getSortedRowModel().rows.map((r) => r.original),
   };
 
-  const onGradeChange = (value: string) => {
-    setGrade(value);
-    table
-      .getColumn('psaGrade')
-      ?.setFilterValue(value === 'all' ? undefined : value);
+  const toggleGrade = (g: number) => {
+    const next = grades.includes(g)
+      ? grades.filter((x) => x !== g)
+      : [...grades, g];
+    setGrades(next);
+    table.getColumn('psaGrade')?.setFilterValue(next.length ? next : undefined);
   };
+  const gradeLabel =
+    grades.length === 0
+      ? 'All grades'
+      : grades.length === 1
+        ? `PSA ${grades[0]}`
+        : `${grades.length} grades`;
 
   return (
     <div className="flex w-full flex-col gap-4 px-4 lg:px-6">
       {/* toolbar */}
       <div className="flex flex-wrap items-center gap-3">
-        <Select value={grade} onValueChange={onGradeChange}>
-          <SelectTrigger size="sm" className="w-32">
-            <SelectValue placeholder="Grade" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All grades</SelectItem>
-            {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map((g) => (
-              <SelectItem key={g} value={String(g)}>
-                PSA {g}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant={grades.length > 0 ? 'default' : 'outline'}
+              size="sm"
+              className="justify-between font-normal"
+            >
+              <span className="truncate">{gradeLabel}</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-2" align="start">
+            <div className="flex flex-col gap-1">
+              {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map((g) => (
+                <label
+                  key={g}
+                  className="flex items-center gap-2 rounded px-2 py-1.5 text-sm cursor-pointer hover:bg-accent"
+                >
+                  <Checkbox
+                    checked={grades.includes(g)}
+                    onCheckedChange={() => toggleGrade(g)}
+                  />
+                  PSA {g}
+                </label>
+              ))}
+            </div>
+            {grades.length > 0 && (
+              <div className="mt-2 border-t pt-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-xs"
+                  onClick={() => {
+                    setGrades([]);
+                    table.getColumn('psaGrade')?.setFilterValue(undefined);
+                  }}
+                >
+                  Clear
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
         <Button
           variant="outline"
           size="sm"
