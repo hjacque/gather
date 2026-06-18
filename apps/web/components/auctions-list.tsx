@@ -3,6 +3,7 @@
 import type { GetAuctionsResponse } from '@gather/api-contract';
 import { Badge } from '@/components/ui/badge';
 import { CardImage } from '@/components/card-image';
+import { AuctionCountdown } from '@/components/auction-countdown';
 import { ExternalLink, Gavel } from 'lucide-react';
 import {
   Table,
@@ -14,19 +15,6 @@ import {
 } from '@/components/ui/table';
 
 const eur = (n: number) => `€${n.toFixed(0)}`;
-
-// Absolute end instant rendered as a short local date+time. The live ticking
-// countdown is a later slice; this already conveys urgency since the feed is
-// ordered ending-soonest.
-const formatEnd = (iso: string | Date) => {
-  const d = new Date(iso);
-  return d.toLocaleString(undefined, {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
 
 export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
   if (auctions.length === 0) {
@@ -83,7 +71,7 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
               {a.bidCount}
             </TableCell>
             <TableCell className="whitespace-nowrap">
-              {formatEnd(a.endTime)}
+              <AuctionCountdown endTime={a.endTime} />
             </TableCell>
             <TableCell className="text-muted-foreground">
               {a.location ?? '—'}
