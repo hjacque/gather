@@ -16,31 +16,54 @@ export class AuctionRepositoryPg implements AuctionRepositoryPort {
     platform: Platform,
     auctions: NewAuction[],
   ): Promise<void> {
+    // Full per-card replacement is the staleness model, but user moderation must
+    // outlive it: carry invalidatedAt and a manual grade fix forward by itemId so
+    // a flagged/corrected auction the re-sync still sees keeps the moderation.
+    const moderated = await this.prisma.auction.findMany({
+      where: {
+        cardId,
+        platform,
+        OR: [{ invalidatedAt: { not: null } }, { gradeEditedAt: { not: null } }],
+      },
+      select: {
+        itemId: true,
+        invalidatedAt: true,
+        gradeEditedAt: true,
+        psaGrade: true,
+      },
+    });
+    const modByItem = new Map(moderated.map((m) => [m.itemId, m]));
     await this.prisma.$transaction([
       this.prisma.auction.deleteMany({ where: { cardId, platform } }),
       this.prisma.auction.createMany({
-        data: auctions.map((a) => ({
-          cardId: a.cardId,
-          platform: a.platform,
-          itemId: a.itemId,
-          psaGrade: a.psaGrade,
-          currentBid: a.currentBid,
-          currency: a.currency,
-          bidCount: a.bidCount,
-          endTime: a.endTime,
-          title: a.title,
-          seller: a.seller,
-          location: a.location,
-          bidCheckedAt: a.bidCheckedAt,
-          seenAt: a.seenAt,
-        })),
+        data: auctions.map((a) => {
+          const mod = modByItem.get(a.itemId);
+          return {
+            cardId: a.cardId,
+            platform: a.platform,
+            itemId: a.itemId,
+            // A manual grade fix wins over the re-parsed scraped grade.
+            psaGrade: mod?.gradeEditedAt ? mod.psaGrade : a.psaGrade,
+            currentBid: a.currentBid,
+            currency: a.currency,
+            bidCount: a.bidCount,
+            endTime: a.endTime,
+            title: a.title,
+            seller: a.seller,
+            location: a.location,
+            bidCheckedAt: a.bidCheckedAt,
+            seenAt: a.seenAt,
+            invalidatedAt: mod?.invalidatedAt ?? null,
+            gradeEditedAt: mod?.gradeEditedAt ?? null,
+          };
+        }),
       }),
     ]);
   }
 
   async getOpenAuctions(now: Date): Promise<AuctionEntity[]> {
     const rows = await this.prisma.auction.findMany({
-      where: { endTime: { gt: now } },
+      where: { endTime: { gt: now }, invalidatedAt: null },
     });
     return rows.map((row) => this.auctionMapper.toEntity(row));
   }
@@ -74,6 +97,20 @@ export class AuctionRepositoryPg implements AuctionRepositoryPort {
 
   async deleteAuction(auctionId: string): Promise<void> {
     await this.prisma.auction.delete({ where: { id: auctionId } });
+  }
+
+  async markAuctionInvalid(auctionId: string): Promise<void> {
+    await this.prisma.auction.update({
+      where: { id: auctionId },
+      data: { invalidatedAt: new Date() },
+    });
+  }
+
+  async updateAuctionGrade(auctionId: string, psaGrade: number): Promise<void> {
+    await this.prisma.auction.update({
+      where: { id: auctionId },
+      data: { psaGrade, gradeEditedAt: new Date() },
+    });
   }
 
   async pruneEndedAuctions(now: Date): Promise<number> {

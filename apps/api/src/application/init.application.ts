@@ -30,6 +30,7 @@ import { EbayAuctionsSource } from "./sync/sources/ebayAuctions.source";
 import { SyncAuctionsUsecase } from "./sync/syncAuctions.usecase";
 import { GetAuctionsUsecase } from "./auction/getAuctions.usecase";
 import { RefreshAuctionBidUsecase } from "./auction/refreshAuctionBid.usecase";
+import { ModerateAuctionUsecase } from "./auction/moderateAuction.usecase";
 import { MarketSalePriceSnapshotService } from "./sale/marketSalePriceSnapshot";
 import { GetOpportunitiesUsecase } from "./opportunities/getOpportunities.usecase";
 
@@ -46,6 +47,7 @@ export type Usecases = {
   syncAuctionsUsecase: SyncAuctionsUsecase;
   getAuctionsUsecase: GetAuctionsUsecase;
   refreshAuctionBidUsecase: RefreshAuctionBidUsecase;
+  moderateAuctionUsecase: ModerateAuctionUsecase;
   invalidateSaleUsecase: InvalidateSaleUsecase;
   invalidateListingUsecase: InvalidateListingUsecase;
   reviewSaleUsecase: ReviewSaleUsecase;
@@ -113,6 +115,7 @@ export const initApplication = ({
     auctionRepository,
     new EbayItemPageSource()
   );
+  const moderateAuctionUsecase = new ModerateAuctionUsecase(auctionRepository);
   const syncUsecase = new SyncUsecase(
     cardRepository,
     priceSources,
@@ -185,6 +188,7 @@ export const initApplication = ({
     syncAuctionsUsecase,
     getAuctionsUsecase,
     refreshAuctionBidUsecase,
+    moderateAuctionUsecase,
     invalidateSaleUsecase,
     invalidateListingUsecase,
     reviewSaleUsecase,

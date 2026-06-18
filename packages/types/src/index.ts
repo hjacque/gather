@@ -155,6 +155,12 @@ export type AuctionEntity = {
   bidCheckedAt: Date;
   // When the last Auction Sync saw this auction live.
   seenAt: Date;
+  // Set when the user flags this auction as not matching the card; excluded from
+  // the feed and carried forward by itemId across the full-replacement sync.
+  invalidatedAt: Date | null;
+  // Set when the user corrects the scraped PSA grade; carried forward by itemId
+  // so a re-sync doesn't overwrite the manual fix.
+  gradeEditedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };

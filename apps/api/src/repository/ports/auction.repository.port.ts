@@ -33,6 +33,14 @@ export abstract class AuctionRepositoryPort {
   // Hard-delete an auction whose item page shows it has ended.
   abstract deleteAuction(auctionId: string): Promise<void>;
 
+  // Flag an auction as not matching its card. It drops out of the feed and the
+  // flag is carried forward by itemId on re-sync.
+  abstract markAuctionInvalid(auctionId: string): Promise<void>;
+
+  // Correct an auction's scraped PSA grade. The fix is carried forward by itemId
+  // on re-sync so the re-parsed grade doesn't overwrite it.
+  abstract updateAuctionGrade(auctionId: string, psaGrade: number): Promise<void>;
+
   // Hard-delete all auctions whose endTime has passed. Storage hygiene run by
   // the Auction Sync; reads already exclude these via the endTime > now filter.
   // Returns the number of rows pruned.

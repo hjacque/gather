@@ -23,6 +23,7 @@ export const http = async ({
   syncAuctionsUsecase,
   getAuctionsUsecase,
   refreshAuctionBidUsecase,
+  moderateAuctionUsecase,
   invalidateSaleUsecase,
   invalidateListingUsecase,
   reviewSaleUsecase,
@@ -140,6 +141,26 @@ export const http = async ({
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
     const result = await refreshAuctionBidUsecase.execute(req.params.auctionid);
     res.status(200).json(result);
+  });
+
+  // Moderate one auction: flag it invalid (drops it from the feed) or correct
+  // its scraped PSA grade. Both edits survive the full-replacement Auction Sync.
+  app.patch("/auctions/:auctionid", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
+    const bodySchema = z.discriminatedUnion("action", [
+      z.object({ action: z.literal("invalidate") }),
+      z.object({
+        action: z.literal("editGrade"),
+        psaGrade: z.number().int().min(1).max(10),
+      }),
+    ]);
+    const body = bodySchema.parse(req.body);
+    if (body.action === "invalidate") {
+      await moderateAuctionUsecase.invalidate(req.params.auctionid);
+    } else {
+      await moderateAuctionUsecase.editGrade(req.params.auctionid, body.psaGrade);
+    }
+    res.status(204).end();
   });
 
   app.get("/sync/sales/card/:cardid", async (req, res) => {

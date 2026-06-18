@@ -20,7 +20,9 @@ import {
   ExternalLink,
   Gavel,
   MoreVertical,
+  Pencil,
   RefreshCw,
+  Trash2,
 } from 'lucide-react';
 
 import type { GetAuctionsResponse, GetCardResponse } from '@gather/api-contract';
@@ -37,6 +39,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -73,6 +79,7 @@ import { getCard } from '@/app/actions/getCard';
 import { invalidateListing } from '@/app/actions/invalidateListing';
 import { invalidateSale } from '@/app/actions/invalidateSale';
 import { syncCardListings, syncListing, syncCardSales } from '@/app/actions/syncCard';
+import { invalidateAuction, editAuctionGrade } from '@/app/actions/moderateAuction';
 
 type Auction = GetAuctionsResponse[number];
 
@@ -158,6 +165,24 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
       /* leave row as-is on a failed refresh */
     } finally {
       setRefreshing((r) => ({ ...r, [id]: false }));
+    }
+  };
+
+  const onInvalidate = async (id: string) => {
+    setData((prev) => prev.filter((a) => a.id !== id));
+    try {
+      await invalidateAuction(id);
+    } catch {
+      await reload(); // restore on failure
+    }
+  };
+
+  const onEditGrade = async (id: string, psaGrade: number) => {
+    updateRow(id, { psaGrade });
+    try {
+      await editAuctionGrade(id, psaGrade);
+    } catch {
+      await reload();
     }
   };
 
@@ -398,7 +423,7 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
                     <span className="sr-only">Open menu</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-44">
                   <DropdownMenuItem disabled={busy} onSelect={() => onRefresh(a.id)}>
                     <RefreshCw
                       className={`size-3.5${busy ? ' animate-spin' : ''}`}
@@ -410,6 +435,31 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
                       <ExternalLink className="size-3.5" />
                       Open on eBay
                     </a>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      <Pencil className="size-3.5" />
+                      Edit grade
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map((g) => (
+                        <DropdownMenuItem
+                          key={g}
+                          disabled={g === a.psaGrade}
+                          onSelect={() => onEditGrade(a.id, g)}
+                        >
+                          PSA {g}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onSelect={() => onInvalidate(a.id)}
+                  >
+                    <Trash2 className="size-3.5" />
+                    Remove (invalid)
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

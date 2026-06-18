@@ -224,6 +224,12 @@ model Auction {
   // When currentBid + bidCount were last read (sync time or a later refresh).
   bidCheckedAt DateTime
   seenAt       DateTime
+  // User-flagged as not matching this card: excluded from the feed, but kept and
+  // carried forward by itemId on re-sync so the flag survives full replacement.
+  invalidatedAt DateTime?
+  // Set when the user corrects the scraped PSA grade; carried forward by itemId
+  // so the re-sync's re-parsed grade doesn't clobber the manual fix.
+  gradeEditedAt DateTime?
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

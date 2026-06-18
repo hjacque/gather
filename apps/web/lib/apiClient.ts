@@ -11,6 +11,7 @@ import type {
   SyncCardListingsResponse,
   SyncCardResponse,
   SyncListingResponse,
+  UpdateAuctionRequest,
   UpdateCardNoteRequest,
   UpdateListingStatusRequest,
   UpsertCollectionEntryRequest,
@@ -175,6 +176,22 @@ export async function refreshAuctionBid(
   auctionId: string,
 ): Promise<RefreshAuctionBidResponse> {
   return apiFetch(`/auctions/${auctionId}/refresh-bid`);
+}
+
+export async function invalidateAuction(auctionId: string): Promise<void> {
+  return apiPatch(`/auctions/${auctionId}`, {
+    action: 'invalidate',
+  } satisfies UpdateAuctionRequest);
+}
+
+export async function editAuctionGrade(
+  auctionId: string,
+  psaGrade: number,
+): Promise<void> {
+  return apiPatch(`/auctions/${auctionId}`, {
+    action: 'editGrade',
+    psaGrade,
+  } satisfies UpdateAuctionRequest);
 }
 
 export async function syncAllPop(): Promise<void> {

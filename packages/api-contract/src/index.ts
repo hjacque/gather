@@ -80,6 +80,12 @@ export type AuctionRecord = {
 
 export type GetAuctionsResponse = AuctionRecord[];
 
+// User moderation of an auction from the Live Auctions feed: flag it as not
+// matching the card (drops it from the feed), or correct its scraped PSA grade.
+export type UpdateAuctionRequest =
+  | { action: 'invalidate' }
+  | { action: 'editGrade'; psaGrade: number };
+
 // Result of a per-row bid refresh: removed when the auction has ended, otherwise
 // the freshly-read current bid (EUR) + bid count and when they were read (or
 // unchanged when the item page couldn't be read).

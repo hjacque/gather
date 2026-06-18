@@ -17,6 +17,8 @@ export class AuctionMapper {
     location,
     bidCheckedAt,
     seenAt,
+    invalidatedAt,
+    gradeEditedAt,
     createdAt,
     updatedAt,
   }: AuctionModel): AuctionEntity {
@@ -35,6 +37,8 @@ export class AuctionMapper {
       location,
       bidCheckedAt,
       seenAt,
+      invalidatedAt,
+      gradeEditedAt,
       createdAt,
       updatedAt,
     };
