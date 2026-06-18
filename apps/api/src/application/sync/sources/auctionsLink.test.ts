@@ -43,8 +43,19 @@ describe("auctionsLinkFromEbayLink", () => {
     );
   });
 
+  it("restricts to a single seller via _ssn when one is given", () => {
+    const link = auctionsLinkFromEbayLink(SOLD_LINK, "slapauction")!;
+    expect(new URL(link).searchParams.get("_ssn")).toBe("slapauction");
+  });
+
+  it("leaves the search seller-unrestricted when no seller is given", () => {
+    const link = auctionsLinkFromEbayLink(SOLD_LINK)!;
+    expect(new URL(link).searchParams.get("_ssn")).toBeNull();
+  });
+
   it("returns null for absent or malformed links", () => {
     expect(auctionsLinkFromEbayLink(null)).toBeNull();
     expect(auctionsLinkFromEbayLink("not a url")).toBeNull();
+    expect(auctionsLinkFromEbayLink("not a url", "slapauction")).toBeNull();
   });
 });

@@ -6,6 +6,7 @@ import {
   AuctionCandidate,
   extractAuctionRow,
 } from "./auctionRowExtractor";
+import { AUCTION_SELLER_ALLOWLIST } from "./auctionSellers";
 
 // Cap on auction pages walked per Card. The search is sorted ending-soonest
 // (`_sop=1`), so the auctions that matter for a "live" feed land on the first
@@ -16,15 +17,17 @@ const MAX_PAGES = 5;
  * eBay ongoing-auctions scraping source — the auction sibling of
  * `EbayListingsSource`. Walks each Card's curated auction search (derived on the
  * fly from `ebayLink` by `auctionsLinkFromEbayLink`: ebay.fr, `LH_Auction=1`,
- * EU item-location filtered, ending-soonest) and reduces each result row to a
- * `RawAuctionRow` for the pure Auction Row Extractor.
+ * EU item-location filtered, ending-soonest), restricted to the allowlisted
+ * sellers (`auctionSellers.ts`) via the search's `_ssn` filter — one search per
+ * seller — and reduces each result row to a `RawAuctionRow` for the pure Auction
+ * Row Extractor. The feed therefore only ingests known cards from known sellers.
  *
  * Selectors mirror the listings walk (rows are `li.s-card[data-listingid]`); the
  * auction-specific additions are the bid-count and "time left" captions, both
  * rendered as `.s-card__attribute-row` lines (French site). The row price is the
- * running bid, not a buyable ask. eBay.fr rows carry no seller line, so seller
- * trust/activity stay at their null-input defaults here; the use case confirms
- * seller quality off each item page.
+ * running bid, not a buyable ask. The seller is already pinned server-side by
+ * `_ssn`, so the use case visits each item page only for the authoritative
+ * EUR bid + live state (and the zero-feedback guard, inert for vetted sellers).
  */
 export class EbayAuctionsSource {
   appliesTo(card: CardEntity): boolean {
@@ -32,19 +35,40 @@ export class EbayAuctionsSource {
   }
 
   async fetch(card: CardEntity, page: Page): Promise<AuctionCandidate[]> {
-    const link = auctionsLinkFromEbayLink(card.ebayLink);
-    if (!link) return [];
-
     const candidates: AuctionCandidate[] = [];
     const seen = new Set<string>();
 
+    // One search per allowlisted seller (eBay's `_ssn` filter takes a single
+    // seller). Dedup across sellers by itemId, though a single auction can only
+    // belong to one seller in practice.
+    for (const seller of AUCTION_SELLER_ALLOWLIST) {
+      const link = auctionsLinkFromEbayLink(card.ebayLink, seller);
+      if (!link) continue;
+      await this.walkSeller(card, seller, link, page, candidates, seen);
+    }
+
+    console.log(
+      `[EbayAuctions] ${card.name}: ${candidates.length} auction candidate(s)`,
+    );
+    return candidates;
+  }
+
+  // Walk every page of one seller's auction search, appending new candidates.
+  private async walkSeller(
+    card: CardEntity,
+    seller: string,
+    link: string,
+    page: Page,
+    candidates: AuctionCandidate[],
+    seen: Set<string>,
+  ): Promise<void> {
     for (let pageNum = 1; pageNum <= MAX_PAGES; pageNum++) {
       const url = this.withPage(link, pageNum);
       try {
         await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
       } catch (error) {
         console.log(
-          `[EbayAuctions] navigation failed for ${card.name} p${pageNum}`,
+          `[EbayAuctions] navigation failed for ${card.name} (${seller}) p${pageNum}`,
           error,
         );
         break;
@@ -69,11 +93,6 @@ export class EbayAuctionsSource {
       }
       if (newOnPage === 0) break;
     }
-
-    console.log(
-      `[EbayAuctions] ${card.name}: ${candidates.length} auction candidate(s)`,
-    );
-    return candidates;
   }
 
   private withPage(link: string, pageNum: number): string {

@@ -38,14 +38,15 @@ const emptyCounters = (): AuctionSyncCounters => ({
 });
 
 // The auction sibling of the Listings Sync: walk each Card's ongoing-auction
-// search, classify every auction's PSA grade with the same card-aware title
-// parser the listings/sales pipelines use, enforce EU provenance per row, and
-// persist the survivors as the Card's full set of live Auctions (full per-card
-// replacement — disappeared/ended auctions are pruned). Each survivor's eBay
-// item page is then visited to apply the same seller-quality gate the Listings
-// Sync uses (zero-feedback sellers dropped); since the page is loaded anyway,
-// the true current bid + bid count are captured there too, so every Auction
-// lands with a bid as of this sync.
+// search restricted to the allowlisted sellers (auctionSellers.ts; the search's
+// `_ssn` filter so only known cards from known sellers are scraped), classify
+// every auction's PSA grade with the same card-aware title parser the
+// listings/sales pipelines use, enforce EU provenance per row, and persist the
+// survivors as the Card's full set of live Auctions (full per-card replacement —
+// disappeared/ended auctions are pruned). Each survivor's eBay item page is then
+// visited for the true current bid + bid count in EUR (so every Auction lands
+// with a bid as of this sync) and the live ended/gone check; the zero-feedback
+// seller guard from the Listings Sync is kept but is inert for vetted sellers.
 export class SyncAuctionsUsecase {
   constructor(
     private readonly cardRepository: CardRepositoryPort,

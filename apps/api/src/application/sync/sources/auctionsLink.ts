@@ -20,13 +20,19 @@
  *     ebay.fr showed `_sop=44` returns no zero-bid rows (797 vs 975 results,
  *     0/62 zero-bid on the page), so the sync never ingests bid-less auctions
  *     and no per-row bid parsing is needed to exclude them.
+ *   - set `_ssn=<seller>` when a seller is given — restrict the search to a
+ *     single allowlisted seller (see auctionSellers.ts). The feed only ingests
+ *     auctions from known sellers, and filtering server-side means other
+ *     sellers' auctions are never walked. Omitted seller → unrestricted (the
+ *     pre-allowlist behaviour, kept for callers that don't curate by seller).
  *
  * Derived on the fly from `ebayLink` (no stored column): the transform is purely
  * mechanical and there is nothing to hand-curate that isn't already in
  * `ebayLink`. See ADR 0010.
  */
 export function auctionsLinkFromEbayLink(
-  ebayLink: string | null
+  ebayLink: string | null,
+  seller?: string | null
 ): string | null {
   if (!ebayLink) return null;
   try {
@@ -39,6 +45,7 @@ export function auctionsLinkFromEbayLink(
     url.searchParams.set("LH_Auction", "1");
     url.searchParams.set("LH_PrefLoc", "3");
     url.searchParams.set("_sop", "44");
+    if (seller) url.searchParams.set("_ssn", seller);
     return url.toString();
   } catch {
     return null;
