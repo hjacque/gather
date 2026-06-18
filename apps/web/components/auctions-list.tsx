@@ -520,6 +520,12 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
     rows: table.getSortedRowModel().rows.map((r) => r.original),
   };
 
+  // Only offer grades that actually have a live auction, high-to-low.
+  const availableGrades = React.useMemo(
+    () => Array.from(new Set(data.map((a) => a.psaGrade))).sort((a, b) => b - a),
+    [data],
+  );
+
   const toggleGrade = (g: number) => {
     const next = grades.includes(g)
       ? grades.filter((x) => x !== g)
@@ -550,7 +556,7 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
           </PopoverTrigger>
           <PopoverContent className="w-auto p-2" align="start">
             <div className="flex flex-col gap-1">
-              {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map((g) => (
+              {availableGrades.map((g) => (
                 <label
                   key={g}
                   className="flex items-center gap-2 rounded px-2 py-1.5 text-sm cursor-pointer hover:bg-accent"
