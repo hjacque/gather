@@ -223,8 +223,8 @@ export class SyncAuctionsUsecase {
 
   private async openBrowser() {
     const { browser, page } = await connect({
-      headless: true,
-      disableXvfb: true,
+      headless: false,
+      disableXvfb: false,
       args: [],
       customConfig: {},
       turnstile: true,
