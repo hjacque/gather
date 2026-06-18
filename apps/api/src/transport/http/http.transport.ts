@@ -22,6 +22,7 @@ export const http = async ({
   syncSingleListingUsecase,
   syncAuctionsUsecase,
   getAuctionsUsecase,
+  refreshAuctionBidUsecase,
   invalidateSaleUsecase,
   invalidateListingUsecase,
   reviewSaleUsecase,
@@ -118,6 +119,13 @@ export const http = async ({
   app.get("/auctions", async (_req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
     const result = await getAuctionsUsecase.execute();
+    res.status(200).json(result);
+  });
+
+  // Refresh one auction's current bid against its eBay item page (per-row).
+  app.get("/auctions/:auctionid/refresh-bid", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
+    const result = await refreshAuctionBidUsecase.execute(req.params.auctionid);
     res.status(200).json(result);
   });
 

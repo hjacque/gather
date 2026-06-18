@@ -80,6 +80,18 @@ export type AuctionRecord = {
 
 export type GetAuctionsResponse = AuctionRecord[];
 
+// Result of a per-row bid refresh: removed when the auction has ended, otherwise
+// the freshly-read current bid (EUR) + bid count and when they were read (or
+// unchanged when the item page couldn't be read).
+export type RefreshAuctionBidResponse = {
+  auctionId: string;
+  removed: boolean;
+  currentBidEur?: number;
+  bidCount?: number;
+  bidCheckedAt?: Date;
+  unchanged?: boolean;
+};
+
 // ─── Market Price ─────────────────────────────────────────────────────────────
 
 // Per-grade market price: the recency-weighted median of that grade's eBay sale

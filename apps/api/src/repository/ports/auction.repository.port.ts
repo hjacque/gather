@@ -15,4 +15,21 @@ export abstract class AuctionRepositoryPort {
   // last is not guaranteed — the read layer sorts. A freshly-ended auction is
   // excluded immediately by the endTime filter, before any prune runs.
   abstract getOpenAuctions(now: Date): Promise<AuctionEntity[]>;
+
+  // One auction by id, or null. Used by the per-row bid refresh.
+  abstract getAuctionById(auctionId: string): Promise<AuctionEntity | null>;
+
+  // Update an auction's live bid state after re-reading its item page.
+  abstract updateAuctionBid(
+    auctionId: string,
+    state: {
+      currentBid: number;
+      currency: string;
+      bidCount: number;
+      bidCheckedAt: Date;
+    }
+  ): Promise<void>;
+
+  // Hard-delete an auction whose item page shows it has ended.
+  abstract deleteAuction(auctionId: string): Promise<void>;
 }

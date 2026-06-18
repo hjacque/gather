@@ -44,4 +44,35 @@ export class AuctionRepositoryPg implements AuctionRepositoryPort {
     });
     return rows.map((row) => this.auctionMapper.toEntity(row));
   }
+
+  async getAuctionById(auctionId: string): Promise<AuctionEntity | null> {
+    const row = await this.prisma.auction.findUnique({
+      where: { id: auctionId },
+    });
+    return row ? this.auctionMapper.toEntity(row) : null;
+  }
+
+  async updateAuctionBid(
+    auctionId: string,
+    state: {
+      currentBid: number;
+      currency: string;
+      bidCount: number;
+      bidCheckedAt: Date;
+    },
+  ): Promise<void> {
+    await this.prisma.auction.update({
+      where: { id: auctionId },
+      data: {
+        currentBid: state.currentBid,
+        currency: state.currency,
+        bidCount: state.bidCount,
+        bidCheckedAt: state.bidCheckedAt,
+      },
+    });
+  }
+
+  async deleteAuction(auctionId: string): Promise<void> {
+    await this.prisma.auction.delete({ where: { id: auctionId } });
+  }
 }

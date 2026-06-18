@@ -1,5 +1,6 @@
 import type {
   GetAuctionsResponse,
+  RefreshAuctionBidResponse,
   GetCardsQuery,
   GetCardsResponse,
   GetCardResponse,
@@ -161,6 +162,12 @@ export async function getAuctions(): Promise<GetAuctionsResponse> {
 
 export async function syncAllAuctions(): Promise<void> {
   await apiFetch('/sync/auctions');
+}
+
+export async function refreshAuctionBid(
+  auctionId: string,
+): Promise<RefreshAuctionBidResponse> {
+  return apiFetch(`/auctions/${auctionId}/refresh-bid`);
 }
 
 export async function syncAllPop(): Promise<void> {

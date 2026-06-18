@@ -29,6 +29,7 @@ import { EbayItemPageSource } from "./sync/sources/ebayItemPage.source";
 import { EbayAuctionsSource } from "./sync/sources/ebayAuctions.source";
 import { SyncAuctionsUsecase } from "./sync/syncAuctions.usecase";
 import { GetAuctionsUsecase } from "./auction/getAuctions.usecase";
+import { RefreshAuctionBidUsecase } from "./auction/refreshAuctionBid.usecase";
 import { MarketSalePriceSnapshotService } from "./sale/marketSalePriceSnapshot";
 import { GetOpportunitiesUsecase } from "./opportunities/getOpportunities.usecase";
 
@@ -44,6 +45,7 @@ export type Usecases = {
   syncSingleListingUsecase: SyncSingleListingUsecase;
   syncAuctionsUsecase: SyncAuctionsUsecase;
   getAuctionsUsecase: GetAuctionsUsecase;
+  refreshAuctionBidUsecase: RefreshAuctionBidUsecase;
   invalidateSaleUsecase: InvalidateSaleUsecase;
   invalidateListingUsecase: InvalidateListingUsecase;
   reviewSaleUsecase: ReviewSaleUsecase;
@@ -106,6 +108,10 @@ export const initApplication = ({
   const getAuctionsUsecase = new GetAuctionsUsecase(
     cardRepository,
     auctionRepository
+  );
+  const refreshAuctionBidUsecase = new RefreshAuctionBidUsecase(
+    auctionRepository,
+    new EbayItemPageSource()
   );
   const syncUsecase = new SyncUsecase(
     cardRepository,
@@ -178,6 +184,7 @@ export const initApplication = ({
     syncSingleListingUsecase,
     syncAuctionsUsecase,
     getAuctionsUsecase,
+    refreshAuctionBidUsecase,
     invalidateSaleUsecase,
     invalidateListingUsecase,
     reviewSaleUsecase,
