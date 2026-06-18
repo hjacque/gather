@@ -1,4 +1,5 @@
 import type {
+  GetAuctionsResponse,
   GetCardsQuery,
   GetCardsResponse,
   GetCardResponse,
@@ -152,6 +153,14 @@ export async function syncAllSales(): Promise<void> {
 
 export async function getOpportunities(): Promise<GetOpportunitiesResponse> {
   return apiFetch('/opportunities');
+}
+
+export async function getAuctions(): Promise<GetAuctionsResponse> {
+  return apiFetch('/auctions');
+}
+
+export async function syncAllAuctions(): Promise<void> {
+  await apiFetch('/sync/auctions');
 }
 
 export async function syncAllPop(): Promise<void> {

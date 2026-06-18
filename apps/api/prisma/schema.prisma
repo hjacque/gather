@@ -95,6 +95,7 @@ model Card {
   psaPopReport              PsaPopReport?
   sales                     Sale[]
   listings                  Listing[]
+  auctions                  Auction[]
 
   collectionEntry           CollectionEntry?
 
@@ -194,6 +195,41 @@ model Listing {
   updatedAt   DateTime @updatedAt
 
   @@unique([platform, itemId, cardId])
+}
+
+// An ongoing eBay auction (EU-located) for a Card at a PSA Grade. Separate from
+// Listing on purpose (ADR 0010): the buy-side minimum reads only Listing, so an
+// auction's currentBid is structurally incapable of feeding a Derived Price.
+// Ephemeral — full per-card replacement on each Auction Sync, and rows are
+// pruned/filtered out once endTime passes.
+model Auction {
+  id           String   @id @default(uuid())
+  card         Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  cardId       String
+  platform     Platform
+  itemId       String
+  psaGrade     Int
+  // Current highest bid in its original currency — a moving asking price, never
+  // a buyable one.
+  currentBid   Float
+  currency     String
+  bidCount     Int      @default(0)
+  // Absolute end instant, computed from eBay's relative "time left" caption at
+  // scrape time. Immutable; drives the countdown and the endTime > now filter.
+  endTime      DateTime
+  title        String
+  seller       String?
+  // Verified-EU item location (e.g. "Allemagne"); null when no location line.
+  location     String?
+  // When currentBid + bidCount were last read (sync time or a later refresh).
+  bidCheckedAt DateTime
+  seenAt       DateTime
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([platform, itemId, cardId])
+  @@index([endTime])
 }
 
 model PsaPopReport {

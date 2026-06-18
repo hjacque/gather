@@ -121,6 +121,44 @@ export type ListingEntity = {
   updatedAt: Date;
 };
 
+// An ongoing eBay auction (EU-located) for a Card at a PSA Grade. Distinct from
+// a ListingEntity (a buyable Buy-It-Now ask) and a SaleEntity (a realized
+// transaction): an Auction carries a *current bid* — a moving asking price you
+// cannot buy at, so it never feeds any Derived Price — and an immutable end
+// time. Stored in its own table, never on Listing, so a bid is structurally
+// incapable of reaching the buy-side minimum. Ephemeral: rows are full-replaced
+// per Card on each Auction Sync and pruned once endTime passes. See ADR 0010.
+export type AuctionEntity = {
+  id: string;
+  cardId: string;
+  platform: Platform;
+  itemId: string;
+  psaGrade: number;
+  // Current highest bid in its original currency. A moving asking price, not a
+  // buyable one — never converted into a Derived Price.
+  currentBid: number;
+  currency: string;
+  // Number of bids placed so far (0 when no one has bid yet).
+  bidCount: number;
+  // Absolute instant the auction ends, computed from eBay's relative "time
+  // left" caption at scrape time. Immutable once captured; drives the live
+  // countdown and the endTime > now read filter.
+  endTime: Date;
+  title: string;
+  // eBay store slug of the seller (e.g. "psa"), or null for non-store sellers.
+  seller: string | null;
+  // Item-location country (e.g. "Allemagne"), verified to be an EU member state
+  // at ingest. null when eBay rendered no location line.
+  location: string | null;
+  // When the current bid + bid count were last read (sync time, or a later
+  // per-row refresh).
+  bidCheckedAt: Date;
+  // When the last Auction Sync saw this auction live.
+  seenAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type SaleEntity = {
   id: string;
   cardId: string;

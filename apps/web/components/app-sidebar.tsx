@@ -25,6 +25,10 @@ const buildNav = (unreviewedCount: number) => [
         url: '/opportunities',
       },
       {
+        title: 'Live Auctions',
+        url: '/auctions',
+      },
+      {
         title: 'Exclusive Promos',
         url: '/pokemon/exclusive-promos',
       },

@@ -4,12 +4,14 @@ import { PsaPopReportRepositoryPort } from "./ports/psaPopReport.repository.port
 import { CollectionRepositoryPort } from "./ports/collection.repository.port";
 import { SaleRepositoryPort } from "./ports/sale.repository.port";
 import { ListingRepositoryPort } from "./ports/listing.repository.port";
+import { AuctionRepositoryPort } from "./ports/auction.repository.port";
 import { CardRepositoryPg } from "./pg/card.repository.pg";
 import { PriceRepositoryPg } from "./pg/price.repository.pg";
 import { PsaPopReportRepositoryPg } from "./pg/psaPopReport.repository.pg";
 import { CollectionRepositoryPg } from "./pg/collection.repository.pg";
 import { SaleRepositoryPg } from "./pg/sale.repository.pg";
 import { ListingRepositoryPg } from "./pg/listing.repository.pg";
+import { AuctionRepositoryPg } from "./pg/auction.repository.pg";
 import { PrismaClient } from "@prisma/client";
 
 export const initRepository = async (): Promise<{
@@ -20,6 +22,7 @@ export const initRepository = async (): Promise<{
     collectionRepository: CollectionRepositoryPort;
     saleRepository: SaleRepositoryPort;
     listingRepository: ListingRepositoryPort;
+    auctionRepository: AuctionRepositoryPort;
   };
   close: () => Promise<void>;
 }> => {
@@ -32,6 +35,7 @@ export const initRepository = async (): Promise<{
   const collectionRepository = new CollectionRepositoryPg(prisma);
   const saleRepository = new SaleRepositoryPg(prisma);
   const listingRepository = new ListingRepositoryPg(prisma);
+  const auctionRepository = new AuctionRepositoryPg(prisma);
 
   return {
     repositories: {
@@ -41,6 +45,7 @@ export const initRepository = async (): Promise<{
       collectionRepository,
       saleRepository,
       listingRepository,
+      auctionRepository,
     },
     close: async () => {
       await prisma.$disconnect();

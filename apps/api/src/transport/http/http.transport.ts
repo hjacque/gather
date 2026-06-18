@@ -20,6 +20,8 @@ export const http = async ({
   syncSalesUsecase,
   syncListingsUsecase,
   syncSingleListingUsecase,
+  syncAuctionsUsecase,
+  getAuctionsUsecase,
   invalidateSaleUsecase,
   invalidateListingUsecase,
   reviewSaleUsecase,
@@ -99,6 +101,23 @@ export const http = async ({
   app.get("/sync/listings/:listingid", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
     const result = await syncSingleListingUsecase.execute(req.params.listingid);
+    res.status(200).json(result);
+  });
+
+  // Discover ongoing EU auctions across Cards (Auction Sync, all Cards).
+  app.get("/sync/auctions", async (req, res) => {
+    const { set, tags } = req.query;
+    const result = await syncAuctionsUsecase.executeBatch({
+      set: set as string | undefined,
+      tags: tags as string | string[] | undefined,
+    });
+    res.status(200).json(result);
+  });
+
+  // Cross-card Live Auctions feed: all ongoing EU auctions, ending-soonest.
+  app.get("/auctions", async (_req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
+    const result = await getAuctionsUsecase.execute();
     res.status(200).json(result);
   });
 

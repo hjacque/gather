@@ -53,6 +53,33 @@ export type ListingRecord = {
   seenAt: Date;
 };
 
+// One ongoing eBay auction on the cross-card Live Auctions feed, with its
+// current bid converted to EUR at read time (unconvertible currencies are
+// excluded by the API). Carries enough card identity to render a row without a
+// second fetch. The countdown is computed client-side from `endTime` (absolute,
+// immutable), so it stays accurate even when `bidCheckedAt` is stale.
+export type AuctionRecord = {
+  id: string;
+  cardId: string;
+  cardName: string;
+  cardSetName: string;
+  imageUrl: string | null;
+  psaGrade: number;
+  // Current highest bid in EUR.
+  currentBidEur: number;
+  bidCount: number;
+  // Absolute auction end instant; the client renders "time left" from this.
+  endTime: Date;
+  // When the current bid was last read, so the UI can show an "as of" label.
+  bidCheckedAt: Date;
+  // Verified-EU item-location country (e.g. "Allemagne"), or null.
+  location: string | null;
+  // Link to the auction's eBay item page.
+  url: string;
+};
+
+export type GetAuctionsResponse = AuctionRecord[];
+
 // ─── Market Price ─────────────────────────────────────────────────────────────
 
 // Per-grade market price: the recency-weighted median of that grade's eBay sale

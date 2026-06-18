@@ -4,6 +4,7 @@ import { PsaPopReportRepositoryPort } from "../repository/ports/psaPopReport.rep
 import { CollectionRepositoryPort } from "../repository/ports/collection.repository.port";
 import { SaleRepositoryPort } from "../repository/ports/sale.repository.port";
 import { ListingRepositoryPort } from "../repository/ports/listing.repository.port";
+import { AuctionRepositoryPort } from "../repository/ports/auction.repository.port";
 import { SyncUsecase } from "./sync/sync.usecase";
 import { GetCardsUsecase } from "./card/getCards.usecase";
 import { GetCardUsecase } from "./card/getCard.usecase";
@@ -25,6 +26,9 @@ import { EbaySalesSource } from "./sync/sources/ebaySales.source";
 import { TerapeakSalesSource } from "./sync/sources/terapeakSales.source";
 import { EbayListingsSource } from "./sync/sources/ebayListings.source";
 import { EbayItemPageSource } from "./sync/sources/ebayItemPage.source";
+import { EbayAuctionsSource } from "./sync/sources/ebayAuctions.source";
+import { SyncAuctionsUsecase } from "./sync/syncAuctions.usecase";
+import { GetAuctionsUsecase } from "./auction/getAuctions.usecase";
 import { MarketSalePriceSnapshotService } from "./sale/marketSalePriceSnapshot";
 import { GetOpportunitiesUsecase } from "./opportunities/getOpportunities.usecase";
 
@@ -38,6 +42,8 @@ export type Usecases = {
   syncSalesUsecase: SyncSalesUsecase;
   syncListingsUsecase: SyncListingsUsecase;
   syncSingleListingUsecase: SyncSingleListingUsecase;
+  syncAuctionsUsecase: SyncAuctionsUsecase;
+  getAuctionsUsecase: GetAuctionsUsecase;
   invalidateSaleUsecase: InvalidateSaleUsecase;
   invalidateListingUsecase: InvalidateListingUsecase;
   reviewSaleUsecase: ReviewSaleUsecase;
@@ -55,6 +61,7 @@ export const initApplication = ({
   collectionRepository,
   saleRepository,
   listingRepository,
+  auctionRepository,
 }: {
   cardRepository: CardRepositoryPort;
   priceRepository: PriceRepositoryPort;
@@ -62,6 +69,7 @@ export const initApplication = ({
   collectionRepository: CollectionRepositoryPort;
   saleRepository: SaleRepositoryPort;
   listingRepository: ListingRepositoryPort;
+  auctionRepository: AuctionRepositoryPort;
 }): Usecases => {
   const priceSources = [
     new CardMarketGradedSource(),
@@ -88,6 +96,15 @@ export const initApplication = ({
   const syncSingleListingUsecase = new SyncSingleListingUsecase(
     listingRepository,
     new EbayItemPageSource()
+  );
+  const syncAuctionsUsecase = new SyncAuctionsUsecase(
+    cardRepository,
+    auctionRepository,
+    new EbayAuctionsSource()
+  );
+  const getAuctionsUsecase = new GetAuctionsUsecase(
+    cardRepository,
+    auctionRepository
   );
   const syncUsecase = new SyncUsecase(
     cardRepository,
@@ -158,6 +175,8 @@ export const initApplication = ({
     syncSalesUsecase,
     syncListingsUsecase,
     syncSingleListingUsecase,
+    syncAuctionsUsecase,
+    getAuctionsUsecase,
     invalidateSaleUsecase,
     invalidateListingUsecase,
     reviewSaleUsecase,
