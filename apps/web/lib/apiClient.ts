@@ -156,8 +156,16 @@ export async function getOpportunities(): Promise<GetOpportunitiesResponse> {
   return apiFetch('/opportunities');
 }
 
-export async function getAuctions(): Promise<GetAuctionsResponse> {
-  return apiFetch('/auctions');
+export type GetAuctionsParams = {
+  grade?: number;
+  sort?: 'ending' | 'bid' | 'bids';
+  minBids?: number;
+};
+
+export async function getAuctions(
+  params: GetAuctionsParams = {},
+): Promise<GetAuctionsResponse> {
+  return apiFetch(`/auctions${toParams(params)}`);
 }
 
 export async function syncAllAuctions(): Promise<void> {

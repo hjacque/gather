@@ -122,10 +122,17 @@ export const http = async ({
     res.status(200).json(result);
   });
 
-  // Cross-card Live Auctions feed: all ongoing EU auctions, ending-soonest.
-  app.get("/auctions", async (_req, res) => {
+  // Cross-card Live Auctions feed: all ongoing EU auctions. Optional grade /
+  // min-bids filters and sort (default ending-soonest).
+  app.get("/auctions", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
-    const result = await getAuctionsUsecase.execute();
+    const querySchema = z.object({
+      grade: z.coerce.number().int().min(1).max(10).optional(),
+      sort: z.enum(["ending", "bid", "bids"]).optional(),
+      minBids: z.coerce.number().int().min(0).optional(),
+    });
+    const params = querySchema.parse(req.query);
+    const result = await getAuctionsUsecase.execute(params);
     res.status(200).json(result);
   });
 

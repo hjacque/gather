@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { CardImage } from '@/components/card-image';
 import { AuctionCountdown } from '@/components/auction-countdown';
 import { refreshAuctionBid } from '@/app/actions/refreshAuctionBid';
+import { getAuctions } from '@/app/actions/getAuctions';
+import type { GetAuctionsParams } from '@/lib/apiClient';
 import { ExternalLink, Gavel, RefreshCw } from 'lucide-react';
 import {
   Table,
@@ -34,9 +36,40 @@ const formatAsOf = (iso: string | Date) => {
 
 type Row = GetAuctionsResponse[number] & { removed?: boolean };
 
+const SELECT_CLASS =
+  'border-input bg-background h-8 rounded-md border px-2 text-sm';
+
 export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
   const [rows, setRows] = useState<Row[]>(auctions);
   const [refreshing, setRefreshing] = useState<Record<string, boolean>>({});
+  const [grade, setGrade] = useState<string>('all');
+  const [sort, setSort] = useState<NonNullable<GetAuctionsParams['sort']>>(
+    'ending',
+  );
+  const [hideZeroBid, setHideZeroBid] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const applyFilters = async (next: {
+    grade?: string;
+    sort?: NonNullable<GetAuctionsParams['sort']>;
+    hideZeroBid?: boolean;
+  }) => {
+    const g = next.grade ?? grade;
+    const s = next.sort ?? sort;
+    const hz = next.hideZeroBid ?? hideZeroBid;
+    setGrade(g);
+    setSort(s);
+    setHideZeroBid(hz);
+    setLoading(true);
+    try {
+      const params: GetAuctionsParams = { sort: s };
+      if (g !== 'all') params.grade = Number(g);
+      if (hz) params.minBids = 1;
+      setRows(await getAuctions(params));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const onRefresh = async (id: string) => {
     setRefreshing((r) => ({ ...r, [id]: true }));
@@ -64,16 +97,67 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
     }
   };
 
+  const toolbar = (
+    <div className="flex flex-wrap items-center gap-3">
+      <label className="text-muted-foreground flex items-center gap-1.5 text-sm">
+        Grade
+        <select
+          className={SELECT_CLASS}
+          value={grade}
+          onChange={(e) => applyFilters({ grade: e.target.value })}
+        >
+          <option value="all">All</option>
+          {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map((g) => (
+            <option key={g} value={String(g)}>
+              PSA {g}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="text-muted-foreground flex items-center gap-1.5 text-sm">
+        Sort
+        <select
+          className={SELECT_CLASS}
+          value={sort}
+          onChange={(e) =>
+            applyFilters({
+              sort: e.target.value as NonNullable<GetAuctionsParams['sort']>,
+            })
+          }
+        >
+          <option value="ending">Ending soonest</option>
+          <option value="bid">Highest bid</option>
+          <option value="bids">Most bids</option>
+        </select>
+      </label>
+      <label className="text-muted-foreground flex items-center gap-1.5 text-sm">
+        <input
+          type="checkbox"
+          checked={hideZeroBid}
+          onChange={(e) => applyFilters({ hideZeroBid: e.target.checked })}
+        />
+        Hide zero-bid
+      </label>
+    </div>
+  );
+
   if (rows.length === 0) {
     return (
-      <p className="text-muted-foreground text-sm">
-        No ongoing auctions. Run an Auction Sync to populate the feed.
-      </p>
+      <div className="flex flex-col gap-4">
+        {toolbar}
+        <p className="text-muted-foreground text-sm">
+          {loading
+            ? 'Loading…'
+            : 'No ongoing auctions match. Run an Auction Sync or relax the filters.'}
+        </p>
+      </div>
     );
   }
 
   return (
-    <Table>
+    <div className="flex flex-col gap-4">
+      {toolbar}
+      <Table>
       <TableHeader>
         <TableRow>
           <TableHead>Card</TableHead>
@@ -156,6 +240,7 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
           </TableRow>
         ))}
       </TableBody>
-    </Table>
+      </Table>
+    </div>
   );
 }
