@@ -5,8 +5,10 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { CardImage } from '@/components/card-image';
 import { AuctionCountdown } from '@/components/auction-countdown';
+import { Button } from '@/components/ui/button';
 import { refreshAuctionBid } from '@/app/actions/refreshAuctionBid';
 import { getAuctions } from '@/app/actions/getAuctions';
+import { syncAllAuctions } from '@/app/actions/syncAuctions';
 import type { GetAuctionsParams } from '@/lib/apiClient';
 import { ExternalLink, Gavel, RefreshCw } from 'lucide-react';
 import {
@@ -48,6 +50,7 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
   );
   const [hideZeroBid, setHideZeroBid] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [syncingAll, setSyncingAll] = useState(false);
 
   const applyFilters = async (next: {
     grade?: string;
@@ -68,6 +71,22 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
       setRows(await getAuctions(params));
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Run the all-cards Auction Sync, then reload the feed with the active
+  // filters. Slow (it walks each card's auction search + visits item pages), so
+  // the button stays disabled with a spinner until the run returns.
+  const handleSyncAll = async () => {
+    if (syncingAll) return;
+    setSyncingAll(true);
+    try {
+      await syncAllAuctions();
+      await applyFilters({});
+    } catch (err) {
+      console.error('Auction sync failed', err);
+    } finally {
+      setSyncingAll(false);
     }
   };
 
@@ -138,6 +157,18 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
         />
         Hide zero-bid
       </label>
+      <Button
+        variant="outline"
+        size="sm"
+        className={`ml-auto h-8 gap-1.5 shrink-0${syncingAll ? ' transition-none' : ''}`}
+        disabled={syncingAll}
+        onClick={handleSyncAll}
+      >
+        <RefreshCw
+          className={`h-3.5 w-3.5${syncingAll ? ' animate-spin' : ''}`}
+        />
+        {syncingAll ? 'Syncing all…' : 'Sync all auctions'}
+      </Button>
     </div>
   );
 
