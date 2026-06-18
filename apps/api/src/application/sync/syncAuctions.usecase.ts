@@ -90,9 +90,30 @@ export class SyncAuctionsUsecase {
       await browser.close();
     }
 
+    const pruned = await this.auctionRepository.pruneEndedAuctions(new Date());
     const result = { cardsSynced, cardsSkipped, ...counters };
-    console.log("[SyncAuctions] batch:", result);
+    console.log("[SyncAuctions] batch:", result, `pruned ${pruned} ended`);
     return result;
+  }
+
+  // Re-walk one card's ongoing auctions in its own browser session (the panel's
+  // "Sync auctions" action). Mirrors executeBatch for a single card; full
+  // per-card replacement plus a global prune of ended rows.
+  async executeForCard(cardId: string): Promise<BatchSyncAuctionsResult> {
+    const card = await this.cardRepository.getCard(cardId);
+    const counters = emptyCounters();
+    if (!this.ebayAuctionsSource.appliesTo(card)) {
+      return { cardsSynced: 0, cardsSkipped: 1, ...counters };
+    }
+    const { browser, page } = await this.openBrowser();
+    try {
+      await this.processCard(card, page, counters);
+    } finally {
+      await page.close();
+      await browser.close();
+    }
+    await this.auctionRepository.pruneEndedAuctions(new Date());
+    return { cardsSynced: 1, cardsSkipped: 0, ...counters };
   }
 
   private async processCard(

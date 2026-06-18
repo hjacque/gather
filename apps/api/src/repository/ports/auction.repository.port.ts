@@ -32,4 +32,9 @@ export abstract class AuctionRepositoryPort {
 
   // Hard-delete an auction whose item page shows it has ended.
   abstract deleteAuction(auctionId: string): Promise<void>;
+
+  // Hard-delete all auctions whose endTime has passed. Storage hygiene run by
+  // the Auction Sync; reads already exclude these via the endTime > now filter.
+  // Returns the number of rows pruned.
+  abstract pruneEndedAuctions(now: Date): Promise<number>;
 }

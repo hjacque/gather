@@ -75,4 +75,11 @@ export class AuctionRepositoryPg implements AuctionRepositoryPort {
   async deleteAuction(auctionId: string): Promise<void> {
     await this.prisma.auction.delete({ where: { id: auctionId } });
   }
+
+  async pruneEndedAuctions(now: Date): Promise<number> {
+    const { count } = await this.prisma.auction.deleteMany({
+      where: { endTime: { lte: now } },
+    });
+    return count;
+  }
 }

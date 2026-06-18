@@ -115,6 +115,13 @@ export const http = async ({
     res.status(200).json(result);
   });
 
+  // Re-walk one card's ongoing auctions (panel "Sync auctions").
+  app.get("/sync/auctions/card/:cardid", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
+    const result = await syncAuctionsUsecase.executeForCard(req.params.cardid);
+    res.status(200).json(result);
+  });
+
   // Cross-card Live Auctions feed: all ongoing EU auctions, ending-soonest.
   app.get("/auctions", async (_req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:42001");
