@@ -1,8 +1,0 @@
-{
-  "worktree": {
-    "bgIsolation": "none"
-  },
-  "permissions": {
-    "defaultMode": "auto"
-  }
-}

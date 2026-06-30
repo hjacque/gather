@@ -2,6 +2,8 @@
 
 A price aggregation tool for Pokémon exclusive promo cards (Japanese, Korean, and Taiwan/HK releases). Gather fetches Raw Prices from CardMarket across PSA grades, derives a Market Sale Price from eBay sold history, and surfaces it alongside PSA population counts and collection tracking.
 
+Built to scratch a real itch: pricing graded promo cards means juggling CardMarket listings, eBay sold history, and PSA pop reports across three regional markets — Gather pulls them into one per-grade view so an under-market listing is obvious at a glance. It doubles as a deliberate exercise in layered/DDD-style backend design (see [`CONTEXT.md`](./CONTEXT.md) and the [ADRs](./docs/adr)).
+
 ---
 
 ## What it does
@@ -135,6 +137,8 @@ Repositories are injected into use cases via port interfaces — concrete Prisma
 | PSA | Pop report (graded card counts per grade) |
 
 All Raw Prices are stored in EUR. eBay Sales are stored in their original currency and converted to EUR on read.
+
+> **A note on data sources.** Gather collects public pricing data from CardMarket, eBay/Terapeak, and PSA by browser automation (Puppeteer), since none of these expose an open pricing API for this use case. This is a personal, non-commercial research project and is not affiliated with or endorsed by any of those sites; automated access may run against their respective Terms of Service. Run it against your own accounts, at a respectful request rate, and at your own risk.
 
 ---
 
