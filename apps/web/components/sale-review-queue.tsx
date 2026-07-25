@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Check, ExternalLink, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 const GRADES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
@@ -110,6 +111,10 @@ export function SaleReviewQueue({ initial, pageSize }: Props) {
       await action();
       removeSale(cardId, saleId);
       window.dispatchEvent(new CustomEvent('sale-reviewed'));
+    } catch (error) {
+      toast.error('Could not save that review', {
+        description: error instanceof Error ? error.message : String(error),
+      });
     } finally {
       setBusyId(null);
     }
