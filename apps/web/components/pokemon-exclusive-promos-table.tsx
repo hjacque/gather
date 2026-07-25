@@ -37,7 +37,6 @@ import {
 import type { GetCardResponse } from '@gather/api-contract';
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -45,33 +44,12 @@ import {
 } from './ui/card';
 import { EbaySalesChart } from '@/components/ebay-sales-chart';
 import { CardListingsTable } from '@/components/card-listings-table';
+import { MarketPricesCard } from '@/components/market-prices-card';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import type { GetCardsResponseItem } from '@gather/api-contract';
 import { CardTable, RowActionsCell, type CardTableHandle } from './card-table';
-
-const marketPriceFormatter = new Intl.NumberFormat('fr-FR', {
-  style: 'currency',
-  currency: 'EUR',
-  maximumFractionDigits: 0,
-});
-
-const FREQUENCY_UNITS: { perDay: number; label: string }[] = [
-  { perDay: 1, label: '/day' },
-  { perDay: 7, label: '/wk' },
-  { perDay: 30.44, label: '/mo' },
-  { perDay: 365.25, label: '/yr' },
-];
-
-const formatSalesFrequency = (salesPerDay: number): string => {
-  const unit =
-    FREQUENCY_UNITS.find((u) => salesPerDay * u.perDay >= 1) ??
-    FREQUENCY_UNITS[FREQUENCY_UNITS.length - 1];
-  const value = salesPerDay * unit.perDay;
-  const rounded = value >= 10 ? Math.round(value) : Math.round(value * 10) / 10;
-  return `${rounded}${unit.label}`;
-};
 
 const CardPanelContext = React.createContext<{
   openPanel: (item: GetCardsResponseItem) => void;
@@ -744,27 +722,6 @@ export function PokemonExclusivePromosTable({
     }
   };
 
-  const psaReport = displayedCard?.psaPopReport ?? null;
-  const grades = psaReport
-    ? [
-        { grade: 1, count: psaReport.grade1 },
-        { grade: 2, count: psaReport.grade2 },
-        { grade: 3, count: psaReport.grade3 },
-        { grade: 4, count: psaReport.grade4 },
-        { grade: 5, count: psaReport.grade5 },
-        { grade: 6, count: psaReport.grade6 },
-        { grade: 7, count: psaReport.grade7 },
-        { grade: 8, count: psaReport.grade8 },
-        { grade: 9, count: psaReport.grade9 },
-        { grade: 10, count: psaReport.grade10 },
-      ]
-    : null;
-
-  const marketPriceByGrade = new Map(
-    (displayedCard?.marketPrices ?? []).map((r) => [r.psaGrade, r])
-  );
-  const hasMarketPrices = marketPriceByGrade.size > 0;
-
   const handlePanelOpenChange = (next: boolean) => {
     setPanelOpen(next);
     if (!next) {
@@ -823,34 +780,14 @@ export function PokemonExclusivePromosTable({
 
             {displayedCard && (
               <div className="w-full px-4 lg:px-6">
-                <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
-                  <CardHeader>
-                    <CardTitle>Market Sale Prices</CardTitle>
-                    <CardDescription>
-                      Recency-weighted median of eBay sold prices per grade
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {hasMarketPrices ? (
-                      <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
-                        {Array.from({ length: 10 }, (_, i) => i + 1).map((grade) => {
-                          const record = marketPriceByGrade.get(grade);
-                          return (
-                            <div key={grade} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-muted">
-                              <span className="text-xs text-muted-foreground font-medium">PSA {grade}</span>
-                              <span className="text-sm font-semibold">{record ? marketPriceFormatter.format(record.priceEur) : '—'}</span>
-                              <span className="text-[10px] text-muted-foreground">{record ? formatSalesFrequency(record.salesPerDay) : ''}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center h-16 text-sm text-muted-foreground">
-                        No sale data — sync eBay sales to populate
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                <MarketPricesCard
+                  marketPrices={displayedCard.marketPrices}
+                  psaPopReport={displayedCard.psaPopReport}
+                  onSyncSales={() => handlePanelSync('sales')}
+                  isSyncingSales={panelSyncLoading === 'sales'}
+                  onSyncPsa={() => handlePanelSync('psa')}
+                  isSyncingPsa={panelSyncLoading === 'psa'}
+                />
               </div>
             )}
 
@@ -864,54 +801,6 @@ export function PokemonExclusivePromosTable({
                   onSyncAll={handleSyncCardListings}
                   isSyncingAll={isSyncingListings}
                 />
-              </div>
-            )}
-
-            {displayedCard && (
-              <div className="w-full px-4 lg:px-6">
-                <Card className="@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full">
-                  <CardHeader>
-                    <CardTitle>PSA Pop Report</CardTitle>
-                    <CardDescription>
-                      Grade distribution ·{' '}
-                      {psaReport?.syncedAt
-                        ? `Updated ${new Date(psaReport.syncedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`
-                        : ''}
-                    </CardDescription>
-                    <CardAction>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handlePanelSync('psa')}
-                        disabled={panelSyncLoading === 'psa'}
-                        className="gap-1.5"
-                      >
-                        <RefreshCw className={`w-3.5 h-3.5${panelSyncLoading === 'psa' ? ' animate-spin' : ''}`} />
-                        Sync
-                      </Button>
-                    </CardAction>
-                  </CardHeader>
-                  <CardContent>
-                    {grades ? (
-                      <div className="grid grid-cols-5 sm:grid-cols-11 gap-2">
-                        {grades.map(({ grade, count }) => (
-                          <div key={grade} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-muted">
-                            <span className="text-xs text-muted-foreground font-medium">PSA {grade}</span>
-                            <span className="text-sm font-semibold">{count != null ? count.toLocaleString() : '—'}</span>
-                          </div>
-                        ))}
-                        <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-primary/10 col-span-1">
-                          <span className="text-xs text-muted-foreground font-medium">Total</span>
-                          <span className="text-sm font-semibold">{psaReport?.total != null ? psaReport.total.toLocaleString() : '—'}</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center h-16 text-sm text-muted-foreground">
-                        No pop report data — sync this card to populate
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
               </div>
             )}
 

@@ -7,7 +7,6 @@ import type {
   GradeOpportunity,
   OpportunityEntry,
   GetCardResponse,
-  PsaPopReportSummary,
   SignalLevel,
 } from '@gather/api-contract';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +27,7 @@ import {
 import { CardImage } from '@/components/card-image';
 import { EbaySalesChart } from '@/components/ebay-sales-chart';
 import { CardListingsTable } from '@/components/card-listings-table';
+import { MarketPricesCard } from '@/components/market-prices-card';
 import {
   Card,
   CardContent,
@@ -43,7 +43,7 @@ import {
   invalidateListingByItem,
 } from '@/app/actions/invalidateListing';
 import { invalidateSale } from '@/app/actions/invalidateSale';
-import { syncCardListings, syncListing, syncCardCardMarket, syncCardSales } from '@/app/actions/syncCard';
+import { syncCardListings, syncListing, syncCardCardMarket, syncCardSales, syncCardPsa } from '@/app/actions/syncCard';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const eur = (n: number | null) => (n === null ? '—' : `€${n.toFixed(0)}`);
@@ -62,12 +62,6 @@ const formatSalesFrequency = (salesPerDay: number) => {
   const v = salesPerDay * unit.perDay;
   return `${v >= 10 ? Math.round(v) : Math.round(v * 10) / 10}${unit.label}`;
 };
-
-const marketPriceFmt = new Intl.NumberFormat('fr-FR', {
-  style: 'currency',
-  currency: 'EUR',
-  maximumFractionDigits: 0,
-});
 
 const PANEL_CARD_CLASS =
   '@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full';
@@ -154,6 +148,23 @@ export function OpportunitiesList({ opportunities, auctions }: Props) {
       console.error('Panel sale sync failed', err);
     } finally {
       setIsSyncingSales(false);
+    }
+  }, []);
+
+  const [isSyncingPsa, setIsSyncingPsa] = useState(false);
+
+  const handleSyncPsa = useCallback(async () => {
+    const opp = activeOppRef.current;
+    if (!opp) return;
+    setIsSyncingPsa(true);
+    try {
+      await syncCardPsa(opp.id);
+      const data = await getCard(opp.id);
+      if (activeOppRef.current?.id === opp.id) setDisplayedCard(data);
+    } catch (err) {
+      console.error('Panel PSA sync failed', err);
+    } finally {
+      setIsSyncingPsa(false);
     }
   }, []);
 
@@ -285,7 +296,14 @@ export function OpportunitiesList({ opportunities, auctions }: Props) {
                 )}
 
                 <div className="w-full px-4 lg:px-6">
-                  <MarketPricesCard marketPrices={displayedCard.marketPrices} />
+                  <MarketPricesCard
+                    marketPrices={displayedCard.marketPrices}
+                    psaPopReport={displayedCard.psaPopReport}
+                    onSyncSales={handleSyncSales}
+                    isSyncingSales={isSyncingSales}
+                    onSyncPsa={handleSyncPsa}
+                    isSyncingPsa={isSyncingPsa}
+                  />
                 </div>
 
                 <div className="w-full px-4 lg:px-6">
@@ -298,12 +316,6 @@ export function OpportunitiesList({ opportunities, auctions }: Props) {
                     isSyncingAll={isSyncingListings}
                   />
                 </div>
-
-                {displayedCard.psaPopReport && (
-                  <div className="w-full px-4 lg:px-6">
-                    <PsaPopCard report={displayedCard.psaPopReport} />
-                  </div>
-                )}
 
                 <div className="w-full px-4 lg:px-6">
                   <Card className={PANEL_CARD_CLASS}>
@@ -820,106 +832,3 @@ function PremiumCell({ g }: { g: GradeOpportunity }) {
   );
 }
 
-function MarketPricesCard({
-  marketPrices,
-}: {
-  marketPrices: GetCardResponse['marketPrices'];
-}) {
-  const byGrade = new Map(marketPrices.map((r) => [r.psaGrade, r]));
-
-  return (
-    <Card className={PANEL_CARD_CLASS}>
-      <CardHeader>
-        <CardTitle>Market Sale Prices</CardTitle>
-        <CardDescription>
-          Recency-weighted median of eBay sold prices per grade
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {byGrade.size > 0 ? (
-          <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
-            {Array.from({ length: 10 }, (_, i) => i + 1).map((grade) => {
-              const record = byGrade.get(grade);
-              return (
-                <div
-                  key={grade}
-                  className="flex flex-col items-center gap-1 p-2 rounded-lg bg-muted"
-                >
-                  <span className="text-xs text-muted-foreground font-medium">
-                    PSA {grade}
-                  </span>
-                  <span className="text-sm font-semibold">
-                    {record ? marketPriceFmt.format(record.priceEur) : '—'}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">
-                    {record ? formatSalesFrequency(record.salesPerDay) : ''}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="flex items-center justify-center h-16 text-sm text-muted-foreground">
-            No sale data — sync eBay sales to populate
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function PsaPopCard({ report }: { report: PsaPopReportSummary }) {
-  const grades = [
-    { grade: 1, count: report.grade1 },
-    { grade: 2, count: report.grade2 },
-    { grade: 3, count: report.grade3 },
-    { grade: 4, count: report.grade4 },
-    { grade: 5, count: report.grade5 },
-    { grade: 6, count: report.grade6 },
-    { grade: 7, count: report.grade7 },
-    { grade: 8, count: report.grade8 },
-    { grade: 9, count: report.grade9 },
-    { grade: 10, count: report.grade10 },
-  ];
-
-  return (
-    <Card className={PANEL_CARD_CLASS}>
-      <CardHeader>
-        <CardTitle>PSA Pop Report</CardTitle>
-        <CardDescription>
-          Grade distribution ·{' '}
-          {report.syncedAt
-            ? `Updated ${new Date(report.syncedAt).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })}`
-            : ''}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-5 sm:grid-cols-11 gap-2">
-          {grades.map(({ grade, count }) => (
-            <div
-              key={grade}
-              className="flex flex-col items-center gap-1 p-2 rounded-lg bg-muted"
-            >
-              <span className="text-xs text-muted-foreground font-medium">
-                PSA {grade}
-              </span>
-              <span className="text-sm font-semibold">
-                {count != null ? count.toLocaleString() : '—'}
-              </span>
-            </div>
-          ))}
-          <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-primary/10">
-            <span className="text-xs text-muted-foreground font-medium">Total</span>
-            <span className="text-sm font-semibold">
-              {report.total != null ? report.total.toLocaleString() : '—'}
-            </span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
