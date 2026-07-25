@@ -34,7 +34,6 @@ export const http = async ({
   getOpportunitiesUsecase,
 }: Usecases) => {
   app.use(express.json());
-  app.use(errorHandler);
 
   app.get("/sync/set/:set", async (req, res) => {
     const result = await syncUsecase.execute({
@@ -295,6 +294,8 @@ export const http = async ({
     await deleteCollectionEntryUsecase.execute(req.params.cardid);
     res.status(204).end();
   });
+
+  app.use(errorHandler);
 
   const server = app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
