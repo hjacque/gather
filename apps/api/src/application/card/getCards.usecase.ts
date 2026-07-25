@@ -4,7 +4,7 @@ import { CollectionRepositoryPort } from "../../repository/ports/collection.repo
 import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
 import { Region } from "@gather/types";
 import type { GetCardsResponse } from "@gather/api-contract";
-import { getEurToUsdRate } from "../sync/helper";
+import { getUsdToEurRate } from "../sync/helper";
 import { psa10MarketPriceWithPrior } from "../sale/cardMarketPrice";
 
 export class GetCardsUsecase {
@@ -27,7 +27,7 @@ export class GetCardsUsecase {
       this.psaPopReportRepository.findByCardIds(cardIds),
       this.collectionRepository.findByCardIds(cardIds),
       this.saleRepository.getCardsSales(cardIds),
-      getEurToUsdRate(),
+      getUsdToEurRate(),
     ]);
 
     const now = new Date();

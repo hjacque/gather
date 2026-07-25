@@ -5,7 +5,7 @@ import { CardRepositoryPort } from "../../repository/ports/card.repository.port"
 import { DEFAULT_USD_TO_EUR } from "../../constants";
 import { ListingRepositoryPort } from "../../repository/ports/listing.repository.port";
 import { PriceSourcePort } from "./sources/priceSource.port";
-import { getEurToUsdRate } from "./helper";
+import { getUsdToEurRate } from "./helper";
 import { syncCard } from "./syncCard";
 import { SyncSalesUsecase, SaleSyncCounters } from "./syncSales.usecase";
 import { TerapeakAuthError } from "./sources/terapeakSales.source";
@@ -37,7 +37,7 @@ export class SyncUsecase {
   async execute({ filter, mode, skipSales = false }: SyncUsecaseInputDto) {
     console.log("start");
 
-    const usdToEur = await getEurToUsdRate();
+    const usdToEur = await getUsdToEurRate();
     const saleCounters: SaleSyncCounters = {
       scraped: 0,
       withinWindow: 0,

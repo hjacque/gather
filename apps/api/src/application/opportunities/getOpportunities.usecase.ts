@@ -5,7 +5,7 @@ import type { PriceRepositoryPort } from "../../repository/ports/price.repositor
 import type { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import type { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
 import { LISTING_FRESHNESS_DAYS } from "../../entities/listing.entity";
-import { getEurToUsdRate } from "../sync/helper";
+import { getUsdToEurRate } from "../sync/helper";
 import { mergeListingOffers } from "./mergeListingOffers";
 import { rankOpportunities } from "./rankOpportunities";
 
@@ -36,7 +36,7 @@ export class GetOpportunitiesUsecase {
 
     const [cards, usdToEur] = await Promise.all([
       this.cardRepository.getCards(),
-      getEurToUsdRate(),
+      getUsdToEurRate(),
     ]);
     const cardIds = cards.map((c) => c.id);
 

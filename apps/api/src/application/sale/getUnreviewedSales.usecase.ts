@@ -1,5 +1,5 @@
 import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
-import { getEurToUsdRate } from "../sync/helper";
+import { getUsdToEurRate } from "../sync/helper";
 import { convertToEur } from "./eurConverter";
 import type {
   GetUnreviewedSalesResponse,
@@ -15,7 +15,7 @@ export class GetUnreviewedSalesUsecase {
   ): Promise<GetUnreviewedSalesResponse> {
     const [{ cards, totalCards }, usdToEur] = await Promise.all([
       this.saleRepository.getUnreviewedSalesByCard(page, pageSize),
-      getEurToUsdRate(),
+      getUsdToEurRate(),
     ]);
 
     return {

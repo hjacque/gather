@@ -1,6 +1,6 @@
 import { initRepository } from "../repository/init.repository";
 import { mergeListingOffers } from "../application/opportunities/mergeListingOffers";
-import { getEurToUsdRate } from "../application/sync/helper";
+import { getUsdToEurRate } from "../application/sync/helper";
 import { computeMarketPrices } from "../application/sale/marketPrice";
 import { rankOpportunities } from "../application/opportunities/rankOpportunities";
 import {
@@ -89,7 +89,7 @@ async function main() {
 
   const [cards, usdToEur] = await Promise.all([
     cardRepository.getCards(),
-    getEurToUsdRate(),
+    getUsdToEurRate(),
   ]);
   const cardIds = cards.map((c) => c.id);
   const [

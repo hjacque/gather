@@ -2,7 +2,7 @@ import type { PriceType } from "@gather/types";
 import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
 import { PriceEntry, PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { computeMarketPrices } from "./marketPrice";
-import { getEurToUsdRate } from "../sync/helper";
+import { getUsdToEurRate } from "../sync/helper";
 
 const gradeToType = (grade: number): PriceType =>
   `marketSalePsa${grade}` as PriceType;
@@ -26,7 +26,7 @@ export class MarketSalePriceSnapshotService {
   ): Promise<void> {
     const [sales, usdToEur] = await Promise.all([
       this.saleRepository.getCardSales(cardId),
-      getEurToUsdRate(),
+      getUsdToEurRate(),
     ]);
 
     const from = startOfDayUtc(fromDate);

@@ -6,7 +6,7 @@ import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port"
 import { ListingRepositoryPort } from "../../repository/ports/listing.repository.port";
 import { CardmarketArticles, PriceSourcePort } from "./sources/priceSource.port";
 import { mirrorCardmarketListings } from "./cardmarketListings";
-import { getEurToUsdRate } from "./helper";
+import { getUsdToEurRate } from "./helper";
 import { psa10MarketPriceWithPrior } from "../sale/cardMarketPrice";
 import type { SyncCardResponse } from "@gather/api-contract";
 
@@ -21,7 +21,7 @@ export class SyncSingleCardCardMarketUsecase {
   ) {}
 
   async execute(cardId: string): Promise<SyncCardResponse> {
-    const usdToEur = await getEurToUsdRate();
+    const usdToEur = await getUsdToEurRate();
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 

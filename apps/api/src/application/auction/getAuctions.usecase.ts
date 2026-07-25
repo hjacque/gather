@@ -1,7 +1,7 @@
 import type { GetAuctionsResponse } from "@gather/api-contract";
 import { CardRepositoryPort } from "../../repository/ports/card.repository.port";
 import { AuctionRepositoryPort } from "../../repository/ports/auction.repository.port";
-import { getEurToUsdRate } from "../sync/helper";
+import { getUsdToEurRate } from "../sync/helper";
 import { convertToEur } from "../sale/eurConverter";
 import { toEnglishCountry } from "../sync/sources/euLocation";
 
@@ -24,7 +24,7 @@ export class GetAuctionsUsecase {
     const [auctions, cards, usdToEur] = await Promise.all([
       this.auctionRepository.getOpenAuctions(now),
       this.cardRepository.getCards(),
-      getEurToUsdRate(),
+      getUsdToEurRate(),
     ]);
 
     const cardById = new Map(cards.map((c) => [c.id, c]));

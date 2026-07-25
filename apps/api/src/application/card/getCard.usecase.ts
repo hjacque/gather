@@ -4,7 +4,7 @@ import { CollectionRepositoryPort } from "../../repository/ports/collection.repo
 import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
 import { ListingRepositoryPort } from "../../repository/ports/listing.repository.port";
 import { LISTING_FRESHNESS_DAYS } from "../../entities/listing.entity";
-import { getEurToUsdRate } from "../sync/helper";
+import { getUsdToEurRate } from "../sync/helper";
 import { convertToEur } from "../sale/eurConverter";
 import { computeMarketPrices } from "../sale/marketPrice";
 import type {
@@ -33,7 +33,7 @@ export class GetCardUsecase {
         this.collectionRepository.findByCardId(cardId),
         this.saleRepository.getCardSales(cardId),
         this.listingRepository.getCardsListings([cardId], listingsSince),
-        getEurToUsdRate(),
+        getUsdToEurRate(),
       ]);
 
     const saleRecords: SaleRecord[] = sales.flatMap((sale) => {

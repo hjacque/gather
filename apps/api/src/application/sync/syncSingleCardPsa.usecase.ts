@@ -4,7 +4,7 @@ import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.
 import { CollectionRepositoryPort } from "../../repository/ports/collection.repository.port";
 import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
 import { scrapePsaPopReport, psaProfileDir } from "./sources/psa.source";
-import { getEurToUsdRate } from "./helper";
+import { getUsdToEurRate } from "./helper";
 import { psa10MarketPriceWithPrior } from "../sale/cardMarketPrice";
 import type { SyncCardResponse } from "@gather/api-contract";
 
@@ -50,7 +50,7 @@ export class SyncSingleCardPsaUsecase {
       this.psaPopReportRepository.findByCardId(card.id),
       this.collectionRepository.findByCardId(card.id),
       this.saleRepository.getCardSales(card.id),
-      getEurToUsdRate(),
+      getUsdToEurRate(),
     ]);
     const market = psa10MarketPriceWithPrior(cardSales, usdToEur);
 
