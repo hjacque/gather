@@ -1,6 +1,8 @@
-import { PriceRepositoryPort } from "../ports/price.repository.port";
+import { PriceEntry, PriceRepositoryPort } from "../ports/price.repository.port";
 import { PriceType } from "@gather/types";
 import { PrismaClient } from "@prisma/client";
+
+const UPSERT_CHUNK = 250;
 
 export class PriceRepositoryPg implements PriceRepositoryPort {
   constructor(private readonly prisma: PrismaClient) {}
@@ -16,6 +18,20 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
       create: { cardId, value: value ?? null, type, date },
       update: { value: value ?? null },
     });
+  }
+
+  async upsertPrices(entries: PriceEntry[]): Promise<void> {
+    for (let i = 0; i < entries.length; i += UPSERT_CHUNK) {
+      await this.prisma.$transaction(
+        entries.slice(i, i + UPSERT_CHUNK).map(({ cardId, value, type, date }) =>
+          this.prisma.price.upsert({
+            where: { cardId_date_type: { cardId, type, date } },
+            create: { cardId, value, type, date },
+            update: { value },
+          })
+        )
+      );
+    }
   }
 
   async getCardsMarketSaleYearRange(cardIds: string[], fromDate: Date, toDate: Date) {

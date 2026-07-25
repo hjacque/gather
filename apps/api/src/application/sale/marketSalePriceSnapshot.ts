@@ -1,6 +1,6 @@
 import type { PriceType } from "@gather/types";
 import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
-import { PriceRepositoryPort } from "../../repository/ports/price.repository.port";
+import { PriceEntry, PriceRepositoryPort } from "../../repository/ports/price.repository.port";
 import { computeMarketPrices } from "./marketPrice";
 import { getEurToUsdRate } from "../sync/helper";
 
@@ -32,21 +32,27 @@ export class MarketSalePriceSnapshotService {
     const from = startOfDayUtc(fromDate);
     const to = startOfDayUtc(toDate);
 
+    const entries: PriceEntry[] = [];
     for (
       let d = new Date(from);
       d <= to;
       d.setUTCDate(d.getUTCDate() + 1)
     ) {
       const snapshot = new Date(d);
-      const grades = computeMarketPrices(sales, usdToEur, snapshot);
-      for (const { psaGrade, priceEur } of grades) {
-        await this.priceRepository.upsertPrice(
+      for (const { psaGrade, priceEur } of computeMarketPrices(
+        sales,
+        usdToEur,
+        snapshot
+      )) {
+        entries.push({
           cardId,
-          priceEur,
-          gradeToType(psaGrade),
-          snapshot
-        );
+          value: priceEur,
+          type: gradeToType(psaGrade),
+          date: snapshot,
+        });
       }
     }
+
+    await this.priceRepository.upsertPrices(entries);
   }
 }
