@@ -34,19 +34,17 @@ import { GRADE_COLORS } from '@/lib/grade-colors';
 
 type Props = {
   sales: SaleRecord[];
-  // Identity of the card being shown; changing it closes any pinned infobox.
   cardId?: string;
   onSyncEbay?: () => void;
   isSyncingEbay?: boolean;
-  // Flag a sale as invalid; the parent should refetch so it drops off the graph.
   onRemoveSale?: (saleId: string) => Promise<void> | void;
 };
 
 type Point = {
   id: string;
   url: string;
-  x: number; // soldAt epoch ms
-  y: number; // price in EUR
+  x: number;
+  y: number;
   pending: boolean;
   bestOffer: boolean;
 };
@@ -56,12 +54,9 @@ type PinnedPoint = Point & { grade: number };
 export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRemoveSale }: Props) {
   const [timeRange, setTimeRange] = React.useState('90d');
   const [hiddenGrades, setHiddenGrades] = React.useState<Set<number>>(new Set());
-  // The dot the user clicked: its pixel position in the chart + the sale data.
   const [pinned, setPinned] = React.useState<{ cx: number; cy: number; point: PinnedPoint } | null>(null);
   const [removingId, setRemovingId] = React.useState<string | null>(null);
 
-  // Switching cards reuses this component instance; drop a stale pinned infobox
-  // so it doesn't linger over another card's graph.
   React.useEffect(() => {
     setPinned(null);
   }, [cardId]);
@@ -75,7 +70,6 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
     []
   );
 
-  // 'all' keeps every Sale; otherwise drop anything older than the window.
   const cutoff = React.useMemo(() => {
     if (timeRange === 'all') return 0;
     const days = timeRange === '30d' ? 30 : timeRange === '90d' ? 90 : 360;
@@ -84,7 +78,6 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
     return d.getTime();
   }, [timeRange]);
 
-  // Group Sales into one point series per grade, within the selected window.
   const { pointsByGrade, gradesWithData, earliest } = React.useMemo(() => {
     const byGrade: Record<number, Point[]> = {};
     const gradeSet = new Set<number>();
@@ -114,13 +107,9 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
     };
   }, [sales, cutoff]);
 
-  // For a fixed window the axis starts at the cutoff; for 'all' it hugs the
-  // oldest Sale so the points aren't squashed against a 1970 origin.
   const domainStart =
     timeRange === 'all' && Number.isFinite(earliest) ? earliest : cutoff;
 
-  // Both the time range and grade visibility reflow the chart, so any pinned
-  // infobox's pixel coordinates go stale — close it on either change.
   const handleTimeRangeChange = (value: string) => {
     setPinned(null);
     setTimeRange(value);
@@ -248,8 +237,6 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
               <Tooltip
                 cursor={false}
                 content={({ active, payload }) => {
-                  // While a dot is pinned the persistent infobox takes over;
-                  // suppress the hover tooltip so we don't stack two boxes.
                   if (pinned) return null;
                   if (!active || !payload || payload.length === 0) return null;
                   const p = payload[0].payload as Point & { grade: number };
@@ -306,7 +293,6 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
                           setPinned({ cx: props.cx, cy: props.cy, point: props.payload });
                         }}
                       >
-                        {/* Enlarged transparent hit target for easier clicking. */}
                         <circle cx={props.cx} cy={props.cy} r={10} fill="transparent" />
                         {isPinned && (
                           <circle

@@ -4,11 +4,6 @@ import { ListingRepositoryPort } from "../../repository/ports/listing.repository
 import { EbayItemPageSource } from "./sources/ebayItemPage.source";
 import { parseItemPageState } from "./sources/listingItemPage";
 
-/**
- * Refresh one stored listing against its live eBay item page: update its EUR
- * price / Best-Offer flag if it moved, or delete it if the listing has ended.
- * Opens its own short-lived browser session (the panel's per-row "Sync").
- */
 export class SyncSingleListingUsecase {
   constructor(
     private readonly listingRepository: ListingRepositoryPort,
@@ -19,10 +14,6 @@ export class SyncSingleListingUsecase {
     const listing = await this.listingRepository.getListingById(listingId);
     if (!listing) throw new Error(`listing ${listingId} not found`);
 
-    // Only eBay listings map to a re-readable item page. CardMarket asks are
-    // synthetic per-grade rows refreshed by the card-level CardMarket sync, so a
-    // per-row refresh here is a no-op rather than a doomed eBay item-page read
-    // (which would 404 on the synthetic itemId and wrongly delete the row).
     if (listing.platform !== "ebay") {
       return { listingId, removed: false, unchanged: true };
     }
@@ -50,7 +41,6 @@ export class SyncSingleListingUsecase {
           isBestOffer: state.isBestOffer,
         };
       }
-      // Couldn't read the page (transient) — leave the stored listing as-is.
       return { listingId, removed: false, unchanged: true };
     } finally {
       await page.close();

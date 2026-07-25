@@ -10,8 +10,6 @@ describe("auctionsLinkFromEbayLink", () => {
     expect(params.get("LH_Sold")).toBeNull();
     expect(params.get("LH_Complete")).toBeNull();
     expect(params.get("LH_Auction")).toBe("1");
-    // _sop=44 is eBay's "ending soonest + with bids" — sorts and filters out
-    // zero-bid auctions server-side (verified by live probe).
     expect(params.get("_sop")).toBe("44");
   });
 

@@ -41,10 +41,6 @@ const NULL_GRADES: PsaGrades = {
   total: null,
 };
 
-// Column indices (0-based, including hidden control col):
-// 0=control(hidden), 1=CardNo, 2=Name, 3=GradeLabel, 4=Auth,
-// 5=grade1, 6=grade1.5(skip), 7=grade2, 8=grade3, 9=grade4, 10=grade5,
-// 11=grade6, 12=grade7, 13=grade8, 14=grade9, 15=grade10, 16=Total
 const GRADE_COLUMNS: [number, keyof PsaGrades][] = [
   [5, "grade1"],
   [7, "grade2"],
@@ -59,8 +55,6 @@ const GRADE_COLUMNS: [number, keyof PsaGrades][] = [
   [16, "total"],
 ];
 
-// Read the count out of a single grade `<td>` cell: its first `<div>`'s text,
-// with PSA's "–"/"-"/empty placeholders and thousands separators handled.
 function parseGradeCell(cell: string | undefined): number | null {
   if (!cell) return null;
   const text = cell.match(/<div[^>]*>([^<]*)</i)?.[1]?.trim() ?? "";
@@ -69,10 +63,6 @@ function parseGradeCell(cell: string | undefined): number | null {
   return Number.isNaN(num) ? null : num;
 }
 
-// Pure counterpart to the in-browser extraction in `scrapePsaPopReport`: given
-// the pop-report table HTML, read the grade counts from the first data row.
-// Shares `GRADE_COLUMNS` with the scraper so the column mapping lives in one
-// place. Returns all-null grades when the table / row is absent or malformed.
 export function parsePsaPopReportHtml(html: string): PsaGrades {
   const tbody = html.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/i)?.[1];
   if (!tbody) return { ...NULL_GRADES };
@@ -106,7 +96,6 @@ export async function scrapePsaPopReport(
       return { ...NULL_GRADES };
     }
 
-    // Wait for search form and initial table rows to be present
     await page.waitForSelector("[data-search-input]", { timeout: 15000 });
     await page.waitForSelector("#tablePSA tbody tr", { timeout: 15000 });
 
@@ -114,7 +103,6 @@ export async function scrapePsaPopReport(
     await page.type("[data-search-input]", searchInput);
     await page.click("[data-search-btn]");
 
-    // DataTables filters client-side; give it a moment to apply
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const grades = await page.evaluate(

@@ -2,25 +2,6 @@ import { connect } from "puppeteer-real-browser";
 import * as fs from "fs";
 import * as readline from "readline";
 
-/**
- * Terapeak re-authentication helper.
- *
- * The Sale Sync runs Chrome inside Xvfb (an invisible virtual display) and only
- * reuses an existing eBay seller session — it never logs in. eBay's seller
- * session is short-lived, so when a sync logs "Terapeak session not
- * authenticated" you run this to refresh it: it opens the SAME persistent Chrome
- * profile the sync uses (userDataDir), but on your real display, so you can sign
- * in by hand. The cookie persists to the profile and the next sync reuses it.
- *
- * Must run on a machine with a real display (DISPLAY set). The profile dir is
- * shared with SyncSalesUsecase.openBrowser — override both with EBAY_PROFILE_DIR.
- *
- * Usage:
- *   cd apps/api && npx ts-node src/scripts/terapeakLogin.ts
- */
-
-// Terapeak research home — landing here confirms the session is good (a logged-
-// out profile bounces to sign-in instead).
 const RESEARCH_URL = "https://www.ebay.com/sh/research";
 
 function prompt(question: string): Promise<void> {
@@ -69,7 +50,6 @@ async function main() {
   );
   await prompt("[terapeak-login] Press Enter once you're signed in... ");
 
-  // Verify the session took: a logged-out profile redirects to sign-in.
   await page.goto(RESEARCH_URL, { waitUntil: "networkidle2", timeout: 60000 });
   const url = page.url();
   const body = await page

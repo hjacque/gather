@@ -5,7 +5,6 @@ import type { PsaGrades } from "./sources/psa.source";
 import { CardEntity } from "../../entities/card.entity";
 import { CardSetEntity } from "../../entities/cardSet.entity";
 
-// Mock puppeteer-real-browser so tests don't need a browser
 jest.mock("puppeteer-real-browser", () => ({
   connect: jest.fn().mockResolvedValue({
     browser: { close: jest.fn().mockResolvedValue(undefined) },
@@ -17,7 +16,6 @@ jest.mock("puppeteer-real-browser", () => ({
   }),
 }));
 
-// Mock the PSA scraper so we control what grades are returned
 jest.mock("./sources/psa.source", () => ({
   psaProfileDir: jest.fn(() => "/tmp/gather-test-psa-profile"),
   scrapePsaPopReport: jest.fn().mockResolvedValue({
@@ -133,7 +131,6 @@ describe("SyncPsaPopReportsUsecase", () => {
 
     cardRepo.getCards.mockResolvedValue([card1, card2]);
 
-    // Make card-1 scrape fail but card-2 succeed
     (scrapePsaPopReport as jest.Mock)
       .mockRejectedValueOnce(new Error("Network error"))
       .mockResolvedValueOnce({
@@ -143,7 +140,6 @@ describe("SyncPsaPopReportsUsecase", () => {
 
     await usecase.execute();
 
-    // Only card-2 should have been upserted (card-1 scrape threw, upsert not reached)
     expect(psaPopReportRepo.upsert).toHaveBeenCalledTimes(1);
     expect(psaPopReportRepo.upsert).toHaveBeenCalledWith(
       "card-2",

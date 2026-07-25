@@ -4,12 +4,6 @@ import { AuctionRepositoryPort } from "../../repository/ports/auction.repository
 import { EbayItemPageSource } from "../sync/sources/ebayItemPage.source";
 import { parseAuctionItemPage } from "../sync/sources/auctionItemPage";
 
-/**
- * Refresh one stored auction's current bid against its live eBay item page:
- * update its current bid (EUR) + bid count if they moved, or delete it if the
- * auction has ended. Opens its own short-lived browser session (the feed's
- * per-row refresh control). The auction sibling of SyncSingleListingUsecase.
- */
 export class RefreshAuctionBidUsecase {
   constructor(
     private readonly auctionRepository: AuctionRepositoryPort,
@@ -46,7 +40,6 @@ export class RefreshAuctionBidUsecase {
           bidCheckedAt,
         };
       }
-      // Couldn't read the page (transient) — leave the stored bid as-is.
       return { auctionId, removed: false, unchanged: true };
     } finally {
       await page.close();

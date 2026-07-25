@@ -57,8 +57,6 @@ const marketPriceFormatter = new Intl.NumberFormat('fr-FR', {
   maximumFractionDigits: 0,
 });
 
-// Render a sales-per-day rate in the largest unit that still reads as ≥1 sale
-// per unit (e.g. 0.5/day → "3.5/wk", 1/400 days → "0.9/yr").
 const FREQUENCY_UNITS: { perDay: number; label: string }[] = [
   { perDay: 1, label: '/day' },
   { perDay: 7, label: '/wk' },
@@ -260,7 +258,6 @@ const columns: ColumnDef<GetCardsResponseItem>[] = [
       </div>
     ),
     cell: ({ row }) => {
-      // Market price, with its 7-day move as a superscript.
       const market = row.original.marketPsa10;
       const prior = row.original.marketPsa10Prior7d;
       const pct = market != null && prior != null && prior !== 0
@@ -662,8 +659,6 @@ export function PokemonExclusivePromosTable({
     setPanelSyncLoading(action);
     try {
       if (action === 'sales') {
-        // Sale Sync returns run counters, not a card; refetch the card so the
-        // freshly scraped sales show up in the panel graph.
         await syncCardSales(id);
         if (activeItemRef.current?.id === id) {
           const data = await getCard(id);
@@ -693,7 +688,6 @@ export function PokemonExclusivePromosTable({
     const id = displayedItem?.id;
     if (!id) return;
     await invalidateSale(saleId);
-    // Refetch so the invalidated sale drops off the graph.
     if (activeItemRef.current?.id === id) {
       const data = await getCard(id);
       if (activeItemRef.current?.id === id) {
@@ -714,8 +708,6 @@ export function PokemonExclusivePromosTable({
     }
   };
 
-  // One panel "Sync" refreshes both buy-side sources for the card: eBay live
-  // asks and CardMarket asks (both land in the Listing model now).
   const handleSyncCardListings = async () => {
     const id = displayedItem?.id;
     if (!id) return;

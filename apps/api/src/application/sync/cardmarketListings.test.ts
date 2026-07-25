@@ -128,7 +128,6 @@ describe("cardmarketArticlesToListings", () => {
 });
 
 describe("mirrorCardmarketListings", () => {
-  // Captures the replaceCardListings call both sync paths route through.
   const fakeRepo = () => {
     const calls: {
       cardId: string;

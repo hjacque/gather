@@ -1,19 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { isEuCountry } from "../application/sync/sources/euLocation";
 
-/**
- * One-off backfill: purge eBay listings whose provenance is not a confirmed EU
- * member state. eBay's `LH_PrefLoc=3` filter leaked Japan/US/UK items into the
- * live sync, and rows scraped before location was captured carry `location =
- * null` (unverifiable). Both are removed here; a subsequent Listings Sync
- * repopulates each card with EU-only asks via full per-card replacement.
- *
- * Scope is `platform = 'ebay'` only — CardMarket listings are inherently EU and
- * intentionally carry a null location, so they are never touched.
- *
- * Usage:
- *   ts-node src/scripts/cleanupNonEuListings.ts [--dry-run]
- */
 const prisma = new PrismaClient();
 const DRY_RUN = process.argv.includes("--dry-run");
 const CHUNK = 500;

@@ -24,41 +24,18 @@ interface CardImageProps {
 const SPRING = { stiffness: 300, damping: 28 };
 const MAX_TILT = 15;
 
-// Card region clip paths — calibrated to standard Pokémon single layout (63×88 mm)
-//
-// Vertical landmarks (% of card height):
-//   0%    – 2.5%  : top outer border
-//   2.5%  – 10%   : name/HP bar (type badge, name, HP)  ← card body region
-//   10%   – 47.3% : illustration box
-//   47.3% – 50.5% : credits bar (Pokédex info strip)    ← no glare, all patterns
-//   50.5% – 97.5% : attacks, stats bar, footer          ← card body region
-//   97.5% – 100%  : bottom outer border
-//
-// Horizontal landmarks:
-//   0%    – 3.5%  : left outer border
-//   3.5%  – 8%    : left body gap (alongside illustration) ← card body region
-//   8%    – 92%   : illustration / inner content width
-//   92%   – 96.5% : right body gap                      ← card body region
-//   96.5% – 100%  : right outer border
-
-// Artwork box only (10%→47.3%)
 const ILLUSTRATION_ZONE: React.CSSProperties = {
   clipPath: 'inset(10% 8% 52.7% 8% round 2px)',
 };
 
-// Name/HP bar (2.5%→10%) — card body above illustration, full inner-border width
 const NAME_BAR_ZONE: React.CSSProperties = {
   clipPath: 'inset(2.5% 3.5% 90% 3.5% round 2px)',
 };
 
-// Credits bar (47.3%→50.5%) — intentionally excluded from all glare zones
-
-// Attacks, stats, footer (50.5%→97.5%) — card body below credits bar, full inner-border width
 const ATTACKS_ZONE: React.CSSProperties = {
   clipPath: 'inset(50.5% 3.5% 2.5% 3.5% round 2px)',
 };
 
-// Side body gaps alongside illustration (10%→51%), between border and illustration edges
 const LEFT_GAP_ZONE: React.CSSProperties = {
   clipPath: 'inset(10% 92% 49% 3.5% round 2px)',
 };
@@ -67,7 +44,6 @@ const RIGHT_GAP_ZONE: React.CSSProperties = {
   clipPath: 'inset(10% 3.5% 49% 92% round 2px)',
 };
 
-// Outer frame ring: 3.5% sides, 2.5% top/bottom — punch out a 93%×95% inner rectangle
 const BORDERS_ZONE: React.CSSProperties = {
   WebkitMaskImage: 'linear-gradient(#000 0%, #000 100%), linear-gradient(#000 0%, #000 100%)',
   WebkitMaskSize: '100% 100%, 93% 95%',
@@ -97,7 +73,6 @@ interface FoilLayersProps {
 function FoilLayers({ pointer, foilBgImage, foilBgPosition }: FoilLayersProps) {
   return (
     <>
-      {/* Layer 1: Soft ambient glow — large, diffuse, tracks cursor */}
       <div
         className="absolute inset-0 rounded-[23px] transition-opacity duration-300"
         style={{
@@ -106,7 +81,6 @@ function FoilLayers({ pointer, foilBgImage, foilBgPosition }: FoilLayersProps) {
         }}
       />
 
-      {/* Layer 2: Specular highlight — sharp bright point at cursor */}
       <div
         className="absolute inset-0 rounded-[23px] transition-opacity duration-150"
         style={{
@@ -115,7 +89,6 @@ function FoilLayers({ pointer, foilBgImage, foilBgPosition }: FoilLayersProps) {
         }}
       />
 
-      {/* Layer 3: Holographic rainbow foil — sweeps across card with tilt angle */}
       <motion.div
         className="absolute inset-0 rounded-[23px]"
         style={{
@@ -128,7 +101,6 @@ function FoilLayers({ pointer, foilBgImage, foilBgPosition }: FoilLayersProps) {
         }}
       />
 
-      {/* Layer 4: Edge rim light — faint vignette glow at card border */}
       <div
         className="absolute inset-0 rounded-[23px] transition-opacity duration-300"
         style={{
@@ -152,7 +124,6 @@ export function CardImage({ src, alt, containerClassName, spotlightOpen: control
   const rotateXSpring = useSpring(rotateX, SPRING);
   const rotateYSpring = useSpring(rotateY, SPRING);
 
-  // Holographic foil: gradient angle + position sweep with tilt, like real card foil
   const foilX = useTransform(rotateYSpring, [-MAX_TILT * 2, MAX_TILT * 2], [0, 100]);
   const foilY = useTransform(rotateXSpring, [MAX_TILT * 2, -MAX_TILT * 2], [0, 100]);
   const foilAngle = useTransform(rotateYSpring, [-MAX_TILT * 2, MAX_TILT * 2], [105, 255]);
@@ -178,7 +149,6 @@ export function CardImage({ src, alt, containerClassName, spotlightOpen: control
 
   return (
     <>
-      {/* Panel image — static, click to open spotlight */}
       <div className={containerClassName ?? 'shrink-0 aspect-[63/88] relative'}>
         <div
           className="absolute inset-0 overflow-hidden cursor-pointer"
@@ -189,7 +159,6 @@ export function CardImage({ src, alt, containerClassName, spotlightOpen: control
         </div>
       </div>
 
-      {/* Spotlight — floating tilt + glare effect */}
       <AnimatePresence>
         {spotlightOpen && (
           <motion.div
@@ -199,7 +168,6 @@ export function CardImage({ src, alt, containerClassName, spotlightOpen: control
             exit={{ opacity: 0 }}
             onClick={() => setSpotlightOpen(false)}
           >
-            {/* Entrance animation */}
             <motion.div
               initial={{ scale: 0.85, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -208,7 +176,6 @@ export function CardImage({ src, alt, containerClassName, spotlightOpen: control
               onClick={(e) => e.stopPropagation()}
               style={{ perspective: '800px' }}
             >
-              {/* Tilt container */}
               <motion.div
                 className="relative cursor-none"
                 style={{

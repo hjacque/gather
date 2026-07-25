@@ -20,7 +20,6 @@ const run = async () => {
     syncPsaPopReportsUsecase: usecases.syncPsaPopReportsUsecase,
     syncAuctionsUsecase: usecases.syncAuctionsUsecase,
   });
-  // await services.syncSchedulerService.execute();
 
   const { close: transportClose } = await initTransport(usecases);
   danglingConnections.push({ close: transportClose });
@@ -34,7 +33,6 @@ run().catch((e) => {
 });
 
 const shutdown = async (reason: string, exitCode: number) => {
-  // Prevents the server from hanging on exit
   setTimeout(() => {
     console.info("[graceful shutown] Forced exit after server hanged on close");
     process.exit(1);
@@ -57,9 +55,6 @@ const shutdown = async (reason: string, exitCode: number) => {
   process.on(signal, () => shutdown(`Received ${signal}`, 0));
 });
 
-// uncaughtException / unhandledRejection hand the *error* to the listener, not a
-// signal name — log it before shutting down so the crash isn't swallowed, and
-// exit non-zero since the process is in an undefined state.
 process.on("uncaughtException", (error) => {
   console.error("[fatal] Uncaught exception:", error);
   void shutdown("Uncaught exception", 1);

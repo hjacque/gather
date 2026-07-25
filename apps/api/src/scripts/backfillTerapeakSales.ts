@@ -12,49 +12,6 @@ import {
 } from "../application/sync/sources/terapeakSales.source";
 import { parseListingTitle } from "../application/sync/sources/listingTitleParser";
 
-/**
- * One-off historical Sale backfill from Terapeak (Seller Hub → Research).
- *
- * The recurring Sale Sync only keeps the trailing 30 days; this script ingests
- * up to ~3 years of older sold history so the Market Sale Price graphs have a
- * real past, then leaves snapshot recomputation to
- * backfillMarketSalePriceSnapshots.ts.
- *
- * It is deliberately *separate* from SyncSalesUsecase and bypasses the seller
- * verification pipeline: the listings are long gone, so their item pages can't
- * be checked. Rows are persisted as already-confirmed trusted history
- * (status=confirmed, verificationStage=complete, reviewedAt=now), which also
- * keeps them out of the manual review and re-verification queues. Terapeak only
- * reports realized transaction prices (never Best-Offer asks), so this is the
- * authoritative accepted price — see the TerapeakSalesSource docs and ADR 0008.
- *
- * It runs across All eBay sites (selectAllSites) so non-US sales count too;
- * Terapeak normalizes every price to USD, so the existing parse + conversion is
- * unchanged. Only single-transaction rows (soldCount === 1) are taken — multi-
- * quantity GTC rows are a blended average pinned to their most-recent date and
- * would be misleading graph points.
- *
- * Idempotent: upsert keys on (platform, itemId, cardId) and the provenance guard
- * makes re-scrapes safe, so re-running only adds genuinely new rows.
- *
- * Rate limiting: eBay throttles sustained scraping with a "Pardon Our
- * Interruption" interstitial. fetchWindow retries each page through a back-off
- * ladder and, when that's exhausted, throws TerapeakRateLimitError so the run
- * aborts loudly instead of reading throttled (empty) pages as "no results" and
- * leaving cards with missing windows. Resume safely with a completion-state file
- * (cards are recorded only after their *full* 3-year walk finishes, so an aborted
- * card is redone from scratch — the idempotent upsert makes the redo free).
- *
- * Usage:
- *   cd apps/api && npx ts-node src/scripts/backfillTerapeakSales.ts [options]
- *     --card <id>        only this Card (good for a dry-run first; ignores state)
- *     --years <n>        how far back to go (default 3)
- *     --chunk-days <n>   date-chunk size, keeps each fetch under the 500 cap (default 60)
- *     --dry-run          scrape + parse but do not write (and do not record state)
- *     --force            re-do Cards already recorded complete in the state file
- *     --state <path>     completion-state file (default ~/.gather/terapeak-backfill-progress.json)
- */
-
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 type Args = {
@@ -91,8 +48,6 @@ function parseArgs(argv: string[]): Args {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-// Completion state: cardIds whose full 3-year walk finished. Used to skip on
-// resume; an aborted (rate-limited) Card is never recorded, so it is redone.
 function loadDone(path: string): Set<string> {
   if (!existsSync(path)) return new Set();
   try {
@@ -152,9 +107,6 @@ async function main() {
 
   const done = args.card ? new Set<string>() : loadDone(args.state);
 
-  // One-time seed for resuming a run that predates the state file: treat Cards
-  // that already hold confirmed historical sales (older than the recurring 30-day
-  // window) as complete, so we don't re-scrape them.
   if (args.seedFromDb && !args.card) {
     const seeded = await prisma.sale.findMany({
       where: {
@@ -182,7 +134,6 @@ async function main() {
   const totals = { scraped: 0, ingested: 0, multiSale: 0, parseSkip: 0, doneSkip: 0 };
 
   try {
-    // Switch to All sites once; the preference sticks for the session.
     const all = await source.selectAllSites(page);
     if (!all) console.warn("[backfill] proceeding US-only (All sites not set)");
 
@@ -197,9 +148,6 @@ async function main() {
       const seen = new Set<string>();
       let cardIngested = 0;
 
-      // Walk back in chunks, newest first; each chunk stays under the 500 cap.
-      // Throttling throws TerapeakRateLimitError out of here, leaving the Card
-      // unrecorded so it is redone in full on resume.
       for (let back = 0; back < totalDays; back += args.chunkDays) {
         const endDate = Date.now() - back * DAY_MS;
         const startDate = Date.now() - Math.min(back + args.chunkDays, totalDays) * DAY_MS;
@@ -213,7 +161,6 @@ async function main() {
           if (seen.has(sale.itemId)) continue;
           seen.add(sale.itemId);
 
-          // Multi-quantity rows are a blended average pinned to the latest date.
           if (sale.soldCount !== 1) {
             totals.multiSale++;
             continue;
@@ -238,7 +185,6 @@ async function main() {
               seller: null,
               source: "terapeak",
               soldAt: sale.soldAt,
-              // Confirmed trusted history: bypasses review + re-verification.
               reviewedAt: new Date(),
               status: "confirmed",
               verificationStage: "complete",
@@ -251,7 +197,6 @@ async function main() {
         await sleep(5000 + Math.random() * 5000);
       }
 
-      // Full walk finished without throttling — record it so resume skips it.
       if (!args.dryRun) recordDone(args.state, done, card.id);
 
       console.log(

@@ -39,7 +39,6 @@ describe("extractListingRow", () => {
       location: "Japon",
       isEuLocation: false,
     });
-    // No location line on the row → unverifiable provenance, treated as non-EU.
     expect(extractListingRow(row({ locationText: null }))).toMatchObject({
       location: null,
       isEuLocation: false,
@@ -62,7 +61,6 @@ describe("extractListingRow", () => {
     expect(extractListingRow(row({ priceText: "120,00 EUR" }))?.price).toBe(
       120,
     );
-    // Thousands grouped with a non-breaking space, comma decimal.
     const result = extractListingRow(row({ priceText: "2 499,00 EUR" }));
     expect(result?.price).toBe(2499);
     expect(result?.currency).toBe("EUR");

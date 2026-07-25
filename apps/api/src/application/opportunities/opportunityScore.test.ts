@@ -19,11 +19,8 @@ describe("computeListingSignal", () => {
   });
 
   it("rises smoothly with sqrt amplification", () => {
-    // 10% off: sqrt(0.10) ≈ 0.316
     expect(computeListingSignal(100, 90)).toBeCloseTo(0.316, 2);
-    // 20% off: sqrt(0.20) ≈ 0.447
     expect(computeListingSignal(100, 80)).toBeCloseTo(0.447, 2);
-    // free card caps at 1
     expect(computeListingSignal(100, 0)).toBe(1);
   });
 
@@ -59,7 +56,6 @@ describe("computeListingConfidence", () => {
   });
 
   it("multiplies the sample and recency factors", () => {
-    // 1 sale (0.2) that is 44 days old (0.5).
     expect(computeListingConfidence(1, daysAgo(44), NOW)).toBeCloseTo(0.1);
   });
 
@@ -81,7 +77,6 @@ describe("computeLiquiditySignal", () => {
   });
 
   it("places one sale per week mid-scale on the log axis", () => {
-    // log(30.44/7) / log(30.44) ≈ 0.43
     expect(computeLiquiditySignal(1 / 7)).toBeCloseTo(0.43, 2);
   });
 
@@ -121,7 +116,6 @@ describe("computeQualitySignal", () => {
   });
 
   it("penalizes PSA 9 much more on modern cards than on vintage cards", () => {
-    // Mid-quality non-premium signals to isolate the premium effect.
     const pop = 0.5, grade = 0.5;
     const modernAge = 0, vintageAge = 1;
 
@@ -133,7 +127,6 @@ describe("computeQualitySignal", () => {
     const modernGap  = modernPsa10  - modernPsa9;
     const vintageGap = vintagePsa10 - vintagePsa9;
 
-    // Modern gap should be ~4× the vintage gap.
     expect(modernGap).toBeGreaterThan(vintageGap * 3);
   });
 });

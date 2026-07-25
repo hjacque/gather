@@ -19,9 +19,6 @@ export class MarketSalePriceSnapshotService {
     private readonly priceRepository: PriceRepositoryPort
   ) {}
 
-  // Upsert Market Sale Price snapshots for `cardId` for each day in
-  // [fromDate, toDate]. Recomputes each date from scratch so invalidations
-  // and review corrections propagate through the full affected window.
   async recompute(
     cardId: string,
     fromDate: Date,

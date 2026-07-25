@@ -19,7 +19,6 @@ export class CardMarketGradedSource implements PriceSourcePort {
       await page.goto(product.cardMarketLink!, { waitUntil: "networkidle2" });
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-
       const isInLine = await page.evaluate(() =>
         document.body.innerText.includes("You are now in line.")
       );
@@ -51,7 +50,6 @@ export class CardMarketGradedSource implements PriceSourcePort {
         await new Promise((resolve) => setTimeout(resolve, 5500));
       }
 
-      // Click "Show more results" until all listings are loaded
       let loadMoreAttempts = 0;
       const MAX_LOAD_MORE = 20;
       while (loadMoreAttempts < MAX_LOAD_MORE) {

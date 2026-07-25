@@ -69,7 +69,6 @@ describe("parseItemPageSellerFeedback", () => {
     expect(
       parseItemPageSellerFeedback("vendeurpro (12 345) 99,2% d'évaluations positives"),
     ).toBe(12345);
-    // Non-breaking space grouping, as eBay actually renders it.
     expect(
       parseItemPageSellerFeedback("vendeurpro (1 234) 100% d'évaluations positives"),
     ).toBe(1234);

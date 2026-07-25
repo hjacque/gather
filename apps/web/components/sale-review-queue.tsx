@@ -46,8 +46,6 @@ function formatEur(value: number | null): string {
   return `€${value.toFixed(2)}`;
 }
 
-// eBay glues a hidden "Opens in a new window or tab" accessibility string onto
-// its listing-link text, which the scraper captured into the title. Strip it.
 function cleanTitle(title: string): string {
   return title.replace(/Opens in a new window or tab\s*$/i, '').trimEnd();
 }
@@ -74,8 +72,6 @@ export function SaleReviewQueue({ initial, pageSize }: Props) {
     [pageSize],
   );
 
-  // Both review outcomes (approve / invalidate) drop the Sale from the queue;
-  // a Card disappears once its last reviewable Sale clears.
   const removeSale = (cardId: string, saleId: string) => {
     setData((prev) => {
       const cards = prev.cards
@@ -98,7 +94,6 @@ export function SaleReviewQueue({ initial, pageSize }: Props) {
     try {
       await action();
       removeSale(cardId, saleId);
-      // Let the sidebar badge refresh its unreviewed count.
       window.dispatchEvent(new CustomEvent('sale-reviewed'));
     } finally {
       setBusyId(null);

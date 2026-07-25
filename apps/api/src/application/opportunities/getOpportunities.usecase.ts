@@ -17,8 +17,6 @@ const startOfDayUtc = (d: Date): Date => {
   return out;
 };
 
-// Fetches the day's inputs and delegates the entire scoring/ranking pipeline
-// to rankOpportunities (pure, tested without repositories).
 export class GetOpportunitiesUsecase {
   constructor(
     private readonly cardRepository: CardRepositoryPort,

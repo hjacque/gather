@@ -63,11 +63,6 @@ export class SyncUsecase {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 
-    // Persistent Chrome profile: the folded-in Sale Sync drives Terapeak, which
-    // is seller-only, so this browser must carry the eBay seller login cookie.
-    // Use the same profile dir SyncSalesUsecase.openBrowser uses (refreshed by
-    // scripts/terapeakLogin.ts); an empty customConfig launches a cookieless
-    // profile and every Terapeak fetch bounces to sign-in.
     const userDataDir =
       process.env.EBAY_PROFILE_DIR ??
       `${process.env.HOME ?? "."}/.gather/ebay-profile`;
@@ -87,10 +82,6 @@ export class SyncUsecase {
       height: Math.floor(768 + Math.random() * 100),
     });
 
-    // Set Terapeak to All sites once for the whole session so the folded-in Sale
-    // Sync ingests non-US marketplaces too. A lapsed session must not crash the
-    // price/listing Sync — syncCardOnPage already no-ops each Card's sales on
-    // TerapeakAuthError, so just log and carry on US-less here.
     if (!skipSales) {
       try {
         await this.syncSalesUsecase.prepareTerapeakSession(page);
@@ -125,12 +116,7 @@ export class SyncUsecase {
           this.listingRepository,
         );
         if (!skipSales) {
-          // Fold the eBay Sale Sync into the same browser session — scrape +
-          // re-verify this Card's Sales right after its prices. No-ops for Cards
-          // without an ebayLink.
           await this.syncSalesUsecase.syncCardOnPage(card, page, saleCounters);
-          // Likewise the Listings Sync: refresh this Card's live Buy-It-Now
-          // asks (the eBay buy side of the opportunities funnel).
           await this.syncListingsUsecase.syncCardOnPage(
             card,
             page,

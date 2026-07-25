@@ -7,8 +7,6 @@ import type {
 
 export type { CardSetEntity };
 
-// ─── Collection Entry ─────────────────────────────────────────────────────────
-
 export type CollectionEntry = {
   isOwned: boolean;
   isWanted: boolean;
@@ -19,82 +17,50 @@ export type UpsertCollectionEntryRequest = {
   isWanted: boolean;
 };
 
-// ─── Shared shapes ───────────────────────────────────────────────────────────
-
-// A confirmed-or-pending Sale with its price converted to EUR at read time.
-// Cancelled, invalid, and unsupported-currency Sales are excluded by the API.
 export type SaleRecord = {
   id: string;
   psaGrade: number;
   priceEur: number;
   soldAt: Date;
   status: SaleStatus;
-  // True for a Best-Offer sale: its price is the ask, not the realized amount,
-  // so it is excluded from Market Sale Price until Terapeak corrects it.
   isBestOffer: boolean;
-  // Link to the original marketplace listing (eBay item page).
   url: string;
 };
 
-// A live marketplace ask with its price converted to EUR at read time.
-// Unconvertible currencies are excluded by the API; only listings seen by a
-// recent Listings Sync (freshness window) are returned.
 export type ListingRecord = {
   id: string;
   psaGrade: number;
   priceEur: number;
-  // Best Offer enabled: still buyable at priceEur, but negotiable below it.
   isBestOffer: boolean;
   source: 'cardmarket' | 'ebay';
-  // Raw marketplace title, for judging card/grade mismatches by hand.
   title: string;
-  // Link to the live listing: the eBay item page, or the card's CardMarket page.
   url: string;
   seenAt: Date;
 };
 
-// One ongoing eBay auction on the cross-card Live Auctions feed, with its
-// current bid converted to EUR at read time (unconvertible currencies are
-// excluded by the API). Carries enough card identity to render a row without a
-// second fetch. The countdown is computed client-side from `endTime` (absolute,
-// immutable), so it stays accurate even when `bidCheckedAt` is stale.
 export type AuctionRecord = {
   id: string;
-  // eBay listing id. The same listing can surface under several cards' feeds, so
-  // the UI uses this to remove every row sharing it in one action.
   itemId: string;
   cardId: string;
   cardName: string;
   cardSetName: string;
   imageUrl: string | null;
   psaGrade: number;
-  // Current highest bid in EUR.
   currentBidEur: number;
   bidCount: number;
-  // Absolute auction end instant; the client renders "time left" from this.
   endTime: Date;
-  // When the current bid was last read, so the UI can show an "as of" label.
   bidCheckedAt: Date;
-  // Verified-EU item-location country (e.g. "Allemagne"), or null.
   location: string | null;
-  // Link to the auction's eBay item page.
   url: string;
 };
 
 export type GetAuctionsResponse = AuctionRecord[];
 
-// User moderation of an auction from the Live Auctions feed: flag it as not
-// matching the card (drops it from the feed), flag every auction sharing its
-// eBay listing id (drops the listing from all cards' feeds at once), or correct
-// its scraped PSA grade.
 export type UpdateAuctionRequest =
   | { action: 'invalidate' }
   | { action: 'invalidateByItem' }
   | { action: 'editGrade'; psaGrade: number };
 
-// Result of a per-row bid refresh: removed when the auction has ended, otherwise
-// the freshly-read current bid (EUR) + bid count and when they were read (or
-// unchanged when the item page couldn't be read).
 export type RefreshAuctionBidResponse = {
   auctionId: string;
   removed: boolean;
@@ -104,22 +70,13 @@ export type RefreshAuctionBidResponse = {
   unchanged?: boolean;
 };
 
-// ─── Market Price ─────────────────────────────────────────────────────────────
-
-// Per-grade market price: the recency-weighted median of that grade's eBay sale
-// prices, in EUR. Only grades with at least one sale appear.
 export type MarketPriceRecord = {
   psaGrade: number;
   priceEur: number;
-  // Number of sales behind the estimate.
   sampleSize: number;
-  // soldAt of the most recent sale in the set.
   newestSoldAt: Date;
-  // Sales per day, rendered in a readable unit (/day…/yr).
   salesPerDay: number;
 };
-
-// ─── PSA Pop Report ───────────────────────────────────────────────────────────
 
 export type PsaPopReportSummary = {
   grade1: number | null;
@@ -136,8 +93,6 @@ export type PsaPopReportSummary = {
   syncedAt: Date;
 };
 
-// ─── GET /cards ───────────────────────────────────────────────────────────────
-
 export type GetCardsQuery = {
   tags?: string | string[];
   set?: string;
@@ -148,50 +103,34 @@ export type GetCardsResponseItem = CardEntity & {
   cardSet: CardSetEntity;
   psaTotal: number | null;
   psaGrade10Pop: number | null;
-  // PSA 10 market price in EUR; null when the card has no PSA 10 sales.
   marketPsa10: number | null;
-  // Same market price as of 7 days ago, for the column's trend delta.
   marketPsa10Prior7d: number | null;
   collectionEntry: CollectionEntry | null;
 };
 
 export type GetCardsResponse = GetCardsResponseItem[];
 
-// ─── GET /cards/:id ───────────────────────────────────────────────────────────
-
 export type GetCardResponse = CardEntity & {
   cardSet: CardSetEntity;
   sales: SaleRecord[];
-  // Live asks, sorted by grade ASC then price ASC.
   listings: ListingRecord[];
   marketPrices: MarketPriceRecord[];
   psaPopReport: PsaPopReportSummary | null;
   collectionEntry: CollectionEntry | null;
 };
 
-// ─── PATCH /cards/:id ────────────────────────────────────────────────────────
-
 export type UpdateCardNoteRequest = {
   note: string | null;
 };
 
-// ─── PATCH /sales/:id ────────────────────────────────────────────────────────
-
-// User-driven Sale moderation. Currently only used to flag a Sale as invalid
-// (e.g. a mismatched listing) so it drops out of the read layer.
 export type UpdateSaleStatusRequest = {
   status: 'invalid';
 };
 
-// User-driven Listing moderation: flag a listing that doesn't match the card so
-// it drops out of the panel + opportunities, either just this row or every
-// listing sharing its eBay listing id (the same listing can surface under
-// several cards' panels — drop it from all of them at once).
 export type UpdateListingStatusRequest =
   | { action: 'invalidate' }
   | { action: 'invalidateByItem' };
 
-// Result of re-walking one card's live listings (panel "Sync listings").
 export type SyncCardListingsResponse = {
   cardsSynced: number;
   cardsSkipped: number;
@@ -201,9 +140,6 @@ export type SyncCardListingsResponse = {
   skippedSeller: number;
 };
 
-// Result of refreshing one listing against its eBay item page: removed when the
-// listing has ended, otherwise the current EUR price + Best-Offer flag (or
-// unchanged when the page couldn't be read).
 export type SyncListingResponse = {
   listingId: string;
   removed: boolean;
@@ -212,19 +148,10 @@ export type SyncListingResponse = {
   unchanged?: boolean;
 };
 
-// Sale Review action from the backoffice page. `approve` stamps the Sale reviewed
-// and applies any corrections (a misparsed grade, a Best-Offer's true price);
-// `invalidate` flags it invalid (which also counts as reviewed).
 export type ReviewSaleRequest =
   | { action: 'approve'; psaGrade?: number; price?: number }
   | { action: 'invalidate' };
 
-// ─── GET /sales/unreviewed ────────────────────────────────────────────────────
-
-// One unreviewed Sale as shown on the Sale Review page. Unlike SaleRecord this
-// carries the raw `title` (the primary signal for judging grade/card) and the
-// original price + currency alongside the EUR conversion (null when the currency
-// is not yet convertible).
 export type ReviewSaleRecord = {
   id: string;
   title: string;
@@ -234,8 +161,6 @@ export type ReviewSaleRecord = {
   priceEur: number | null;
   soldAt: Date;
   status: SaleStatus;
-  // True for a Best-Offer sale: the scraped price is the ask, not the realized
-  // amount. Surfaced so the review queue can mark it (excluded from pricing).
   isBestOffer: boolean;
   url: string;
 };
@@ -251,66 +176,39 @@ export type UnreviewedSalesCard = {
 
 export type GetUnreviewedSalesResponse = {
   cards: UnreviewedSalesCard[];
-  // Total number of Cards with unreviewed Sales, for pagination.
   totalCards: number;
   page: number;
   pageSize: number;
 };
 
-// ─── GET /sales/unreviewed/count ──────────────────────────────────────────────
-
 export type GetUnreviewedCountResponse = {
   count: number;
 };
 
-// ─── GET /opportunities ───────────────────────────────────────────────────────
-
-// Four-level evaluation scale returned by the backend for each signal and the
-// overall score. The frontend maps these to colours; the thresholds live in the
-// backend so they are easy to tune without touching UI code.
 export type SignalLevel = 'green-strong' | 'yellow-light' | 'orange-light' | 'red-strong';
 
 export type GradeOpportunity = {
   psaGrade: number;
-  // score = 100 × listingSignal × (0.4 + 0.6 × qualitySignal): the deal is the
-  // base, card quality scales it 0.4×–1×. Entries with no discount (score ≤ 0)
-  // are never returned.
   score: number;
   scoreLevel: SignalLevel;
-  // Card desirability independent of today's listing (0–1): blend of grade
-  // rarity, population, age, gem-mint premium and liquidity.
   qualitySignal: number;
-  // Listing signal: sqrt discount of listing vs Market Sale Price (negative when
-  // listed above market; 0 inside the 3% dead zone, where "below market" is
-  // median noise rather than a deal), scaled by listingConfidence — how
-  // trustworthy the Market Sale Price is, from its sample size and the recency
-  // of the last sale.
   listingSignal: number;
   listingConfidence: number;
   sampleSize: number;
   newestSoldAt: Date;
-  // Liquidity: sale velocity for this grade, log-scaled (0 = ≤1 sale/month,
-  // 1 = ≥1 sale/day). Measures how easily a buyer could exit the position.
   salesPerDay: number;
   liquiditySignal: number;
   liquidityLevel: SignalLevel;
   listingPrice: number | null;
-  // Where today's cheapest listing comes from. CardMarket prices are firm asks;
-  // eBay prices are Buy-It-Now asks (buyable at face value), possibly with Best
-  // Offer enabled — i.e. negotiable below the shown price.
   listingSource: 'cardmarket' | 'ebay' | null;
-  // Direct link to the cheapest listing (eBay item page / CardMarket card page).
   listingUrl: string | null;
   listingIsBestOffer: boolean;
   marketSalePrice: number;
   listingLevel: SignalLevel;
-  // Year signal: where Market Sale Price sits in its 52-week range (0=high,
-  // 1=low). Display-only — it does not enter the score.
   yearSignal: number;
   yearLow: number | null;
   yearHigh: number | null;
   yearLevel: SignalLevel;
-  // Collectability signals (normalized across the collection, 0–1 each).
   ageSignal: number;
   ageLevel: SignalLevel;
   populationSignal: number;
@@ -333,8 +231,6 @@ export type OpportunityEntry = {
 };
 
 export type GetOpportunitiesResponse = OpportunityEntry[];
-
-// ─── GET /sync/card/:id/cardmarket | GET /sync/card/:id/psa ─────────────────
 
 export type SyncCardResponse = CardEntity & {
   cardSet: CardSetEntity;

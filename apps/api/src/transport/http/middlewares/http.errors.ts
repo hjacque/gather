@@ -7,7 +7,6 @@ export const errorHandler = (
   res: Response,
   next: NextFunction,
 ) => {
-  // Handled errors
   if (err instanceof CustomError) {
     const { statusCode, errors, logging } = err;
     if (logging) {
@@ -27,7 +26,6 @@ export const errorHandler = (
     return res.status(statusCode).send({ errors });
   }
 
-  // Unhandled errors
   console.error(JSON.stringify(err, null, 2));
   return res
     .status(500)

@@ -16,9 +16,6 @@ export class ListingRepositoryPg implements ListingRepositoryPort {
     platform: Platform,
     listings: NewListing[],
   ): Promise<void> {
-    // Full per-card replacement is the staleness model, but a user's
-    // invalidation must outlive it: carry invalidatedAt forward by itemId so a
-    // listing the user flagged stays hidden after a refresh re-sees it.
     const invalidated = await this.prisma.listing.findMany({
       where: { cardId, platform, invalidatedAt: { not: null } },
       select: { itemId: true, invalidatedAt: true },

@@ -1,14 +1,3 @@
-/**
- * One-off script: visit all pending eBay sales and mark as invalid those where
- * eBay shows the "Ended" signal (cancelled transaction).
- *
- * Usage:
- *   ts-node src/scripts/markEndedSalesInvalid.ts [--dry-run] [--skip=N] [itemId]
- *
- * --skip=N  skip the first N pending sales (resume after a partial run)
- * --dry-run prints what would be invalidated without writing to the DB.
- */
-
 import { connect } from "puppeteer-real-browser";
 import type { Page } from "rebrowser-puppeteer-core";
 import { PrismaClient } from "@prisma/client";
@@ -51,9 +40,6 @@ async function isEnded(itemId: string, page: Page): Promise<boolean> {
     await sleep(5500);
   }
 
-  // Query the hotness-signal element directly; fall back to body text regex.
-  // innerText misses the "Ended" signal because eBay applies CSS that hides
-  // it from innerText traversal, so DOM querying is the reliable path.
   const signalText: string | null = await page.evaluate(() => {
     const el = document.querySelector('[data-testid="ux-hotness-signal-text"]');
     return el?.textContent?.trim() ?? null;

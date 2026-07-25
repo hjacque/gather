@@ -16,14 +16,6 @@ async function main() {
     },
   });
   console.log(`Found ${products.length} products to process.`);
-  // console.log(products);
-  // return;
-  // const products = [
-  //     await prisma.product.findUnique({
-  //         where: { id: "a7143318-2f7b-4ace-b7d3-f35e17ef3dae" },
-  //         include: { productSet: true },
-  //     }),
-  // ]
 
   const dateToFix = new Date("2026-04-12");
   console.log("Fixing prices for date:", dateToFix.toISOString().split("T")[0]);
@@ -62,10 +54,6 @@ async function main() {
         },
       },
     });
-
-    // if (!yesterdayCardmarketPrice) {
-    //   continue;
-    // }
 
     await prisma.price.upsert({
       where: {

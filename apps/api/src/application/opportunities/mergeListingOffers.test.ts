@@ -4,7 +4,7 @@ import { Platform } from "@gather/types";
 import { mergeListingOffers } from "./mergeListingOffers";
 
 const NOW = new Date("2026-06-11T12:00:00Z");
-const RATE = 0.9; // EUR per USD
+const RATE = 0.9;
 
 const card = (id: string, overrides: Partial<CardEntity> = {}): CardEntity => ({
   id,
@@ -55,7 +55,6 @@ const listing = (
   };
 };
 
-// CardMarket asks live as EUR cardmarket-platform listings.
 const cm = (
   cardId: string,
   psaGrade: number,
@@ -116,10 +115,8 @@ describe("mergeListingOffers", () => {
         listing("a", 9, 100),
       ],
     });
-    // grade 10: eBay 100 USD = 90 EUR beats CardMarket 100 EUR.
     expect(result.get("a")![10]!.source).toBe("ebay");
     expect(result.get("a")![10]!.priceEur).toBe(90);
-    // grade 9: CardMarket 50 EUR beats eBay 90 EUR.
     expect(result.get("a")![9]!.source).toBe("cardmarket");
     expect(result.get("a")![9]!.priceEur).toBe(50);
   });

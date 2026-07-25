@@ -12,18 +12,17 @@ import { EbayItemPageSource } from "./sources/ebayItemPage.source";
 import { parseItemPageSellerFeedback } from "./sources/listingItemPage";
 import { parseListingTitle } from "./sources/listingTitleParser";
 
-// Counters accumulated over one or many Cards in a single Listings Sync run.
 export type ListingSyncCounters = {
-  scraped: number; // candidates returned by the source
-  stored: number; // candidates accepted by the parser and persisted
-  skippedTitle: number; // candidates rejected by the parser (bundle / foreign / etc.)
-  skippedSeller: number; // candidates dropped for a zero-activity seller
-  skippedLocation: number; // candidates dropped for non-EU / unknown provenance
+  scraped: number;
+  stored: number;
+  skippedTitle: number;
+  skippedSeller: number;
+  skippedLocation: number;
 };
 
 export type BatchSyncListingsResult = ListingSyncCounters & {
-  cardsSynced: number; // Cards with an ebayLink that were synced
-  cardsSkipped: number; // Cards skipped for having no ebayLink
+  cardsSynced: number;
+  cardsSkipped: number;
 };
 
 const emptyCounters = (): ListingSyncCounters => ({
@@ -34,10 +33,6 @@ const emptyCounters = (): ListingSyncCounters => ({
   skippedLocation: 0,
 });
 
-// The buy-side sibling of the Sale Sync: walk each Card's active Buy-It-Now
-// search, classify every ask's PSA grade with the same card-aware title parser
-// the sales pipeline uses, and persist the survivors as the Card's full set of
-// live Listings (full per-card replacement — disappeared asks are pruned).
 export class SyncListingsUsecase {
   constructor(
     private readonly cardRepository: CardRepositoryPort,
@@ -46,7 +41,6 @@ export class SyncListingsUsecase {
     private readonly ebayItemPageSource: EbayItemPageSource,
   ) {}
 
-  // Batch across Cards in one browser session, filterable like the price Sync.
   async executeBatch(
     filter: GetCardsFilter = {},
   ): Promise<BatchSyncListingsResult> {
@@ -87,8 +81,6 @@ export class SyncListingsUsecase {
     return result;
   }
 
-  // Sync one card's listings in its own browser session (the panel's
-  // "Sync listings" action). Mirrors executeBatch for a single card.
   async executeForCard(cardId: string): Promise<BatchSyncListingsResult> {
     const card = await this.cardRepository.getCard(cardId);
     const counters = emptyCounters();
@@ -105,9 +97,6 @@ export class SyncListingsUsecase {
     return { cardsSynced: 1, cardsSkipped: 0, ...counters };
   }
 
-  // Scrape one Card's active eBay asks on a page the caller already owns (e.g.
-  // the full price Sync, which holds its own browser session). No-ops for Cards
-  // without an ebayLink. Counters accumulate into `into` when provided.
   async syncCardOnPage(
     card: CardEntity,
     page: Page,
@@ -138,30 +127,16 @@ export class SyncListingsUsecase {
         continue;
       }
 
-      // A seller with zero feedback is a fake-listing signal (same bar the Sale
-      // Sync auto-invalidates on). An ask nobody can safely buy must not set
-      // the per-grade minimum. The row-level guard is inert on the EU walk
-      // (ebay.fr search rows carry no seller line), so the real check is the
-      // item-page one below; this stays as a cheap backstop for any row that
-      // does carry feedback.
       if (!candidate.sellerHasActivity) {
         counters.skippedSeller++;
         continue;
       }
 
-      // eBay's EU search filter (LH_PrefLoc=3) renders as applied but leaks
-      // Japan/US/UK items, so trust the per-row location instead: drop anything
-      // that isn't a confirmed EU member state (unknown provenance included).
       if (!candidate.isEuLocation) {
         counters.skippedLocation++;
         continue;
       }
 
-      // ebay.fr search rows expose no seller feedback, so confirm the seller off
-      // the listing's own item page — the buy-side analogue of the Sale Sync's
-      // zero-activity auto-invalidate. Only survivors of the title + EU filters
-      // are visited, to keep the extra page loads bounded. An unreadable page
-      // leaves the count null (never invalidating on a miss).
       if (await this.sellerHasZeroFeedback(candidate.itemId, page)) {
         counters.skippedSeller++;
         continue;
@@ -189,10 +164,6 @@ export class SyncListingsUsecase {
     );
   }
 
-  // True only when the listing's item page confirms a zero-feedback seller. A
-  // failed / unreadable page yields a null count, which is treated as "not
-  // zero" so a transient miss never drops a real ask. A small jitter between
-  // visits mirrors the search walk's anti-rate-limit pacing.
   private async sellerHasZeroFeedback(
     itemId: string,
     page: Page,

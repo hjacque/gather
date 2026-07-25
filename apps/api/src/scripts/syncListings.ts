@@ -1,12 +1,3 @@
-/**
- * Backfill / refresh eBay active listings (the buy side of the opportunities
- * funnel) for every Card with an ebayLink, in one browser session. Each Card's
- * stored Listings are fully replaced, so re-running prunes stale asks.
- *
- * Usage:
- *   tsx src/scripts/syncListings.ts [--set=CODE] [--tags=a,b]
- */
-
 import { initRepository } from "../repository/init.repository";
 import { SyncListingsUsecase } from "../application/sync/syncListings.usecase";
 import { EbayListingsSource } from "../application/sync/sources/ebayListings.source";

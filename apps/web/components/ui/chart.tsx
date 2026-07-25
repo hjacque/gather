@@ -5,7 +5,6 @@ import * as RechartsPrimitive from 'recharts';
 
 import { cn } from '@/lib/utils';
 
-// Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: '', dark: '.dark' } as const;
 
 export type ChartConfig = {
@@ -131,7 +130,6 @@ function ChartTooltipContent({
     indicator?: 'line' | 'dot' | 'dashed';
     nameKey?: string;
     labelKey?: string;
-    // recharts v3 omits these from TooltipProps — they're injected via context
     payload?: RechartsPrimitive.TooltipPayload;
     label?: string | number;
   }) {
@@ -270,7 +268,6 @@ function ChartLegendContent({
 }: React.ComponentProps<'div'> & {
     hideIcon?: boolean;
     nameKey?: string;
-    // recharts v3 omits these from LegendProps — they're injected via context
     payload?: ReadonlyArray<RechartsPrimitive.LegendPayload>;
     verticalAlign?: 'top' | 'bottom' | 'middle';
   }) {
@@ -317,7 +314,6 @@ function ChartLegendContent({
   );
 }
 
-// Helper to extract item config from a payload.
 function getPayloadConfigFromPayload(
   config: ChartConfig,
   payload: unknown,

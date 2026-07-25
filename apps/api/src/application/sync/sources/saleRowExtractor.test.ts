@@ -60,7 +60,6 @@ describe("extractSaleRow", () => {
   });
 
   it("leaves a non-store seller with no parseable feedback line as having activity", () => {
-    // Unknown is conservative: an unparseable line must not read as no activity.
     expect(
       extractSaleRow(row({ sellerHref: null, sellerInfoText: null }))?.sellerHasActivity,
     ).toBe(true);

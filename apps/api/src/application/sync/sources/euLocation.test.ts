@@ -37,7 +37,6 @@ describe("isEuCountry", () => {
   it("rejects non-EU locations from the live capture", () => {
     expect(isEuCountry("Japon")).toBe(false);
     expect(isEuCountry("États-Unis")).toBe(false);
-    // UK is non-EU post-Brexit.
     expect(isEuCountry("Royaume-Uni")).toBe(false);
     expect(isEuCountry("Suisse")).toBe(false);
   });

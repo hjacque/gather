@@ -16,9 +16,6 @@ export class AuctionRepositoryPg implements AuctionRepositoryPort {
     platform: Platform,
     auctions: NewAuction[],
   ): Promise<void> {
-    // Full per-card replacement is the staleness model, but user moderation must
-    // outlive it: carry invalidatedAt and a manual grade fix forward by itemId so
-    // a flagged/corrected auction the re-sync still sees keeps the moderation.
     const moderated = await this.prisma.auction.findMany({
       where: {
         cardId,
@@ -42,7 +39,6 @@ export class AuctionRepositoryPg implements AuctionRepositoryPort {
             cardId: a.cardId,
             platform: a.platform,
             itemId: a.itemId,
-            // A manual grade fix wins over the re-parsed scraped grade.
             psaGrade: mod?.gradeEditedAt ? mod.psaGrade : a.psaGrade,
             currentBid: a.currentBid,
             currency: a.currency,

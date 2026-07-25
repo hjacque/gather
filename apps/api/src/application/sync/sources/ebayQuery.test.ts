@@ -46,7 +46,6 @@ describe("extractCoreName", () => {
   });
 
   it("matches the earliest species when several are named", () => {
-    // "Gyarados" precedes "Pikachu", so the core stops at Gyarados.
     expect(extractCoreName("Pretend Gyarados Pikachu Holo")).toBe("pretend gyarados");
   });
 

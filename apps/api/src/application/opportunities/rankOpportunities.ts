@@ -1,9 +1,3 @@
-// The Opportunity Score ranking pipeline, pure end to end: given the day's
-// inputs (Cards, Sales, listing prices, year ranges, PSA Pop Reports), compute
-// every signal, score each (card, grade) pair, keep the best grade per Card and
-// return the top entries. No repository or clock access — the use case fetches,
-// this module decides.
-
 import type { GetOpportunitiesResponse } from "@gather/api-contract";
 import { CardEntity } from "../../entities/card.entity";
 import { CardSetEntity } from "../../entities/cardSet.entity";
@@ -33,17 +27,13 @@ import {
   computePremiumLevel,
 } from "./opportunityScore";
 
-// How many opportunities the page shows.
 const TOP_N = 20;
 
 export type GradeYearRange = { min: number; max: number } | null;
 
 export type OpportunityInputs = {
   cards: (CardEntity & { cardSet: CardSetEntity })[];
-  // All maps are keyed by card id; absent entries mean "no data for this card".
   salesByCard: Map<string, SaleEntity[]>;
-  // Merged buy side (see mergeListingOffers): per grade, today's cheapest
-  // offer across CardMarket and live eBay asks, with its provenance.
   listingPricesByCard: Map<string, Record<number, ListingOffer | null>>;
   yearRangesByCard: Map<string, Record<number, GradeYearRange>>;
   psaReportsByCard: Map<string, PsaPopReportEntity>;
@@ -60,19 +50,10 @@ export const rankOpportunities = ({
   usdToEur,
   now,
 }: OpportunityInputs): GetOpportunitiesResponse => {
-  // Both age and population signals are normalized across the FULL collection so
-  // the scale is stable regardless of which cards have a qualifying listing today.
-  // The listing gate only decides which entries appear in the output — it must not
-  // distort the relative ranking of signals.
-
-  // Age: one value per card, older → higher signal.
   const allCardAgeSignals = normalizeInverted(
     cards.map((c) => c.releaseDate?.getTime() ?? null)
   );
 
-  // Population: percentile rank across the collection — 1 = lowest pop (best), 0 = highest pop (worst).
-  // Ties share the average percentile of their group so the quartile thresholds in
-  // computePopulationLevel (0.75 / 0.50 / 0.25) map to actual population quartiles.
   const allPopEntries: { cardId: string; total: number }[] = [];
   for (const card of cards) {
     const total = psaReportsByCard.get(card.id)?.total ?? 0;
@@ -103,7 +84,6 @@ export const rankOpportunities = ({
     allPopEntries.map((e, i) => [e.cardId, popSignals[i]])
   );
 
-  // Collect per-(card, grade) raw inputs for all grades with a Market Sale Price.
   type RawEntry = {
     cardIdx: number;
     grade: number;
@@ -160,17 +140,12 @@ export const rankOpportunities = ({
         gradeSignal = computeGradeSignal(psaReport, psaGrade);
       }
 
-      // The discount only counts to the extent the market price is trustworthy:
-      // confidence shrinks the signal toward neutral on thin or stale sales,
-      // in both directions (an "overpriced" verdict on weak data is just as unreliable).
       const listingConfidence = computeListingConfidence(
         sampleSize,
         newestSoldAt,
         now
       );
 
-      // Best-offer listings are negotiable: treat them as if they were cheaper
-      // by BEST_OFFER_BOOST for scoring purposes only (display price unchanged).
       const effectiveListingPrice =
         listingOffer.isBestOffer && listingPrice !== null
           ? listingPrice * (1 - BEST_OFFER_BOOST)
@@ -202,7 +177,6 @@ export const rankOpportunities = ({
     }
   }
 
-  // Compute final scores and filter.
   const bestPerCard = new Map<
     number,
     {
@@ -286,9 +260,6 @@ export const rankOpportunities = ({
     }
   }
 
-  // Multiplicative scoring means no discount → score 0: those entries are not
-  // opportunities and are dropped rather than padding the list. A quiet day
-  // yields a short (or empty) page.
   const ranked = [...bestPerCard.entries()]
     .filter(([, g]) => g.score > 0)
     .sort((a, b) => b[1].score - a[1].score);

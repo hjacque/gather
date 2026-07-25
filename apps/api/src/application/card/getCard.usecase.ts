@@ -36,8 +36,6 @@ export class GetCardUsecase {
         getEurToUsdRate(),
       ]);
 
-    // Convert each Sale to EUR at read time, dropping invalid Sales and any
-    // whose currency we cannot yet convert.
     const saleRecords: SaleRecord[] = sales.flatMap((sale) => {
       if (sale.status === "invalid") return [];
       const priceEur = convertToEur(sale.price, sale.currency, usdToEur);
@@ -55,8 +53,6 @@ export class GetCardUsecase {
       ];
     });
 
-    // Live asks in EUR, cheapest first within each grade. Unconvertible
-    // currencies are dropped, like Sales.
     const listingRecords: ListingRecord[] = (listingsByCard.get(cardId) ?? [])
       .flatMap((listing) => {
         const priceEur = convertToEur(listing.price, listing.currency, usdToEur);
@@ -79,8 +75,6 @@ export class GetCardUsecase {
       })
       .sort((a, b) => a.psaGrade - b.psaGrade || a.priceEur - b.priceEur);
 
-    // Per-grade Market Sale Price; eligibility (invalid, unconvertible,
-    // Best-Offer/review gate) is owned by computeMarketPrices.
     const marketPrices = computeMarketPrices(sales, usdToEur);
 
     const psaPopReport = psaReport

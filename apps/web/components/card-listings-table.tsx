@@ -37,8 +37,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-// Asks keep their cents: unlike the rounded market medians, these are exact
-// buyable prices.
 const askPriceFmt = new Intl.NumberFormat('fr-FR', {
   style: 'currency',
   currency: 'EUR',
@@ -52,11 +50,6 @@ const SOURCE_LABELS: Record<GetCardResponse['listings'][number]['source'], strin
 const PANEL_CARD_CLASS =
   '@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full';
 
-// Live-asks table for the card side panel: one row per active listing, grade
-// ASC then price ASC. Each row gets an action menu — Sync (re-verify this one
-// listing's price / whether it still exists) and Delete (invalidate a listing
-// that isn't this card, hiding it from the panel and opportunities). The header
-// carries a "Sync" that re-walks the whole card's listings.
 export function CardListingsTable({
   listings,
   onInvalidate,

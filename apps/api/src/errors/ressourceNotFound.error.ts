@@ -19,7 +19,6 @@ export default class RessourceNotFoundError extends CustomError {
     this._logging = logging || true;
     this._context = params?.context || {};
 
-    // Only because we are extending a built in class
     Object.setPrototypeOf(this, RessourceNotFoundError.prototype);
   }
 

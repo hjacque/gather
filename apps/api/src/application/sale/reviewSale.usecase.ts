@@ -1,9 +1,6 @@
 import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
 import { MarketSalePriceSnapshotService } from "./marketSalePriceSnapshot";
 
-// Records a Sale Review (the "approve" path): stamps reviewedAt and applies any
-// admin corrections. Flagging a Sale invalid is the separate InvalidateSale
-// use case. See Sale Review in CONTEXT.md.
 export class ReviewSaleUsecase {
   constructor(
     private readonly saleRepository: SaleRepositoryPort,

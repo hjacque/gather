@@ -8,8 +8,6 @@ export abstract class PriceRepositoryPort {
     date: Date
   ): Promise<void>;
 
-  // Min/max of stored marketSalePsa1–10 snapshots per card per grade over the
-  // given date range. Used to compute the 52-week high/low year signal.
   abstract getCardsMarketSaleYearRange(
     cardIds: string[],
     fromDate: Date,

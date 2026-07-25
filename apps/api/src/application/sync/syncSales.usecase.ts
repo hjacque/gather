@@ -14,37 +14,29 @@ import { parseListingTitle } from "./sources/listingTitleParser";
 import { classifyReverification } from "./sources/reverificationClassifier";
 import { MarketSalePriceSnapshotService } from "../sale/marketSalePriceSnapshot";
 
-// Trailing window re-fetched on every run; sales older than this are ignored so
-// re-running is idempotent over a fixed recent window (see #84).
 const WINDOW_DAYS = 30;
 
-// Trailing window the real-time public completed-listings search backfills:
-// just the most recent days Terapeak hasn't indexed yet (~3-day lag). Kept
-// narrow so this source covers the freshest sales without broadly re-introducing
-// Best-Offer asking-price bias on days Terapeak already reports accurately.
-// See ADR 0008.
 const EBAY_SEARCH_GAP_DAYS = 4;
 
-// Counters accumulated over one or many Cards in a single Sale Sync run.
 export type SaleSyncCounters = {
-  scraped: number; // Terapeak sale rows returned by the source
-  withinWindow: number; // sales inside the trailing 30-day window
-  upserted: number; // sales accepted by the parser and persisted
-  skipped: number; // candidates rejected by the parser (bundle / foreign / etc.)
-  autoValidated: number; // upserted Sales auto-validated by trusted seller
-  autoInvalidated: number; // upserted Sales auto-invalidated for a 0-activity seller
-  reverified: number; // pending Sales revisited at a checkpoint this run
-  confirmed: number; // reverified Sales that survived to 30 days
-  invalidated: number; // reverified Sales found gone / relisted
-  ebayScraped: number; // public completed-listings candidates returned
-  ebayIngested: number; // in-gap, parsed candidates upserted as ebay_search
+  scraped: number;
+  withinWindow: number;
+  upserted: number;
+  skipped: number;
+  autoValidated: number;
+  autoInvalidated: number;
+  reverified: number;
+  confirmed: number;
+  invalidated: number;
+  ebayScraped: number;
+  ebayIngested: number;
 };
 
 export type SyncSalesResult = SaleSyncCounters & { cardId: string };
 
 export type BatchSyncSalesResult = SaleSyncCounters & {
-  cardsSynced: number; // Cards with an ebayLink that were synced
-  cardsSkipped: number; // Cards skipped for having no ebayLink
+  cardsSynced: number;
+  cardsSkipped: number;
 };
 
 const emptyCounters = (): SaleSyncCounters => ({
@@ -61,8 +53,6 @@ const emptyCounters = (): SaleSyncCounters => ({
   ebayIngested: 0,
 });
 
-// A Terapeak sale persisted (as pending) in the authenticated Phase 1, carried
-// into the no-auth Phase 2 for seller verification. Grade is already parsed.
 type IngestedSale = {
   itemId: string;
   grade: number;
@@ -70,15 +60,14 @@ type IngestedSale = {
   currency: string;
   title: string;
   soldAt: Date;
-  isNew: boolean; // first time this (listing, card) was scraped this run
+  isNew: boolean;
 };
 
-// Per-Card outcome of Phase 2, for progress logging.
 type VerifyResult = {
-  checked: number; // ingested sales seller-verified (not already decided)
-  confirmed: number; // auto-confirmed this Card
-  invalid: number; // auto-invalidated this Card
-  reverified: number; // due sales revisited at their 7d/30d checkpoint
+  checked: number;
+  confirmed: number;
+  invalid: number;
+  reverified: number;
 };
 
 export class SyncSalesUsecase {
@@ -90,7 +79,6 @@ export class SyncSalesUsecase {
     private readonly snapshotService: MarketSalePriceSnapshotService
   ) {}
 
-  // Single Card on demand.
   async execute(cardId: string): Promise<SyncSalesResult> {
     const card = await this.cardRepository.getCard(cardId);
     const counters = emptyCounters();
@@ -120,14 +108,6 @@ export class SyncSalesUsecase {
     return result;
   }
 
-  // Batch across Cards in one browser session, filterable like the price Sync.
-  //
-  // Split into two phases so a full all-Cards run survives eBay's short seller
-  // session: Phase 1 does only the *authenticated* Terapeak fetches (fast — ~1
-  // page/Card), persisting sales as pending; Phase 2 does the *slow, public*
-  // eBay seller verification + re-verification, which needs no login. The
-  // authenticated window is therefore bounded to Phase 1. If the session expires
-  // mid-Phase-1 we stop fetching but still finalize everything ingested so far.
   async executeBatch(filter: GetCardsFilter = {}): Promise<BatchSyncSalesResult> {
     const counters = emptyCounters();
     let cardsSynced = 0;
@@ -139,9 +119,6 @@ export class SyncSalesUsecase {
       const applicable = cards.filter((c) => this.ebaySalesSource.appliesTo(c));
       cardsSkipped = cards.length - applicable.length;
 
-      // Phase 1 — authenticated Terapeak ingest. Persist each Card's sales as
-      // pending. A session expiry aborts the loop (no point fetching more), but
-      // whatever was ingested still flows to Phase 2.
       const ingestedByCard = new Map<string, IngestedSale[]>();
       const ingestOrder: CardEntity[] = [];
       try {
@@ -162,11 +139,6 @@ export class SyncSalesUsecase {
         );
       }
 
-      // Phase 2 — public eBay work (no auth): backfill the fresh-gap sales from
-      // the real-time completed-listings search, then seller-verify +
-      // re-verify. This is the slow stretch with no per-sale source output, so
-      // log a per-Card progress line to make it visibly advance rather than look
-      // stalled.
       for (const card of ingestOrder) {
         await this.ingestEbaySearchSales(card, page, counters);
         const r = await this.verifyIngestedSales(
@@ -192,9 +164,6 @@ export class SyncSalesUsecase {
     return result;
   }
 
-  // Scrape + re-verify one Card's eBay Sales on a page the caller already owns
-  // (e.g. the full price Sync, which holds its own browser session). No-ops for
-  // Cards without an ebayLink. Counters accumulate into `into` when provided.
   async syncCardOnPage(
     card: CardEntity,
     page: Page,
@@ -204,9 +173,6 @@ export class SyncSalesUsecase {
     try {
       await this.processCard(card, page, into);
     } catch (error) {
-      // The Sale Sync is folded into the larger price Sync here, so a lapsed
-      // Terapeak session must not crash the run — skip this Card's sales and let
-      // prices / listings continue. Re-throw anything else.
       if (!(error instanceof TerapeakAuthError)) throw error;
       console.warn(
         `[SyncSales] Terapeak session expired — skipping sales for ${card.name}. ` +
@@ -216,8 +182,6 @@ export class SyncSalesUsecase {
     return into;
   }
 
-  // Page through the Card repository into a single list, so the two phases can
-  // each iterate the full set.
   private async collectCards(filter: GetCardsFilter): Promise<CardEntity[]> {
     const all: CardEntity[] = [];
     for (let paginationPage = 1; ; paginationPage++) {
@@ -231,24 +195,16 @@ export class SyncSalesUsecase {
     return all;
   }
 
-  // Both phases for one Card (single-Card paths, where one Card always fits in a
-  // session). Phase 1's Terapeak fetch may throw TerapeakAuthError.
   private async processCard(
     card: CardEntity,
     page: Page,
     counters: SaleSyncCounters
   ): Promise<void> {
     const ingested = await this.ingestTerapeakSales(card, page, counters);
-    // Backfill the fresh days Terapeak lags behind from the real-time public
-    // search. Runs before verify so the re-verification pass sees these too.
     await this.ingestEbaySearchSales(card, page, counters);
     await this.verifyIngestedSales(card, ingested, page, counters);
   }
 
-  // Phase 1 (authenticated): fetch the Card's Terapeak sales — the authoritative
-  // transaction prices the public completed-search hides — parse grade + card
-  // attribution from each title, and persist the in-window ones as pending.
-  // Returns them for Phase 2. Throws TerapeakAuthError if the session has lapsed.
   private async ingestTerapeakSales(
     card: CardEntity,
     page: Page,
@@ -271,8 +227,6 @@ export class SyncSalesUsecase {
         continue;
       }
 
-      // Persist as pending; seller is filled in by Phase 2. Terapeak's price is
-      // the true accepted price, never an unresolved asking price.
       const isNew = await this.saleRepository.upsert({
         cardId: card.id,
         platform: "ebay",
@@ -281,7 +235,6 @@ export class SyncSalesUsecase {
         price: sale.price,
         currency: sale.currency,
         title: sale.title,
-        // Terapeak reports the realized price, never a Best-Offer ask.
         isBestOffer: false,
         seller: null,
         source: "terapeak",
@@ -302,16 +255,6 @@ export class SyncSalesUsecase {
     return ingested;
   }
 
-  // Fresh-gap backfill (public, no auth): pull the most recent sales from the
-  // real-time eBay completed-listings search for the days Terapeak hasn't
-  // indexed yet. Each public row carries its own seller / trust / activity, so
-  // these are seller-decided here at ingest (no extra item-page visit) — unlike
-  // Terapeak rows, which have no seller and need Phase 2's item page.
-  //
-  // Stored with source `ebay_search`: the repository will not let this price
-  // overwrite a Terapeak one, and Terapeak upgrades the row (and corrects any
-  // Best-Offer asking-price overstatement) once it catches up. Only sales inside
-  // the trailing gap are kept; older ones are Terapeak's to report.
   private async ingestEbaySearchSales(
     card: CardEntity,
     page: Page,
@@ -329,9 +272,6 @@ export class SyncSalesUsecase {
       const parsed = parseListingTitle(candidate.title, { number: card.number });
       if (parsed.kind === "skipped") continue;
 
-      // Same trust gate as Terapeak's Phase 2, but the verdict is already in the
-      // row: trusted seller (or PSA's store) auto-confirms; a zero-activity
-      // seller auto-invalidates; everything else stays pending for review.
       const autoConfirm = candidate.seller === "psa" || candidate.trustedSeller;
       const autoInvalidate = !autoConfirm && !candidate.sellerHasActivity;
       const decided = autoConfirm || autoInvalidate;
@@ -344,8 +284,6 @@ export class SyncSalesUsecase {
         price: candidate.price,
         currency: candidate.currency,
         title: candidate.title,
-        // A Best-Offer row's price is the ask, not the realized amount; flag it
-        // so pricing excludes it until Terapeak upgrades the row (ADR 0009).
         isBestOffer: candidate.isBestOffer,
         seller: candidate.seller,
         source: "ebay_search",
@@ -358,11 +296,6 @@ export class SyncSalesUsecase {
     }
   }
 
-  // Phase 2 (no auth): for each ingested sale not already decided, read seller
-  // quality from the public eBay item page and auto-confirm / auto-invalidate
-  // (undecided ones stay pending for human review). Then run the 7d/30d re-
-  // verification pass (catches cancellations / refunds) and recompute the
-  // Card's snapshot.
   private async verifyIngestedSales(
     card: CardEntity,
     ingested: IngestedSale[],
@@ -377,23 +310,13 @@ export class SyncSalesUsecase {
     };
 
     for (const sale of ingested) {
-      // Only verify the seller for first-time scrapes. A sale already in the DB
-      // had its seller checked when it was first scraped; the seller's standing
-      // won't have meaningfully shifted, and the sale's lifecycle from here is
-      // owned by the re-verification pass below. Re-checking it every run is the
-      // costliest no-op in this Sync (one eBay item-page load per known sale).
       if (!sale.isNew) continue;
 
-      // Seller quality from the listing's eBay item page (Terapeak has none).
       const sellerQ = await this.ebaySalesSource.fetchSellerQuality(
         sale.itemId,
         page
       );
 
-      // Auto-confirm (skip review) sales from sellers we trust: PSA's own store
-      // as the grading authority, plus any seller clearing the reputation bar
-      // (5000+ feedback at 99.5%+ positive). A zero-activity seller is a fake-
-      // listing signal — auto-invalidate. Undecided sales enter the review queue.
       const autoConfirm = sellerQ.seller === "psa" || sellerQ.trustedSeller;
       const autoInvalidate = !autoConfirm && !sellerQ.sellerHasActivity;
       const decided = autoConfirm || autoInvalidate;
@@ -406,8 +329,6 @@ export class SyncSalesUsecase {
         price: sale.price,
         currency: sale.currency,
         title: sale.title,
-        // Terapeak-sourced realized price (this re-upsert carries the verified
-        // seller), never a Best-Offer ask.
         isBestOffer: false,
         seller: sellerQ.seller,
         source: "terapeak",
@@ -429,8 +350,6 @@ export class SyncSalesUsecase {
       await this.sleep(2000 + Math.random() * 2000);
     }
 
-    // Re-verification pass: revisit this Card's due pending Sales at their
-    // 7-day / 30-day checkpoint and resolve their status.
     const due = await this.saleRepository.getSalesDueForVerification(
       new Date(),
       card.id
@@ -459,27 +378,15 @@ export class SyncSalesUsecase {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  // Set Terapeak's Listing Site to "All sites" once per browser session so the
-  // recurring ingest counts non-US marketplaces (.fr/.de/.co.uk/…) too, matching
-  // the historical backfill; Terapeak normalizes every price to USD. Must run
-  // before the first fetch (it is session state, not a URL param — see
-  // TerapeakSalesSource.selectAllSites). Degrades to US-only if the selector
-  // isn't found; a lapsed session surfaces as TerapeakAuthError for the caller to
-  // handle like any other Terapeak auth failure.
   async prepareTerapeakSession(page: Page): Promise<void> {
     const all = await this.terapeakSource.selectAllSites(page);
     if (!all) console.warn("[SyncSales] proceeding US-only (All sites not set)");
   }
 
   private async openBrowser() {
-    // Persistent Chrome profile: Terapeak is seller-only, so the eBay login
-    // cookie must survive between runs. Log in by hand once in this profile and
-    // every later session reuses it. Override the location with EBAY_PROFILE_DIR.
     const userDataDir =
       process.env.EBAY_PROFILE_DIR ??
       `${process.env.HOME ?? "."}/.gather/ebay-profile`;
-    // chrome-launcher writes chrome-out.log into the profile dir on launch and
-    // does not create it, so ensure it exists first.
     mkdirSync(userDataDir, { recursive: true });
     const { browser, page } = await connect({
       headless: false,

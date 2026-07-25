@@ -100,7 +100,6 @@ type Auction = GetAuctionsResponse[number];
 
 const eur = (n: number) => `€${n.toFixed(0)}`;
 
-// "as of" label for a stored bid: relative when recent, else a short clock time.
 const formatAsOf = (iso: string | Date) => {
   const then = new Date(iso).getTime();
   const mins = Math.round((Date.now() - then) / 60000);
@@ -123,8 +122,6 @@ function SortHeader({
   onClick: () => void;
   align?: 'left' | 'right';
 }) {
-  // Plain ghost button, matching the exclusive-promos table: default padding
-  // sets the column rhythm; right-aligned columns just flip the justify.
   return (
     <div className={align === 'right' ? 'flex justify-end' : ''}>
       <Button variant="ghost" onClick={onClick}>
@@ -147,7 +144,6 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
   const [syncingAll, setSyncingAll] = useState(false);
   const [grades, setGrades] = useState<number[]>([]);
 
-  // ── side panel ──────────────────────────────────────────────────────────
   const [panelOpen, setPanelOpen] = useState(false);
   const [displayedAuction, setDisplayedAuction] = useState<Auction | null>(null);
   const [displayedCard, setDisplayedCard] = useState<GetCardResponse | null>(null);
@@ -184,19 +180,16 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
     try {
       await invalidateAuction(id);
     } catch {
-      await reload(); // restore on failure
+      await reload();
     }
   };
 
-  // Remove every row sharing this auction's eBay listing id (the same listing
-  // can surface under several cards). Optimistically drop them all, then flag
-  // them server-side by listing id.
   const onInvalidateAll = async (id: string, itemId: string) => {
     setData((prev) => prev.filter((a) => a.itemId !== itemId));
     try {
       await invalidateAuctionByItem(id);
     } catch {
-      await reload(); // restore on failure
+      await reload();
     }
   };
 
@@ -317,7 +310,6 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
     await reloadCard(cardId, cardActionId);
   };
 
-  // ── columns ─────────────────────────────────────────────────────────────
   const columns = React.useMemo<ColumnDef<Auction>[]>(
     () => [
       {
@@ -543,7 +535,6 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
     rows: table.getSortedRowModel().rows.map((r) => r.original),
   };
 
-  // Only offer grades that actually have a live auction, high-to-low.
   const availableGrades = React.useMemo(
     () => Array.from(new Set(data.map((a) => a.psaGrade))).sort((a, b) => b - a),
     [data],
@@ -565,7 +556,6 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
 
   return (
     <div className="flex w-full flex-col gap-4 px-4 lg:px-6">
-      {/* toolbar */}
       <div className="flex flex-wrap items-center gap-3">
         <Popover>
           <PopoverTrigger asChild>
@@ -621,7 +611,6 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
         </Button>
       </div>
 
-      {/* table */}
       <div className="overflow-hidden rounded-lg border">
         <Table>
           <TableHeader className="from-primary/5 to-card dark:bg-card sticky top-0 z-10 bg-gradient-to-t shadow-xs backdrop-blur-md">
@@ -691,7 +680,6 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
         </Table>
       </div>
 
-      {/* pagination */}
       <div className="flex items-center justify-between">
         <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
           {table.getFilteredRowModel().rows.length} auction(s)
@@ -761,7 +749,6 @@ export function AuctionsList({ auctions }: { auctions: GetAuctionsResponse }) {
         </div>
       </div>
 
-      {/* side panel */}
       {displayedAuction && (
         <Sheet open={panelOpen} onOpenChange={setPanelOpen}>
           <SheetContent

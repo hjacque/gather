@@ -1,15 +1,6 @@
 import { connect } from "puppeteer-real-browser";
 import * as fs from "node:fs";
 
-/**
- * One-off diagnostic: load a Card's `ebayFrLink` in the SAME browser stack the
- * Listings Sync uses, and dump what eBay actually serves that session —
- * the final URL after redirects, the result-count heading, the per-row item
- * location, and the item-location refinement options (to see what LH_PrefLoc
- * indices resolve to). Confirms whether LH_PrefLoc=3 is honored as "EU".
- *
- *   ts-node src/scripts/captureEbayEuSearch.ts "<ebayFrLink>" [outHtmlPath]
- */
 async function main() {
   const url = process.argv[2];
   const outHtml = process.argv[3] ?? "/tmp/ebay-eu-capture.html";
@@ -46,8 +37,6 @@ async function main() {
         txt(document.querySelector("h1.srp-controls__count-heading")) ||
         txt(document.querySelector("[class*='count-heading']"));
 
-      // Item-location refinement group: anchors/inputs whose href carries
-      // LH_PrefLoc, with their visible label.
       const prefLocOptions = [...document.querySelectorAll("a[href*='LH_PrefLoc'], input")]
         .map((el) => {
           const href = el.getAttribute("href") ?? "";
@@ -60,7 +49,6 @@ async function main() {
         })
         .filter(Boolean);
 
-      // Any visible mention of the EU/worldwide location radio labels.
       const locationMentions = [
         "Union européenne",
         "Mondial",
@@ -77,7 +65,6 @@ async function main() {
         return {
           title: txt(row.querySelector(".s-card__title")).slice(0, 70),
           price: txt(row.querySelector(".s-card__price")),
-          // candidate location selectors across UI variants
           location:
             txt(row.querySelector(".s-card__location")) ||
             txt(row.querySelector("[class*='location']")) ||

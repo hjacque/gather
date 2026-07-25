@@ -40,10 +40,6 @@ export class CardRepositoryPg implements CardRepositoryPort {
       conditions.push(Prisma.sql`c."regions" && ${regions}::"Region"[]`);
     }
 
-    // A Card's own releaseDate is nullable (most only carry their Set's date),
-    // so order on the coalesced date — an undated Card sorts with its Set, not
-    // at the very end. Prisma's orderBy can't express COALESCE, hence the raw
-    // id query; the rows themselves still come back through findMany.
     const ordered = await this.prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
       SELECT c."id"
       FROM "Card" c

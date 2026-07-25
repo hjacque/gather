@@ -2,25 +2,6 @@ import { connect } from "puppeteer-real-browser";
 import { psaProfileDir, isPsaSignInUrl } from "../application/sync/sources/psa.source";
 import * as readline from "readline";
 
-/**
- * PSA re-authentication helper.
- *
- * PSA now gates the pop report behind a signed-in account. The PSA sync runs
- * Chrome inside Xvfb (an invisible virtual display) and only reuses an existing
- * PSA session — it never logs in. When a sync logs "[PSA] Not signed in" you run
- * this to refresh it: it opens the SAME persistent Chrome profile the sync uses
- * (psaProfileDir), but on your real display, so you can sign in by hand. The
- * cookie persists to the profile and the next sync reuses it.
- *
- * Must run on a machine with a real display (DISPLAY set). The profile dir is
- * shared with the sync usecases — override both with PSA_PROFILE_DIR.
- *
- * Usage:
- *   cd apps/api && npx ts-node src/scripts/psaLogin.ts
- */
-
-// PSA pop report home — landing here (not the sign-in flow) confirms the
-// session is good.
 const POP_URL = "https://www.psacard.com/pop";
 
 function prompt(question: string): Promise<void> {
@@ -66,7 +47,6 @@ async function main() {
   );
   await prompt("[psa-login] Press Enter once you're signed in... ");
 
-  // Verify the session took: a logged-out profile redirects to sign-in.
   await page.goto(POP_URL, { waitUntil: "networkidle2", timeout: 60000 });
   const url = page.url();
   const body = await page

@@ -1,19 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { activeListingsLinkFromEbayLink } from "../application/sync/sources/activeListingsLink";
 
-/**
- * Backfill each Card's `ebayFrLink` — the curated ebay.fr active Buy-It-Now
- * search the Listings Sync reads — from its existing ebay.com `ebayLink` sold
- * search, via the same transform the sync used to apply on the fly: host →
- * ebay.fr, drop the completed filters + inherited US `_fcid`, pin LH_BIN=1 +
- * LH_PrefLoc=3 (EU item location) + _sop=15.
- *
- * Idempotent: fills only Cards whose ebayFrLink is null, unless --overwrite.
- *
- *   ts-node src/scripts/generateEbayFrLinks.ts            # fill missing
- *   ts-node src/scripts/generateEbayFrLinks.ts --overwrite
- *   ts-node src/scripts/generateEbayFrLinks.ts --dry-run
- */
 async function main() {
   const overwrite = process.argv.includes("--overwrite");
   const dryRun = process.argv.includes("--dry-run");

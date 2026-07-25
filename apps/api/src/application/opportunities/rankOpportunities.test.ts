@@ -9,9 +9,6 @@ import {
 } from "./rankOpportunities";
 import type { ListingOffer } from "./mergeListingOffers";
 
-// Tests assert gating, normalization, selection and ordering — never absolute
-// score values, which move whenever the weights in computeScore are tuned.
-
 const NOW = new Date("2026-06-11T12:00:00Z");
 const RATE = 0.9;
 
@@ -103,8 +100,6 @@ const report = (
   } as PsaPopReportEntity;
 };
 
-// A bare number is shorthand for a CardMarket offer at that EUR price; a full
-// ListingOffer exercises the eBay provenance pass-through.
 const offer = (price: number | ListingOffer | null): ListingOffer | null =>
   typeof price === "number"
     ? { priceEur: price, source: "cardmarket", url: null, isBestOffer: false }
@@ -113,7 +108,6 @@ const offer = (price: number | ListingOffer | null): ListingOffer | null =>
 const inputs = (init: {
   cards: CardWithSet[];
   sales?: SaleEntity[];
-  // cardId → grade → listing price (number) or full offer
   listings?: Record<string, Record<number, number | ListingOffer | null>>;
   yearRanges?: Record<string, Record<number, GradeYearRange>>;
   reports?: PsaPopReportEntity[];
@@ -211,8 +205,6 @@ describe("rankOpportunities", () => {
   });
 
   it("keeps only the best-scoring grade per card", () => {
-    // Grade 10 dominates grade 9 on every signal: deeper discount, rarer
-    // grade, premium. Whatever the weights, it must win.
     const a = card("a");
     const result = rankOpportunities(
       inputs({
@@ -227,8 +219,6 @@ describe("rankOpportunities", () => {
   });
 
   it("ranks by score descending and caps the list at 20", () => {
-    // 25 otherwise-identical cards whose listing discount deepens with their
-    // index — deeper discount means a strictly higher score.
     const cards = Array.from({ length: 25 }, (_, i) => card(`c${i}`));
     const sales = cards.map((c) => sale(c.id, 10, 100));
     const listings = Object.fromEntries(
@@ -237,11 +227,9 @@ describe("rankOpportunities", () => {
     const result = rankOpportunities(inputs({ cards, sales, listings }));
 
     expect(result).toHaveLength(20);
-    // Deepest discount (last card) first.
     expect(result[0].id).toBe("c24");
     const scores = result.map((r) => r.bestGrade.score);
     expect([...scores].sort((x, y) => y - x)).toEqual(scores);
-    // The 5 shallowest discounts fall off the end.
     const ids = new Set(result.map((r) => r.id));
     for (const dropped of ["c0", "c1", "c2", "c3", "c4"]) {
       expect(ids.has(dropped)).toBe(false);
@@ -250,7 +238,6 @@ describe("rankOpportunities", () => {
 
   it("scores any listing below market, no dead zone", () => {
     const a = card("a");
-    // Even a 1% discount should surface as an opportunity.
     const slightDiscount = inputs({
       cards: [a],
       sales: [sale("a", 10, 100)],
@@ -258,7 +245,6 @@ describe("rankOpportunities", () => {
     });
     expect(rankOpportunities(slightDiscount)).toHaveLength(1);
 
-    // Exactly at market still scores 0 and is excluded.
     const atMarket = inputs({
       cards: [a],
       sales: [sale("a", 10, 100)],
@@ -268,8 +254,6 @@ describe("rankOpportunities", () => {
   });
 
   it("excludes a card listed at market even when the card itself is excellent", () => {
-    // Low pop, PSA 10, vintage, liquid — but the listing carries no discount.
-    // Multiplicative scoring: no deal means no opportunity.
     const grail = card("grail", { releaseDate: new Date("1999-01-01") });
     const result = rankOpportunities(
       inputs({
@@ -285,9 +269,6 @@ describe("rankOpportunities", () => {
   });
 
   it("ranks a modest discount on solid sale history above a deep discount on one stale comp", () => {
-    // "thin": 40% off a market price built on a single 90-day-old sale.
-    // "solid": 15% off a market price built on 6 sales from the last week.
-    // Confidence must collapse the thin discount so "solid" wins.
     const cards = [card("thin"), card("solid")];
     const result = rankOpportunities(
       inputs({
@@ -308,8 +289,6 @@ describe("rankOpportunities", () => {
   });
 
   it("exposes liquiditySignal for context but does not use it in ranking", () => {
-    // Both listings sit 20% under market with full confidence — only velocity differs.
-    // Liquidity is excluded from quality (collector use case), so scores must be equal.
     const cards = [card("slowmover"), card("fastmover")];
     const result = rankOpportunities(
       inputs({
@@ -326,17 +305,13 @@ describe("rankOpportunities", () => {
       })
     );
     expect(result).toHaveLength(2);
-    // Scores are equal — liquidity does not drive ranking.
     expect(result[0].bestGrade.score).toBeCloseTo(result[1].bestGrade.score, 5);
-    // liquiditySignal is still surfaced for display.
     const fast = result.find((r) => r.id === "fastmover")!;
     const slow = result.find((r) => r.id === "slowmover")!;
     expect(fast.bestGrade.liquiditySignal).toBeGreaterThan(slow.bestGrade.liquiditySignal);
   });
 
   it("normalizes the population signal across the full collection, not just gated cards", () => {
-    // "a" has the lowest pop but no listing today; it must still anchor the
-    // scale so "b" sits mid-pack instead of being promoted to best.
     const cards = [card("a"), card("b"), card("c")];
     const result = rankOpportunities(
       inputs({
@@ -374,14 +349,12 @@ describe("rankOpportunities", () => {
       })
     );
     const byId = new Map(result.map((r) => [r.id, r]));
-    // Ranks 1st and 2nd of 3 → percentiles 1 and 0.5 → shared average 0.75.
     expect(byId.get("a")?.bestGrade.populationSignal).toBeCloseTo(0.75);
     expect(byId.get("b")?.bestGrade.populationSignal).toBeCloseTo(0.75);
     expect(byId.get("c")?.bestGrade.populationSignal).toBeCloseTo(0);
   });
 
   it("normalizes the age signal across the full collection, not just gated cards", () => {
-    // Oldest card has no listing; the mid-age card must still land mid-scale.
     const cards = [
       card("old", { releaseDate: new Date("2000-01-01") }),
       card("mid", { releaseDate: new Date("2013-01-01") }),
@@ -433,7 +406,6 @@ describe("rankOpportunities", () => {
     expect(levels).toContain(entry.bestGrade.listingLevel);
     expect(entry.bestGrade.yearLow).toBe(80);
     expect(entry.bestGrade.yearHigh).toBe(120);
-    // Market 100 sits exactly mid-range → year signal 0.5.
     expect(entry.bestGrade.yearSignal).toBeCloseTo(0.5);
   });
 });

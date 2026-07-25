@@ -13,19 +13,18 @@ import { parseItemPageSellerFeedback } from "./sources/listingItemPage";
 import { parseAuctionItemPage } from "./sources/auctionItemPage";
 import { parseListingTitle } from "./sources/listingTitleParser";
 
-// Counters accumulated over one or many Cards in a single Auction Sync run.
 export type AuctionSyncCounters = {
-  scraped: number; // candidates returned by the source
-  stored: number; // candidates accepted by the parser and persisted
-  skippedTitle: number; // candidates rejected by the parser (bundle / foreign / etc.)
-  skippedLocation: number; // candidates dropped for non-EU / unknown provenance
-  skippedSeller: number; // candidates dropped for a zero-feedback seller
-  skippedEnded: number; // candidates that ended between search and item-page visit
+  scraped: number;
+  stored: number;
+  skippedTitle: number;
+  skippedLocation: number;
+  skippedSeller: number;
+  skippedEnded: number;
 };
 
 export type BatchSyncAuctionsResult = AuctionSyncCounters & {
-  cardsSynced: number; // Cards with an ebayLink that were synced
-  cardsSkipped: number; // Cards skipped for having no ebayLink
+  cardsSynced: number;
+  cardsSkipped: number;
 };
 
 const emptyCounters = (): AuctionSyncCounters => ({
@@ -37,16 +36,6 @@ const emptyCounters = (): AuctionSyncCounters => ({
   skippedEnded: 0,
 });
 
-// The auction sibling of the Listings Sync: walk each Card's ongoing-auction
-// search restricted to the allowlisted sellers (auctionSellers.ts; the search's
-// `_ssn` filter so only known cards from known sellers are scraped), classify
-// every auction's PSA grade with the same card-aware title parser the
-// listings/sales pipelines use, enforce EU provenance per row, and persist the
-// survivors as the Card's full set of live Auctions (full per-card replacement —
-// disappeared/ended auctions are pruned). Each survivor's eBay item page is then
-// visited for the true current bid + bid count in EUR (so every Auction lands
-// with a bid as of this sync) and the live ended/gone check; the zero-feedback
-// seller guard from the Listings Sync is kept but is inert for vetted sellers.
 export class SyncAuctionsUsecase {
   constructor(
     private readonly cardRepository: CardRepositoryPort,
@@ -55,7 +44,6 @@ export class SyncAuctionsUsecase {
     private readonly ebayItemPageSource: EbayItemPageSource,
   ) {}
 
-  // Batch across Cards in one browser session, filterable like the price Sync.
   async executeBatch(
     filter: GetCardsFilter = {},
   ): Promise<BatchSyncAuctionsResult> {
@@ -97,9 +85,6 @@ export class SyncAuctionsUsecase {
     return result;
   }
 
-  // Re-walk one card's ongoing auctions in its own browser session (the panel's
-  // "Sync auctions" action). Mirrors executeBatch for a single card; full
-  // per-card replacement plus a global prune of ended rows.
   async executeForCard(cardId: string): Promise<BatchSyncAuctionsResult> {
     const card = await this.cardRepository.getCard(cardId);
     const counters = emptyCounters();
@@ -137,23 +122,11 @@ export class SyncAuctionsUsecase {
         continue;
       }
 
-      // Zero-bid auctions are excluded server-side by the search sort
-      // (_sop=44, "ending soonest + with bids"; see auctionsLink.ts), so no
-      // per-row bid gate is needed here — the feed tracks bid auctions only.
-
-      // eBay's EU search filter (LH_PrefLoc=3) leaks Japan/US/UK items, so trust
-      // the per-row location instead: drop anything that isn't a confirmed EU
-      // member state (unknown provenance included).
       if (!candidate.isEuLocation) {
         counters.skippedLocation++;
         continue;
       }
 
-      // Visit the item page: confirm the seller off its own card (ebay.fr search
-      // rows expose no seller line, like the Listings Sync), drop zero-feedback
-      // (fake-listing) sellers, and capture the true current bid + bid count
-      // while we're there. A small jitter between visits mirrors the search
-      // walk's anti-rate-limit pacing.
       const { feedback, itemState } = await this.readItemPage(
         candidate.itemId,
         page,
@@ -167,8 +140,6 @@ export class SyncAuctionsUsecase {
         continue;
       }
 
-      // Prefer the item-page bid (EUR, authoritative) over the search-row value;
-      // fall back to the search row when the page couldn't be read.
       let currentBid = candidate.currentBid;
       let currency = candidate.currency;
       let bidCount = candidate.bidCount;
@@ -204,10 +175,6 @@ export class SyncAuctionsUsecase {
     );
   }
 
-  // Read one auction's item page for its seller feedback and live state. A
-  // failed / unreadable page yields a null feedback (never invalidating on a
-  // miss) and an "unknown" state (keeps the search-row bid). Paces visits with a
-  // small jitter, like the search walk.
   private async readItemPage(itemId: string, page: Page) {
     let feedback: number | null = null;
     let itemState = { status: "unknown" } as ReturnType<

@@ -46,8 +46,6 @@ import { invalidateSale } from '@/app/actions/invalidateSale';
 import { syncCardListings, syncListing, syncCardCardMarket, syncCardSales } from '@/app/actions/syncCard';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// ── helpers ──────────────────────────────────────────────────────────────────
-
 const eur = (n: number | null) => (n === null ? '—' : `€${n.toFixed(0)}`);
 
 const FREQUENCY_UNITS = [
@@ -73,8 +71,6 @@ const marketPriceFmt = new Intl.NumberFormat('fr-FR', {
 
 const PANEL_CARD_CLASS =
   '@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full';
-
-// ── list ─────────────────────────────────────────────────────────────────────
 
 const ENDS_SOON_MS = 24 * 60 * 60 * 1000;
 
@@ -171,8 +167,6 @@ export function OpportunitiesList({ opportunities, auctions }: Props) {
     if (activeOppRef.current?.id === opp.id) setDisplayedCard(data);
   }, []);
 
-  // One panel "Sync" refreshes both buy-side sources for the card: eBay live
-  // asks and CardMarket asks (both land in the Listing model now).
   const handleSyncCardListings = useCallback(async () => {
     const opp = activeOppRef.current;
     if (!opp) return;
@@ -225,7 +219,6 @@ export function OpportunitiesList({ opportunities, auctions }: Props) {
     }
   };
 
-  // Index auctions ending within 24 h by cardId, sorted soonest-first.
   const soonByCard = new Map<string, AuctionRecord[]>();
   const now = Date.now();
   for (const a of auctions) {
@@ -403,8 +396,6 @@ export function OpportunitiesList({ opportunities, auctions }: Props) {
   );
 }
 
-// ── list item ─────────────────────────────────────────────────────────────────
-
 function OpportunityCard({
   opportunity,
   rank,
@@ -418,8 +409,6 @@ function OpportunityCard({
 }) {
   const { bestGrade: g } = opportunity;
 
-  // Auctions for the same PSA grade where the current bid is below market price,
-  // sorted by soonest-ending first.
   const matched = liveAuctions
     .filter(a => a.psaGrade === g.psaGrade && a.currentBidEur < g.marketSalePrice)
     .sort((a, b) => new Date(a.endTime).getTime() - new Date(b.endTime).getTime());
@@ -431,7 +420,6 @@ function OpportunityCard({
       className="bg-card border rounded-xl p-4 flex gap-4 cursor-pointer hover:bg-accent/50 transition-colors"
       onClick={() => onOpen(opportunity)}
     >
-      {/* Thumbnail — plain img, no spotlight */}
       <div className="shrink-0 w-[80px]">
         {opportunity.imageUrl ? (
           <div
@@ -465,7 +453,6 @@ function OpportunityCard({
           <ScoreBadge g={g} />
         </div>
 
-        {/* Signal breakdown */}
         <div className="grid grid-cols-2 sm:grid-cols-7 gap-x-4 gap-y-2 pt-0.5">
           <DiscountCell g={g} />
           <PremiumCell g={g} />
@@ -483,8 +470,6 @@ function OpportunityCard({
     </div>
   );
 }
-
-// ── live auction row ──────────────────────────────────────────────────────────
 
 function LiveAuctionRow({
   auction,
@@ -522,8 +507,6 @@ function LiveAuctionRow({
     </a>
   );
 }
-
-// ── score badge ───────────────────────────────────────────────────────────────
 
 const SCORE_LABEL: Record<SignalLevel, string> = {
   'green-strong': 'Strong',
@@ -566,8 +549,6 @@ function ScoreBadge({ g }: { g: GradeOpportunity }) {
     </Tooltip>
   );
 }
-
-// ── signal cells ──────────────────────────────────────────────────────────────
 
 const SIGNAL_COLOR_CLASS: Record<SignalLevel, string> = {
   'green-strong': 'text-green-600 dark:text-green-400',
@@ -640,9 +621,6 @@ function DiscountCell({ g }: { g: GradeOpportunity }) {
     );
   }
   const pct = ((g.listingPrice - g.marketSalePrice) / g.marketSalePrice) * 100;
-  // The cheapest offer can come from CardMarket or a live eBay Buy-It-Now ask;
-  // link straight to it. A Best Offer ask is buyable at the shown price but
-  // negotiable below it — marked with a gavel.
   const priceLabel = `${eur(g.listingPrice)}${g.listingSource === 'ebay' ? ' eBay' : ''}`;
   const sub = (
     <>
@@ -841,8 +819,6 @@ function PremiumCell({ g }: { g: GradeOpportunity }) {
     />
   );
 }
-
-// ── panel sub-components ──────────────────────────────────────────────────────
 
 function MarketPricesCard({
   marketPrices,

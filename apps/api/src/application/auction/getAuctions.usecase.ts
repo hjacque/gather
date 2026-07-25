@@ -5,22 +5,13 @@ import { getEurToUsdRate } from "../sync/helper";
 import { convertToEur } from "../sale/eurConverter";
 import { toEnglishCountry } from "../sync/sources/euLocation";
 
-// Feed sort orders. Default is ending-soonest; the others let the user scan by
-// price or traction. "ending" never inverts — it is the live feed's spine.
 export type AuctionSort = "ending" | "bid" | "bids";
 
 export type GetAuctionsParams = {
-  // Restrict to a single PSA grade (1–10), or all grades when absent.
   grade?: number;
   sort?: AuctionSort;
 };
 
-// Assembles the cross-card Live Auctions feed: every ongoing auction (endTime in
-// the future), its current bid converted to EUR at read time, joined to its
-// Card for display. Supports a PSA-grade filter and a sort (default
-// ending-soonest). The feed only contains auctions with bids — the Auction Sync
-// stores bid auctions only. Unconvertible currencies are dropped (like Sales and
-// Listings). A plain feed — no scoring, no pricing impact.
 export class GetAuctionsUsecase {
   constructor(
     private readonly cardRepository: CardRepositoryPort,

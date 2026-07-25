@@ -1,12 +1,9 @@
 import { parseListingTitle, TargetCard } from "./listingTitleParser";
 
-// Target Card for these fixtures: Cramorant, collector number 226.
 const CRAMORANT_226: TargetCard = { number: "226" };
 
 describe("parseListingTitle", () => {
   describe("real single-card titles → accepted with the right grade", () => {
-    // Verbatim titles captured from a live eBay sold-listings search
-    // (apps/api/.../__fixtures__/ebay-completed-listings.html).
     const acceptedPsa10 = [
       "2021 POKEMON JAPANESE S PROMO POKEMON STAMP BOX #226 FULL ART/CRAMORANT PSA 10",
       "Pokemon Cramorant P.M. Stamp Bx. Japanese Full Art Promo 226/S-P PSA 10 Gem Mint",
@@ -77,7 +74,6 @@ describe("parseListingTitle", () => {
   });
 
   describe("rejects mixed-grade (multi-card) titles", () => {
-    // Real two-card listings carrying two different PSA grades.
     it.each([
       "PSA 10 Pikachu 227 Stamp Box Full Art Promo 2021 Pokemon PSA 9 Cramorant 226",
       "Pikachu 227/S-P PSA 9 Cramorant 226/S-P PSA 10 Pokemon Stamp Promo Seq. FULL SET",
@@ -105,8 +101,6 @@ describe("parseListingTitle", () => {
   });
 
   describe("rejects multi-card sets that name a foreign card number", () => {
-    // Two-card listings with NO bundle keyword — only the foreign card number
-    // (227, Pikachu) distinguishes them from a single Cramorant 226.
     it.each([
       "PSA10 Pikachu 227/S-P Cramorant 226/S-P Stamp Box Promo Japanese Pokemon Card",
       "PSA 10 Pikachu Cramorant 226/S-P 227/S-P Stamp Box Promo Pokemon Card Japanese",

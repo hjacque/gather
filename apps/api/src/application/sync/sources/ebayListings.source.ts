@@ -6,26 +6,8 @@ import {
   extractListingRow,
 } from "./listingRowExtractor";
 
-// Cap on active-listings pages walked per Card. The search is sorted cheapest
-// first (`_sop=15`), so the asks that can move the per-grade min all land in
-// the first pages; deeper pages only add ever-more-expensive noise.
 const MAX_PAGES = 5;
 
-/**
- * eBay active-listings scraping source — the buy-side sibling of the eBay
- * sales source. Walks the same curated per-Card search as `EbaySalesSource`,
- * but filtered to live Buy-It-Now items (see activeListingsLink.ts), and
- * reduces each result row to a `RawListingRow` for the pure Listing Row
- * Extractor. The search is the Card's curated `ebayFrLink` (an ebay.fr active
- * Buy-It-Now search, EU item-location filtered); Cards without one are skipped.
- *
- * Selectors are identical to the sales walk (rows are `li.s-card
- * [data-listingid]`); the differences are the missing "Sold <date>" caption,
- * the price being a live ask, and the site language being French (the EU
- * item-location filter only exists on ebay.fr — see activeListingsLink.ts).
- * eBay.fr rows carry no seller line, so seller trust/activity stay at their
- * null-input defaults there.
- */
 export class EbayListingsSource {
   appliesTo(card: CardEntity): boolean {
     return !!card.ebayFrLink;
@@ -83,8 +65,6 @@ export class EbayListingsSource {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  // Mirrors the sales source's defensive waits for eBay's "in line" /
-  // rate-limit / Cloudflare turnstile screens.
   private async handleInterstitials(page: Page): Promise<void> {
     const body = await this.readBodyText(page);
     if (
@@ -103,8 +83,6 @@ export class EbayListingsSource {
     }
   }
 
-  // Reads the page body text, tolerating a mid-navigation context teardown by
-  // settling and retrying once.
   private async readBodyText(page: Page): Promise<string> {
     try {
       return await page.evaluate(() => document.body.innerText);
@@ -124,18 +102,12 @@ export class EbayListingsSource {
         const text = (sel: string) =>
           row.querySelector(sel)?.textContent?.trim() ?? "";
 
-        // The seller line lives in its own attribute-row, e.g.
-        // "dxbdxb 99.3% positive (460)". That class is reused for price / offer
-        // rows too, so pick the one carrying the "% positive" feedback marker.
         const attributeRows = [
           ...row.querySelectorAll(".s-card__attribute-row"),
         ].map((r) => r.textContent?.trim() ?? "");
         const sellerInfoText =
           attributeRows.find((t) => /%\s*positive/i.test(t)) ?? null;
 
-        // Item location renders as a "de <Pays>" attribute line ("de Allemagne",
-        // "de Japon"). The shipping line ("...pour la livraison") never starts
-        // with "de", so an anchored match isolates the location safely.
         const locationText =
           attributeRows.find((t) => /^de\s+\S/i.test(t)) ?? null;
 

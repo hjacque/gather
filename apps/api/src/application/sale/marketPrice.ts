@@ -1,15 +1,3 @@
-// Per-grade "market price" from a card's eBay sale history. Each PSA grade is a
-// separate market, priced independently. The estimate is a recency-weighted
-// median of the grade's EUR sale prices (exponential age decay, default 30-day
-// half-life). The median resists off comps; genuinely wrong listings are
-// excluded by moderation (status invalid), so there is no automatic outlier
-// rejection here.
-//
-// This module owns the whole eligibility rule: which Sales count, how their
-// prices reach EUR, and how the per-grade median is taken. Callers hand over
-// raw SaleEntity rows plus today's USD→EUR rate and get Market Sale Prices
-// back — they never pre-filter or pre-convert.
-
 import { SaleEntity } from "../../entities/sale.entity";
 import { convertToEur } from "./eurConverter";
 
@@ -19,12 +7,6 @@ type SaleForPricing = {
   soldAt: Date;
 };
 
-// Eligibility: moderated-out Sales (status invalid) are dropped; Best-Offer
-// sales are dropped because their scraped price is the ask, not the realized
-// amount — they count only once Terapeak upgrades the row with the true price
-// (clearing the flag), see ADR 0009; and prices convert to EUR at read time —
-// Sales in currencies we cannot convert yet are excluded rather than shown wrong
-// (see ADR 0004).
 const toSalesForPricing = (
   sales: SaleEntity[],
   usdToEur: number
@@ -48,8 +30,6 @@ export type GradeMarketPrice = {
   priceEur: number;
   sampleSize: number;
   newestSoldAt: Date;
-  // Sales per day over the span from the oldest sale to `now`, so a recent
-  // drought lowers the rate. Rendered in whatever unit reads cleanly (/day…/yr).
   salesPerDay: number;
 };
 
@@ -72,8 +52,6 @@ const computeFromEligible = (
 ): GradeMarketPrice[] => {
   const byGrade = new Map<number, SaleForPricing[]>();
   for (const sale of sales) {
-    // Ignore sales after `now` so callers can reconstruct the price as of a past
-    // date (used for the 7-day trend baseline).
     if (sale.soldAt > now) continue;
     const list = byGrade.get(sale.psaGrade);
     if (list) list.push(sale);
@@ -94,8 +72,6 @@ const computeFromEligible = (
       gradeSales[0].soldAt
     );
 
-    // Floor the span at one day so a cluster of same-day sales can't drive the
-    // rate to infinity.
     const spanDays = Math.max(
       (now.getTime() - oldestSoldAt.getTime()) / DAY_MS,
       1
@@ -113,9 +89,6 @@ const computeFromEligible = (
   return result.sort((a, b) => a.psaGrade - b.psaGrade);
 };
 
-// Median of `priceEur` where each sale is weighted by exp-decay on its age.
-// Returns the price at which cumulative weight first crosses half the total;
-// on an exact boundary the two straddling prices are averaged.
 const weightedMedian = (
   sales: SaleForPricing[],
   now: Date,

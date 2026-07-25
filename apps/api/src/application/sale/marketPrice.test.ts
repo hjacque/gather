@@ -4,7 +4,6 @@ import { computeMarketPrices } from "./marketPrice";
 const daysAgo = (now: Date, days: number): Date =>
   new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 
-// usdToEur rate used throughout; EUR sales ignore it entirely.
 const RATE = 0.9;
 
 let seq = 0;
@@ -65,19 +64,15 @@ describe("computeMarketPrices", () => {
       sale({ psaGrade: 10, price: 200, soldAt: now }),
       sale({ psaGrade: 10, price: 900, soldAt: now }),
     ];
-    // Median resists the high outlier — mean would be 400.
     expect(computeMarketPrices(sales, RATE, now)[0].priceEur).toBe(200);
   });
 
   it("weights recent sales above old ones via exponential decay", () => {
-    // One fresh sale at 100, many old (one half-life+) sales at 300. The fresh
-    // sale carries enough weight that the weighted median sits at 100, not 300.
     const sales = [
       sale({ psaGrade: 10, price: 100, soldAt: now }),
       sale({ psaGrade: 10, price: 300, soldAt: daysAgo(now, 60) }),
       sale({ psaGrade: 10, price: 300, soldAt: daysAgo(now, 60) }),
     ];
-    // weights ≈ 1.0, 0.25, 0.25 → half = 0.75; cumulative hits the 100 bucket.
     expect(computeMarketPrices(sales, RATE, now, 30)[0].priceEur).toBe(100);
   });
 
@@ -93,7 +88,6 @@ describe("computeMarketPrices", () => {
   });
 
   it("derives sales-per-day over the oldest-sale-to-now span", () => {
-    // 4 sales, oldest 20 days ago → span 20 days → 0.2 sales/day.
     const sales = [
       sale({ psaGrade: 10, price: 100, soldAt: daysAgo(now, 20) }),
       sale({ psaGrade: 10, price: 100, soldAt: daysAgo(now, 10) }),
@@ -104,7 +98,6 @@ describe("computeMarketPrices", () => {
   });
 
   it("a recent drought lowers the rate (span runs to now, not to newest sale)", () => {
-    // 2 sales a year apart, newest 200 days ago → span 565 days → ~0.0035/day.
     const sales = [
       sale({ psaGrade: 10, price: 100, soldAt: daysAgo(now, 565) }),
       sale({ psaGrade: 10, price: 100, soldAt: daysAgo(now, 200) }),
@@ -128,7 +121,6 @@ describe("computeMarketPrices", () => {
       sale({ psaGrade: 10, price: 100, soldAt: daysAgo(now, 3) }),
       sale({ psaGrade: 10, price: 500, soldAt: now }), // sold "today"
     ];
-    // As of yesterday, today's 500 sale doesn't exist yet → price is just 100.
     const asOfYesterday = computeMarketPrices(sales, RATE, daysAgo(now, 1));
     expect(asOfYesterday[0].priceEur).toBe(100);
     expect(asOfYesterday[0].sampleSize).toBe(1);
@@ -183,7 +175,6 @@ describe("computeMarketPrices", () => {
         sale({ psaGrade: 10, price: 9999, soldAt: now, isBestOffer: true }),
       ];
       const [record] = computeMarketPrices(sales, RATE, now);
-      // The 9999 Best-Offer ask is ignored; only the 500 realized sale counts.
       expect(record.priceEur).toBe(500);
       expect(record.sampleSize).toBe(1);
     });

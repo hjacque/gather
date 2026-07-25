@@ -1,6 +1,3 @@
-// Shared PSA-grade color palette, used by both the CardMarket listing chart
-// and the eBay Sales chart so the two read consistently. Blue (low grade) →
-// gold (gem mint).
 export const GRADE_COLORS: Record<number, string> = {
   1:  'hsl(220, 40%, 50%)',
   2:  'hsl(200, 45%, 48%)',

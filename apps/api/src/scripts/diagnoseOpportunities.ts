@@ -1,25 +1,3 @@
-/**
- * Read-only diagnostic for the Opportunity Score pipeline. Runs the exact same
- * inputs as GET /opportunities, but instead of silently gating entries out it
- * attributes every (card, grade) with a Market Sale Price to the factor that
- * removed it from the page:
- *
- *   in top 20            shown today
- *   lost to PSA x        another grade of the same card scored higher
- *   no listing           no buy-side offer (CardMarket today / live eBay ask) for this grade
- *   overpriced           listed above market
- *   conf-killed          would clear today's cutoff if confidence were 1
- *   below cutoff         not competitive even with full confidence
- *
- * Focus set: PSA 10 entries and vintage cards (released before --year, default
- * 2003), i.e. "the cards a collector actually wants". Prints per-entry signal
- * breakdowns for the focus set plus verdict tallies, so formula changes can be
- * argued from evidence instead of theory.
- *
- * Usage:
- *   tsx src/scripts/diagnoseOpportunities.ts [--year=2003] [--limit=40] [--all]
- */
-
 import { initRepository } from "../repository/init.repository";
 import { mergeListingOffers } from "../application/opportunities/mergeListingOffers";
 import { getEurToUsdRate } from "../application/sync/helper";
@@ -106,7 +84,6 @@ async function main() {
   const today = startOfDayUtc(now);
   const yearAgo = new Date(today);
   yearAgo.setUTCDate(yearAgo.getUTCDate() - YEAR_DAYS);
-  // Same eBay freshness window as GetOpportunitiesUsecase.
   const listingsSince = new Date(today);
   listingsSince.setUTCDate(listingsSince.getUTCDate() - 3);
 
@@ -127,14 +104,12 @@ async function main() {
     psaPopReportRepository.findByCardIds(cardIds),
   ]);
 
-  // Merged buy side — the exact input GET /opportunities ranks on.
   const listingPricesByCard = mergeListingOffers({
     cards,
     listingsByCard,
     usdToEur,
   });
 
-  // What the page actually shows today, and the score needed to get on it.
   const page = rankOpportunities({
     cards,
     salesByCard,
@@ -147,7 +122,6 @@ async function main() {
   const shown = new Map(page.map((e) => [e.id, e.bestGrade.psaGrade]));
   const cutoff = page.length === 20 ? page[page.length - 1].bestGrade.score : 0;
 
-  // Same collection-wide normalizations as rankOpportunities.
   const ageSignals = normalizeInverted(
     cards.map((c) => c.releaseDate?.getTime() ?? null)
   );
@@ -251,7 +225,6 @@ async function main() {
     d.releaseYear !== null && d.releaseYear < VINTAGE_YEAR;
   const focus = diags.filter((d) => d.grade === 10 || isVintage(d));
 
-  // ── Per-entry breakdown for the focus set ───────────────────────────────────
   const header =
     pad("card", 30) +
     pad("set", 18) +
@@ -302,7 +275,6 @@ async function main() {
   if (!SHOW_ALL && rows.length > LIMIT)
     console.log(`… ${rows.length - LIMIT} more (use --all)`);
 
-  // ── Verdict tallies ──────────────────────────────────────────────────────────
   const tally = (entries: Diag[]): string => {
     const counts = new Map<Verdict, number>();
     for (const d of entries) counts.set(d.verdict, (counts.get(d.verdict) ?? 0) + 1);

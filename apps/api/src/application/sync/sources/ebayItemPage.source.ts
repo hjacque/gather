@@ -1,12 +1,6 @@
 import type { Page } from "rebrowser-puppeteer-core";
 import { RawItemPage } from "./listingItemPage";
 
-/**
- * Reads one eBay item page (ebay.fr/itm/<id>) down to the raw fields the pure
- * item-page parser needs. The single-listing counterpart of the search-walking
- * EbayListingsSource: used to re-verify a stored ask's current price / whether
- * it still exists, on demand.
- */
 export class EbayItemPageSource {
   async fetchState(itemId: string, page: Page): Promise<RawItemPage> {
     const url = `https://www.ebay.fr/itm/${itemId}`;
@@ -17,9 +11,6 @@ export class EbayItemPageSource {
     return page.evaluate(() => {
       const t = (sel: string) =>
         document.querySelector(sel)?.textContent?.trim() ?? "";
-      // Seller-card block carries the seller name, feedback score and positive
-      // rate. The ATF card is the current layout; fall back to the older
-      // seller-section across UI variants.
       const sellerInfoText =
         t(".x-sellercard-atf__info") ||
         t(".x-sellercard-atf") ||

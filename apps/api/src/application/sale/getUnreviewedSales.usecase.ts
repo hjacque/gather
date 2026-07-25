@@ -6,10 +6,6 @@ import type {
   ReviewSaleRecord,
 } from "@gather/api-contract";
 
-// The Sale Review queue: unreviewed Sales grouped by Card, paginated by Card,
-// oldest unreviewed Sale first. Prices are converted to EUR at read time (today's
-// rate); unconvertible currencies surface a null priceEur but are still shown so
-// the admin can act on them.
 export class GetUnreviewedSalesUsecase {
   constructor(private readonly saleRepository: SaleRepositoryPort) {}
 

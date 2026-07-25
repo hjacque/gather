@@ -3,25 +3,6 @@ import * as fs from "fs";
 import * as path from "path";
 import * as readline from "readline";
 
-/**
- * One-off HITL capture tool for the eBay Sales work (gather-gj4.2).
- *
- * Launches the same non-headless stealth browser the real Sale Sync uses,
- * navigates to an eBay completed-listings search URL, and pauses so you can
- * clear any Cloudflare / bot check and scroll/expand the results into the
- * state you want. When you press Enter it dumps the fully-rendered HTML and a
- * screenshot into the sources __fixtures__ dir, which the Listing Title Parser
- * and Sale Row Extractor tests read from.
- *
- * Usage:
- *   ts-node src/scripts/captureEbayHtml.ts "<ebay completed-listings URL>" [basename]
- *
- * Example:
- *   ts-node src/scripts/captureEbayHtml.ts \
- *     "https://www.ebay.com/sch/i.html?_nkw=charizard+psa+10&LH_Sold=1&LH_Complete=1" \
- *     ebay-sold-charizard
- */
-
 const FIXTURES_DIR = path.resolve(
   __dirname,
   "../application/sync/sources/__fixtures__"

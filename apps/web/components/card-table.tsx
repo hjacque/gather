@@ -209,8 +209,6 @@ export function CardTable({
     try {
       setLoadingRow({ id, action });
       if (action === 'sales') {
-        // Sale Sync returns run counters, not a card — nothing to patch into
-        // the row (sales render in the side panel, not the table).
         await syncCardSales(id);
         return;
       }

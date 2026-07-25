@@ -1,13 +1,3 @@
-/**
- * One-off backfill: drop the leading `pokemon` token from every Card's stored
- * eBay query (`card.ebayLink`'s `_nkw`). The query builder no longer emits the
- * `pokemon` prefix; this brings the 118 already-stored links in line without
- * regenerating them, so any hand-edits to the rest of the query are preserved.
- *
- * Usage:
- *   tsx src/scripts/stripPokemonFromEbayLinks.ts [--dry-run]
- */
-
 import { PrismaClient } from "@prisma/client";
 import {
   queryFromLink,
@@ -17,7 +7,6 @@ import {
 const prisma = new PrismaClient();
 const DRY_RUN = process.argv.includes("--dry-run");
 
-// Strip a single leading "pokemon" token (case-insensitive), nothing else.
 function stripLeadingPokemon(query: string): string {
   return query.replace(/^\s*pokemon\b\s*/i, "").trim();
 }
