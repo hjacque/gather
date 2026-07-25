@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { GRADE_COLORS } from '@/lib/grade-colors';
 
 const FREQUENCY_UNITS = [
   { perDay: 1, label: '/day' },
@@ -35,8 +36,6 @@ const marketPriceFmt = new Intl.NumberFormat('fr-FR', {
   currency: 'EUR',
   maximumFractionDigits: 0,
 });
-
-const POP_TEXT_CLASS = 'text-sky-600 dark:text-sky-400';
 
 const CARD_CLASS =
   '@container/card bg-gradient-to-t from-primary/5 to-card dark:bg-card backdrop-blur-md rounded-2xl border border-border p-6 shadow-xs w-full';
@@ -139,22 +138,23 @@ export function MarketPricesCard({
                     <span className="text-xs text-muted-foreground font-medium">
                       PSA {grade}
                     </span>
-                    <span className="text-sm font-semibold">
+                    <span
+                      className="text-sm font-semibold"
+                      style={record ? { color: GRADE_COLORS[grade] } : undefined}
+                    >
                       {record ? marketPriceFmt.format(record.priceEur) : '—'}
                     </span>
                     <span className="text-[10px] text-muted-foreground">
                       {record ? formatSalesFrequency(record.salesPerDay) : ''}
                     </span>
-                    <span
-                      className={`text-[11px] font-semibold ${POP_TEXT_CLASS}`}
-                    >
+                    <span className="text-[11px] font-semibold">
                       {pop != null ? String(pop) : '—'}
                     </span>
                   </div>
                 );
               })}
             </div>
-            <p className={`mt-6 text-right text-xs ${POP_TEXT_CLASS}`}>
+            <p className="mt-6 text-right text-xs">
               Total PSA population
               {psaPopReport?.total != null ? `: ${psaPopReport.total}` : ''}
               {syncedAt ? ` · updated ${syncedAt}` : ''}
