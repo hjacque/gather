@@ -1,7 +1,7 @@
 import { connect } from "puppeteer-real-browser";
 import { CardRepositoryPort } from "../../repository/ports/card.repository.port";
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
-import { scrapePsaPopReport } from "./sources/psa.source";
+import { scrapePsaPopReport, psaProfileDir } from "./sources/psa.source";
 
 export class SyncPsaPopReportsUsecase {
   constructor(
@@ -27,9 +27,9 @@ export class SyncPsaPopReportsUsecase {
 
     const { browser, page } = await connect({
       headless: false,
-      disableXvfb: true,
+      disableXvfb: false,
       args: [],
-      customConfig: {},
+      customConfig: { userDataDir: psaProfileDir() },
       turnstile: true,
       connectOption: { defaultViewport: null },
       ignoreAllFlags: false,

@@ -19,6 +19,7 @@ jest.mock("puppeteer-real-browser", () => ({
 
 // Mock the PSA scraper so we control what grades are returned
 jest.mock("./sources/psa.source", () => ({
+  psaProfileDir: jest.fn(() => "/tmp/gather-test-psa-profile"),
   scrapePsaPopReport: jest.fn().mockResolvedValue({
     grade1: 1,
     grade2: 2,

@@ -1,4 +1,17 @@
 import type { Page } from "rebrowser-puppeteer-core";
+import { mkdirSync } from "fs";
+
+export function psaProfileDir(): string {
+  const dir =
+    process.env.PSA_PROFILE_DIR ??
+    `${process.env.HOME ?? "."}/.gather/psa-profile`;
+  mkdirSync(dir, { recursive: true });
+  return dir;
+}
+
+export function isPsaSignInUrl(url: string): boolean {
+  return /\/(login|signin|sign-in)\b/i.test(url) || /login\.psacard\./i.test(url);
+}
 
 export type PsaGrades = {
   grade1: number | null;
@@ -84,6 +97,14 @@ export async function scrapePsaPopReport(
 ): Promise<PsaGrades> {
   try {
     await page.goto(psaLink, { waitUntil: "domcontentloaded", timeout: 30000 });
+
+    if (isPsaSignInUrl(page.url())) {
+      console.error(
+        `[PSA] Not signed in (redirected to ${page.url()}). Refresh the ` +
+          "session by running: cd apps/api && npx ts-node src/scripts/psaLogin.ts"
+      );
+      return { ...NULL_GRADES };
+    }
 
     // Wait for search form and initial table rows to be present
     await page.waitForSelector("[data-search-input]", { timeout: 15000 });

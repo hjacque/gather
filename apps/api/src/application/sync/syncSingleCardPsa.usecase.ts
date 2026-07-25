@@ -3,7 +3,7 @@ import { CardRepositoryPort } from "../../repository/ports/card.repository.port"
 import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.repository.port";
 import { CollectionRepositoryPort } from "../../repository/ports/collection.repository.port";
 import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
-import { scrapePsaPopReport } from "./sources/psa.source";
+import { scrapePsaPopReport, psaProfileDir } from "./sources/psa.source";
 import { getEurToUsdRate } from "./helper";
 import { psa10MarketPriceWithPrior } from "../sale/cardMarketPrice";
 import type { SyncCardResponse } from "@gather/api-contract";
@@ -21,7 +21,7 @@ export class SyncSingleCardPsaUsecase {
       headless: false,
       disableXvfb: false,
       args: [],
-      customConfig: {},
+      customConfig: { userDataDir: psaProfileDir() },
       turnstile: true,
       connectOption: { defaultViewport: null },
       ignoreAllFlags: false,
