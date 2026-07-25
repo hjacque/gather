@@ -61,11 +61,14 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
 
     if (existing.reviewedAt && !terapeakUpgrade) return false;
 
+    const reviewedEdits = existing.reviewedAt
+      ? {}
+      : { psaGrade: sale.psaGrade, price: sale.price };
+
     await this.prisma.sale.update({
       where: { id: existing.id },
       data: {
-        psaGrade: sale.psaGrade,
-        price: sale.price,
+        ...reviewedEdits,
         currency: sale.currency,
         title: sale.title,
         isBestOffer: sale.isBestOffer,
