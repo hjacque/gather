@@ -123,6 +123,7 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
     const sales = await this.prisma.sale.findMany({
       where: {
         status: "pending",
+        reviewedAt: null,
         ...(cardId ? { cardId } : {}),
         OR: [
           { verificationStage: "unverified", soldAt: { lte: sevenDaysAgo } },
