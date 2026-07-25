@@ -13,7 +13,7 @@ const toSalesForPricing = (
 ): SaleForPricing[] =>
   sales.flatMap((sale) => {
     if (sale.status === "invalid") return [];
-    if (sale.isBestOffer) return [];
+    if (sale.isBestOffer && sale.source !== "terapeak") return [];
     const priceEur = convertToEur(sale.price, sale.currency, usdToEur);
     if (priceEur === null) return [];
     return [

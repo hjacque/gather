@@ -168,27 +168,45 @@ describe("computeMarketPrices", () => {
     });
   });
 
-  describe("Best-Offer gating (ADR 0009)", () => {
-    it("excludes a Best-Offer sale (ask price, not realized)", () => {
+  describe("Best-Offer gating (ADR 0011)", () => {
+    it("excludes an ebay_search Best-Offer sale (ask price, not realized)", () => {
       const sales = [
         sale({ psaGrade: 10, price: 500, soldAt: now }),
-        sale({ psaGrade: 10, price: 9999, soldAt: now, isBestOffer: true }),
+        sale({
+          psaGrade: 10,
+          price: 9999,
+          soldAt: now,
+          isBestOffer: true,
+          source: "ebay_search",
+        }),
       ];
       const [record] = computeMarketPrices(sales, RATE, now);
       expect(record.priceEur).toBe(500);
       expect(record.sampleSize).toBe(1);
     });
 
-    it("yields no estimate for a grade whose only sale is a Best-Offer", () => {
+    it("yields no estimate for a grade whose only sale is an unpriced Best-Offer", () => {
       const sales = [
-        sale({ psaGrade: 9, price: 250, soldAt: now, isBestOffer: true }),
+        sale({
+          psaGrade: 9,
+          price: 250,
+          soldAt: now,
+          isBestOffer: true,
+          source: "ebay_search",
+        }),
       ];
       expect(computeMarketPrices(sales, RATE, now)).toEqual([]);
     });
 
-    it("counts a Terapeak-upgraded sale (flag cleared) like any realized sale", () => {
+    it("counts a Terapeak-priced Best-Offer sale, flag and all", () => {
       const sales = [
-        sale({ psaGrade: 10, price: 820, soldAt: now, isBestOffer: false }),
+        sale({
+          psaGrade: 10,
+          price: 820,
+          soldAt: now,
+          isBestOffer: true,
+          source: "terapeak",
+        }),
       ];
       expect(computeMarketPrices(sales, RATE, now)[0].sampleSize).toBe(1);
     });

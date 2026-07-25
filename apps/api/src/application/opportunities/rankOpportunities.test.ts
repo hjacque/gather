@@ -196,7 +196,7 @@ describe("rankOpportunities", () => {
         cards: [a],
         sales: [
           sale("a", 10, 100, { status: "invalid" }),
-          sale("a", 10, 9999, { isBestOffer: true }),
+          sale("a", 10, 9999, { isBestOffer: true, source: "ebay_search" }),
         ],
         listings: { a: { 10: 80 } },
       })
