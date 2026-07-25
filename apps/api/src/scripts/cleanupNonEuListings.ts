@@ -2,11 +2,12 @@ import { PrismaClient } from "@prisma/client";
 import { isEuCountry } from "../application/sync/sources/euLocation";
 
 const prisma = new PrismaClient();
-const DRY_RUN = process.argv.includes("--dry-run");
+const DRY_RUN = !process.argv.includes("--confirm");
 const CHUNK = 500;
 
 async function main() {
-  if (DRY_RUN) console.log("[cleanup-eu] DRY RUN — no DB writes");
+  if (DRY_RUN)
+    console.log("[cleanup-eu] DRY RUN — no DB writes; pass --confirm to delete");
 
   const rows = await prisma.listing.findMany({
     where: { platform: "ebay" },

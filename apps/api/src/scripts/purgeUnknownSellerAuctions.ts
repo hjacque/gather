@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { isAllowedAuctionSeller } from "../application/sync/sources/auctionSellers";
 
 async function main() {
-  const dryRun = process.argv.slice(2).includes("--dry-run");
+  const dryRun = !process.argv.slice(2).includes("--confirm");
   const prisma = new PrismaClient();
 
   try {
@@ -20,7 +20,7 @@ async function main() {
 
     console.log(
       `[purge] ${rows.length} auction(s) total; ${toDelete.length} from unknown sellers ` +
-        `${dryRun ? "(DRY RUN, nothing deleted)" : "to delete"}`,
+        `${dryRun ? "(DRY RUN, nothing deleted; pass --confirm to delete)" : "to delete"}`,
     );
     for (const [seller, count] of [...bySeller].sort((a, b) => b[1] - a[1])) {
       console.log(`[purge]   ${seller}: ${count}`);
