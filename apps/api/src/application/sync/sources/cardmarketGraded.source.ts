@@ -2,7 +2,8 @@ import type { Page } from "rebrowser-puppeteer-core";
 import { CardEntity } from "../../../entities/card.entity";
 import { CardmarketArticles, PriceSourcePort } from "./priceSource.port";
 
-const BANNED_DESCRIPTION_KEYWORDS = ["contendent", "Probably", "Sealed", "maybe", "possible", "like"];
+const BANNED_DESCRIPTION_PATTERN =
+  /\b(contendent|contender|candidate|not|probably|sealed|maybe|possible|like)\b/i;
 
 export class CardMarketGradedSource implements PriceSourcePort {
   appliesTo(product: CardEntity): boolean {
@@ -78,7 +79,7 @@ export class CardMarketGradedSource implements PriceSourcePort {
       const articles: CardmarketArticles = await page.$$eval(
         ".article-row",
         (rows) => {
-          const banned = ["contendent", "Probably", "Sealed", "maybe", "possible", "like"];
+          const banned = /\b(contendent|contender|candidate|not|probably|sealed|maybe|possible|like)\b/i;
           const result: {
             articleId: string | null;
             psaGrade: number;
@@ -98,7 +99,7 @@ export class CardMarketGradedSource implements PriceSourcePort {
             if (!descEl || !priceEl) continue;
 
             const desc = descEl.textContent || "";
-            if (banned.some((kw) => desc.toLowerCase().includes(kw.toLowerCase()))) continue;
+            if (banned.test(desc)) continue;
 
             const gradeMatch = desc.match(/psa\s*(\d+)/i);
             if (!gradeMatch) continue;
