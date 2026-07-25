@@ -11,40 +11,10 @@ export class PriceRepositoryPg implements PriceRepositoryPort {
     type: PriceType,
     date: Date
   ): Promise<void> {
-    const existingPrice = await this.prisma.price.findUnique({
-      where: {
-        cardId_date_type: {
-          cardId,
-          type,
-          date,
-        },
-      },
-    });
-    if (existingPrice) {
-      await this.prisma.price.update({
-        where: {
-          cardId_date_type: {
-            cardId,
-            type,
-            date,
-          },
-        },
-        data: {
-          value: value ?? null,
-          type,
-          date,
-          updatedAt: new Date(),
-        },
-      });
-      return;
-    }
-    await this.prisma.price.create({
-      data: {
-        cardId,
-        value,
-        type,
-        date,
-      },
+    await this.prisma.price.upsert({
+      where: { cardId_date_type: { cardId, type, date } },
+      create: { cardId, value: value ?? null, type, date },
+      update: { value: value ?? null },
     });
   }
 
