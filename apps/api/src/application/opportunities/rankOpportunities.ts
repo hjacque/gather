@@ -95,6 +95,7 @@ export const rankOpportunities = ({
     salesPerDay: number;
     liquiditySignal: number;
     listingPrice: number | null;
+    effectiveListingPrice: number | null;
     listingOffer: ListingOffer;
     yearSignal: number;
     yearRange: GradeYearRange;
@@ -164,6 +165,7 @@ export const rankOpportunities = ({
         salesPerDay,
         liquiditySignal: computeLiquiditySignal(salesPerDay),
         listingPrice,
+        effectiveListingPrice,
         listingOffer,
         yearSignal: computeYearSignal(marketSalePrice, yearRange),
         yearRange,
@@ -242,7 +244,10 @@ export const rankOpportunities = ({
         listingPrice: e.listingPrice,
         listingOffer: e.listingOffer,
         marketSalePrice: e.marketSalePrice,
-        listingLevel: computeDiscountLevel(e.marketSalePrice, e.listingPrice),
+        listingLevel: computeDiscountLevel(
+          e.marketSalePrice,
+          e.effectiveListingPrice
+        ),
         yearSignal: e.yearSignal,
         yearRange: e.yearRange,
         yearLevel: computeYearLevel(e.yearSignal),
