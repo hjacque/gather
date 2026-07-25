@@ -30,6 +30,7 @@ export function mergeListingOffers({
 
     const best: Record<number, ListingOffer> = {};
     for (const listing of listings) {
+      if (listing.platform !== "cardmarket") continue;
       const priceEur = convertToEur(listing.price, listing.currency, usdToEur);
       if (priceEur === null) continue;
       const source = listing.platform === "cardmarket" ? "cardmarket" : "ebay";

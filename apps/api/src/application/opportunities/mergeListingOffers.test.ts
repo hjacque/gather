@@ -92,66 +92,43 @@ describe("mergeListingOffers", () => {
     expect(result.get("a")![9]).toBeNull();
   });
 
-  it("fills a grade CardMarket has no listing for from eBay, converted to EUR", () => {
+  it("leaves a grade empty when only eBay has a listing for it", () => {
     const result = merge({
       cards: [card("a")],
       listings: [listing("a", 10, 100, { itemId: "396556820656" })],
     });
-    expect(result.get("a")![10]).toEqual({
-      priceEur: 90, // 100 USD × 0.9
-      source: "ebay",
-      url: "https://www.ebay.fr/itm/396556820656",
-      isBestOffer: false,
-    });
+    expect(result.get("a")![10]).toBeNull();
   });
 
-  it("takes the cheaper source per grade, in EUR terms", () => {
+  it("ignores a cheaper eBay ask in favour of the CardMarket one", () => {
+    const result = merge({
+      cards: [card("a")],
+      listings: [cm("a", 10, 100), listing("a", 10, 50)],
+    });
+    expect(result.get("a")![10]!.source).toBe("cardmarket");
+    expect(result.get("a")![10]!.priceEur).toBe(100);
+  });
+
+  it("picks the cheapest CardMarket ask per grade and carries its Best Offer flag", () => {
     const result = merge({
       cards: [card("a")],
       listings: [
-        cm("a", 10, 100),
-        cm("a", 9, 50),
-        listing("a", 10, 100),
-        listing("a", 9, 100),
-      ],
-    });
-    expect(result.get("a")![10]!.source).toBe("ebay");
-    expect(result.get("a")![10]!.priceEur).toBe(90);
-    expect(result.get("a")![9]!.source).toBe("cardmarket");
-    expect(result.get("a")![9]!.priceEur).toBe(50);
-  });
-
-  it("picks the cheapest eBay ask per grade and carries its Best Offer flag", () => {
-    const result = merge({
-      cards: [card("a")],
-      listings: [
-        listing("a", 10, 120),
-        listing("a", 10, 100, { itemId: "cheap", isBestOffer: true }),
+        cm("a", 10, 120),
+        cm("a", 10, 100, { isBestOffer: true }),
       ],
     });
     expect(result.get("a")![10]).toEqual({
-      priceEur: 90,
-      source: "ebay",
-      url: "https://www.ebay.fr/itm/cheap",
+      priceEur: 100,
+      source: "cardmarket",
+      url: "https://www.cardmarket.com/card-a",
       isBestOffer: true,
     });
   });
 
-  it("breaks ties toward CardMarket regardless of listing order", () => {
+  it("skips asks in unsupported currencies rather than mispricing them", () => {
     const result = merge({
       cards: [card("a")],
-      listings: [
-        listing("a", 10, 100), // = 90 EUR, seen first
-        cm("a", 10, 90),
-      ],
-    });
-    expect(result.get("a")![10]!.source).toBe("cardmarket");
-  });
-
-  it("skips eBay asks in unsupported currencies rather than mispricing them", () => {
-    const result = merge({
-      cards: [card("a")],
-      listings: [listing("a", 10, 100, { currency: "GBP" })],
+      listings: [cm("a", 10, 100, { currency: "GBP" })],
     });
     expect(result.get("a")![10]).toBeNull();
   });
