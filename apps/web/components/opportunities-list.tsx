@@ -43,7 +43,7 @@ import {
   invalidateListingByItem,
 } from '@/app/actions/invalidateListing';
 import { invalidateSale } from '@/app/actions/invalidateSale';
-import { syncCardListings, syncListing, syncCardCardMarket } from '@/app/actions/syncCard';
+import { syncCardListings, syncListing, syncCardCardMarket, syncCardSales } from '@/app/actions/syncCard';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -142,6 +142,23 @@ export function OpportunitiesList({ opportunities, auctions }: Props) {
     await invalidateSale(saleId);
     const data = await getCard(opp.id);
     if (activeOppRef.current?.id === opp.id) setDisplayedCard(data);
+  }, []);
+
+  const [isSyncingSales, setIsSyncingSales] = useState(false);
+
+  const handleSyncSales = useCallback(async () => {
+    const opp = activeOppRef.current;
+    if (!opp) return;
+    setIsSyncingSales(true);
+    try {
+      await syncCardSales(opp.id);
+      const data = await getCard(opp.id);
+      if (activeOppRef.current?.id === opp.id) setDisplayedCard(data);
+    } catch (err) {
+      console.error('Panel sale sync failed', err);
+    } finally {
+      setIsSyncingSales(false);
+    }
   }, []);
 
   const [isSyncingListings, setIsSyncingListings] = useState(false);
@@ -266,6 +283,8 @@ export function OpportunitiesList({ opportunities, auctions }: Props) {
                       <EbaySalesChart
                         sales={displayedCard.sales}
                         cardId={displayedOpp.id}
+                        onSyncEbay={handleSyncSales}
+                        isSyncingEbay={isSyncingSales}
                         onRemoveSale={handleRemoveSale}
                       />
                     </div>

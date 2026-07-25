@@ -820,7 +820,7 @@ export function PokemonExclusivePromosTable({
                     <EbaySalesChart
                     sales={displayedCard?.sales ?? []}
                     cardId={displayedItem.id}
-                    onSyncEbay={displayedItem.ebayLink ? () => handlePanelSync('sales') : undefined}
+                    onSyncEbay={() => handlePanelSync('sales')}
                     isSyncingEbay={panelSyncLoading === 'sales'}
                     onRemoveSale={handleRemoveSale}
                   />
