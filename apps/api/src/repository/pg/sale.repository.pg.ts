@@ -19,7 +19,7 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
     const { platform, itemId, cardId } = sale;
     const existing = await this.prisma.sale.findUnique({
       where: { platform_itemId_cardId: { platform, itemId, cardId } },
-      select: { id: true, reviewedAt: true, source: true },
+      select: { id: true, reviewedAt: true, source: true, isBestOffer: true },
     });
 
     const trustedFields = sale.reviewedAt
@@ -53,6 +53,12 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
     }
 
     if (sale.source === "ebay_search" && existing.source === "terapeak") {
+      if (sale.isBestOffer && !existing.isBestOffer) {
+        await this.prisma.sale.update({
+          where: { id: existing.id },
+          data: { isBestOffer: true },
+        });
+      }
       return false;
     }
 
@@ -71,7 +77,7 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
         ...reviewedEdits,
         currency: sale.currency,
         title: sale.title,
-        isBestOffer: sale.isBestOffer,
+        isBestOffer: sale.isBestOffer || existing.isBestOffer,
         seller: sale.seller,
         source: sale.source,
         soldAt: sale.soldAt,
