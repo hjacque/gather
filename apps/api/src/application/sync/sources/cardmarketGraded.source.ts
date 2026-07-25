@@ -1,6 +1,6 @@
 import type { Page } from "rebrowser-puppeteer-core";
 import { CardEntity } from "../../../entities/card.entity";
-import { CardmarketGradePrices, PriceSourcePort } from "./priceSource.port";
+import { CardmarketArticles, PriceSourcePort } from "./priceSource.port";
 
 const BANNED_DESCRIPTION_KEYWORDS = ["contendent", "Probably", "Sealed", "maybe", "possible", "like"];
 
@@ -14,7 +14,7 @@ export class CardMarketGradedSource implements PriceSourcePort {
     page: Page,
     _usdToEur: number,
     retry = 0
-  ): Promise<CardmarketGradePrices> {
+  ): Promise<CardmarketArticles> {
     try {
       await page.goto(product.cardMarketLink!, { waitUntil: "networkidle2" });
       await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -35,7 +35,7 @@ export class CardMarketGradedSource implements PriceSourcePort {
         console.log("[GradedSource] Rate limit detected");
         if (retry > 3) {
           console.log("[GradedSource] Max retries reached");
-          return new Map();
+          return [];
         }
         await new Promise((resolve) => setTimeout(resolve, 60000 * retry));
         return this.fetch(product, page, _usdToEur, retry + 1);
@@ -77,57 +77,73 @@ export class CardMarketGradedSource implements PriceSourcePort {
         console.log(`[GradedSource] Clicked "Show more results" ${loadMoreAttempts} time(s)`);
       }
 
-      // Parse all rows and find the minimum price per PSA grade
-      const gradeMinPrices = await page.$$eval(".article-row", (rows) => {
-        const banned = ["contendent", "Probably", "Sealed", "maybe", "possible", "like"];
-        const result: Record<number, number> = {};
+      const articles: CardmarketArticles = await page.$$eval(
+        ".article-row",
+        (rows) => {
+          const banned = ["contendent", "Probably", "Sealed", "maybe", "possible", "like"];
+          const result: {
+            articleId: string | null;
+            psaGrade: number;
+            price: number;
+            seller: string | null;
+            comment: string | null;
+          }[] = [];
 
-        for (const row of rows) {
-          const descEl = row.querySelector(
-            ".product-comments .d-block.text-truncate"
-          );
-          const priceEl = row.querySelector(
-            ".price-container .color-primary"
-          );
+          for (const row of rows) {
+            const descEl = row.querySelector(
+              ".product-comments .d-block.text-truncate"
+            );
+            const priceEl = row.querySelector(
+              ".price-container .color-primary"
+            );
 
-          if (!descEl || !priceEl) continue;
+            if (!descEl || !priceEl) continue;
 
-          const desc = descEl.textContent || "";
-          if (banned.some((kw) => desc.toLowerCase().includes(kw.toLowerCase()))) continue;
+            const desc = descEl.textContent || "";
+            if (banned.some((kw) => desc.toLowerCase().includes(kw.toLowerCase()))) continue;
 
-          const gradeMatch = desc.match(/psa\s*(\d+)/i);
-          if (!gradeMatch) continue;
+            const gradeMatch = desc.match(/psa\s*(\d+)/i);
+            if (!gradeMatch) continue;
 
-          const grade = parseInt(gradeMatch[1], 10);
-          if (grade < 1 || grade > 10) continue;
+            const grade = parseInt(gradeMatch[1], 10);
+            if (grade < 1 || grade > 10) continue;
 
-          const priceText = priceEl.textContent ?? "";
-          const price = parseFloat(
-            priceText.replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "")
-          );
-          if (isNaN(price) || price <= 0) continue;
+            const priceText = priceEl.textContent ?? "";
+            const price = parseFloat(
+              priceText.replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "")
+            );
+            if (isNaN(price) || price <= 0) continue;
 
-          if (result[grade] === undefined || price < result[grade]) {
-            result[grade] = price;
+            const rowId = row.getAttribute("id") ?? "";
+            const articleId = rowId.startsWith("articleRow")
+              ? rowId.slice("articleRow".length)
+              : null;
+
+            const sellerEl = row.querySelector(".seller-name a");
+            const seller = sellerEl?.textContent?.trim() || null;
+
+            result.push({
+              articleId: articleId || null,
+              psaGrade: grade,
+              price,
+              seller,
+              comment: desc.trim() || null,
+            });
           }
+
+          return result;
         }
+      );
 
-        return result;
-      });
+      console.log(
+        `[GradedSource] ${articles.length} PSA article(s)`,
+        articles.map((a) => `PSA ${a.psaGrade} @ ${a.price}`)
+      );
 
-      console.log("[GradedSource] PSA grade prices", gradeMinPrices);
-
-      const prices: CardmarketGradePrices = new Map();
-      for (let grade = 1; grade <= 10; grade++) {
-        if (gradeMinPrices[grade] !== undefined) {
-          prices.set(grade, gradeMinPrices[grade]);
-        }
-      }
-
-      return prices;
+      return articles;
     } catch (error) {
       console.log("[GradedSource] Failed to scrape graded prices for", product.name, error);
-      return new Map();
+      return [];
     }
   }
 }

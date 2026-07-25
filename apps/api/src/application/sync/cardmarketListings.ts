@@ -1,56 +1,70 @@
 import { NewListing } from "../../entities/listing.entity";
 import { ListingRepositoryPort } from "../../repository/ports/listing.repository.port";
-import { CardmarketGradePrices } from "./sources/priceSource.port";
+import { CardmarketArticle, CardmarketArticles } from "./sources/priceSource.port";
 
-// CardMarket is scraped as one lowest ask per PSA grade (CardMarketGradedSource
-// keeps only the minimum), so each grade maps to a single synthetic Listing
-// rather than a row per real article. The itemId is stable per (card, grade) so
-// full-replacement re-sync carries a user's invalidation forward, exactly like
-// eBay listings. Prices are already EUR off CardMarket.
-export const cardmarketListingItemId = (psaGrade: number): string =>
-  `cardmarket-psa${psaGrade}`;
-
-// Build the cardmarket Listing rows for one card from its scraped grade prices.
-// `gradePrices` is grade → lowest ask in EUR; grades with no price are skipped.
-export const cardmarketGradePricesToListings = (
-  cardId: string,
-  gradePrices: Map<number, number>,
-  seenAt: Date,
-): NewListing[] => {
-  const listings: NewListing[] = [];
-  for (let grade = 1; grade <= 10; grade++) {
-    const price = gradePrices.get(grade);
-    if (price === undefined || price <= 0) continue;
-    listings.push({
-      cardId,
-      platform: "cardmarket",
-      itemId: cardmarketListingItemId(grade),
-      psaGrade: grade,
-      price,
-      currency: "EUR",
-      title: `CardMarket PSA ${grade} lowest ask`,
-      isBestOffer: false,
-      seller: null,
-      // CardMarket is an EU marketplace; location only carries the eBay
-      // provenance check, so leave it null here.
-      location: null,
-      seenAt,
-    });
-  }
-  return listings;
+export const cardmarketListingItemId = (article: CardmarketArticle): string => {
+  if (article.articleId) return `cardmarket-${article.articleId}`;
+  const seller = (article.seller ?? "unknown")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return `cardmarket-psa${article.psaGrade}-${seller || "unknown"}-${Math.round(
+    article.price * 100,
+  )}`;
 };
 
-// Mirror a card's freshly scraped CardMarket grade asks into the unified
-// Listing model. Shared by every sync path (full, per-set, per-card) so they
-// can't drift on what a CardMarket listing is. Full per-card replacement prunes
-// grades that dropped off, exactly like the eBay listings sync.
+const listingTitle = (article: CardmarketArticle): string => {
+  const base = `CardMarket PSA ${article.psaGrade}`;
+  const parts = [article.seller, article.comment].filter(Boolean);
+  return parts.length ? `${base} — ${parts.join(" — ")}` : base;
+};
+
+export const cardmarketArticlesToListings = (
+  cardId: string,
+  articles: CardmarketArticles,
+  seenAt: Date,
+): NewListing[] => {
+  const usable = articles
+    .filter(
+      (a) =>
+        a.price > 0 &&
+        Number.isFinite(a.price) &&
+        a.psaGrade >= 1 &&
+        a.psaGrade <= 10,
+    )
+    .sort((a, b) => a.psaGrade - b.psaGrade || a.price - b.price);
+
+  const usedItemIds = new Map<string, number>();
+
+  return usable.map((article) => {
+    const baseItemId = cardmarketListingItemId(article);
+    const seen = usedItemIds.get(baseItemId) ?? 0;
+    usedItemIds.set(baseItemId, seen + 1);
+    const itemId = seen === 0 ? baseItemId : `${baseItemId}-${seen + 1}`;
+
+    return {
+      cardId,
+      platform: "cardmarket" as const,
+      itemId,
+      psaGrade: article.psaGrade,
+      price: article.price,
+      currency: "EUR",
+      title: listingTitle(article),
+      isBestOffer: false,
+      seller: article.seller,
+      location: null,
+      seenAt,
+    };
+  });
+};
+
 export const mirrorCardmarketListings = async (
   listingRepository: ListingRepositoryPort,
   cardId: string,
-  gradePrices: CardmarketGradePrices,
+  articles: CardmarketArticles,
   seenAt: Date,
 ): Promise<NewListing[]> => {
-  const listings = cardmarketGradePricesToListings(cardId, gradePrices, seenAt);
+  const listings = cardmarketArticlesToListings(cardId, articles, seenAt);
   await listingRepository.replaceCardListings(cardId, "cardmarket", listings);
   return listings;
 };

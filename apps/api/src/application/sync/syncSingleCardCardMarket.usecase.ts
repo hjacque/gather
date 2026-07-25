@@ -4,7 +4,7 @@ import { PsaPopReportRepositoryPort } from "../../repository/ports/psaPopReport.
 import { CollectionRepositoryPort } from "../../repository/ports/collection.repository.port";
 import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
 import { ListingRepositoryPort } from "../../repository/ports/listing.repository.port";
-import { CardmarketGradePrices, PriceSourcePort } from "./sources/priceSource.port";
+import { CardmarketArticles, PriceSourcePort } from "./sources/priceSource.port";
 import { mirrorCardmarketListings } from "./cardmarketListings";
 import { getEurToUsdRate } from "./helper";
 import { psa10MarketPriceWithPrior } from "../sale/cardMarketPrice";
@@ -42,17 +42,14 @@ export class SyncSingleCardCardMarketUsecase {
 
     const card = await this.cardRepository.getCard(cardId);
 
-    const gradePrices: CardmarketGradePrices = new Map();
+    const articles: CardmarketArticles = [];
     for (const source of this.cardmarketPriceSources) {
       if (source.appliesTo(card)) {
-        const result = await source.fetch(card, page, usdToEur);
-        for (const [grade, price] of result) gradePrices.set(grade, price);
+        articles.push(...(await source.fetch(card, page, usdToEur)));
       }
     }
 
-    // CardMarket asks are listings: mirror the scraped lowest ask per grade into
-    // the unified Listing model (full per-card replacement prunes stale grades).
-    await mirrorCardmarketListings(this.listingRepository, card.id, gradePrices, today);
+    await mirrorCardmarketListings(this.listingRepository, card.id, articles, today);
 
     await page.close();
     await browser.close();

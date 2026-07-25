@@ -1,10 +1,15 @@
 import type { Page } from "rebrowser-puppeteer-core";
 import { CardEntity } from "../../../entities/card.entity";
 
-// A CardMarket scrape result: PSA grade (1-10) → lowest ask in EUR. CardMarket
-// asks are listings now, so a source yields buyable prices per grade rather than
-// dated price points.
-export type CardmarketGradePrices = Map<number, number>;
+export type CardmarketArticle = {
+  articleId: string | null;
+  psaGrade: number;
+  price: number;
+  seller: string | null;
+  comment: string | null;
+};
+
+export type CardmarketArticles = CardmarketArticle[];
 
 export interface PriceSourcePort {
   appliesTo(card: CardEntity): boolean;
@@ -12,5 +17,5 @@ export interface PriceSourcePort {
     card: CardEntity,
     page: Page,
     usdToEur: number
-  ): Promise<CardmarketGradePrices>;
+  ): Promise<CardmarketArticles>;
 }
