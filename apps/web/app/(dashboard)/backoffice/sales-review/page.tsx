@@ -4,7 +4,7 @@ import { SaleReviewQueue } from '@/components/sale-review-queue';
 const PAGE_SIZE = 20;
 
 export default async function SaleReviewPage() {
-  const initial = await getUnreviewedSales(1, PAGE_SIZE);
+  const initial = await getUnreviewedSales(PAGE_SIZE);
 
   return (
     <div className="flex flex-1 flex-col">

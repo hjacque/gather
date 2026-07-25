@@ -5,6 +5,7 @@ import { errorHandler } from "./middlewares/http.errors";
 import { SyncUsecaseInputDto } from "application/sync/sync.usecase";
 import type { UpdateCardNoteRequest, UpsertCollectionEntryRequest } from "@gather/api-contract";
 import { REGIONS } from "@gather/types";
+import { decodeCursor } from "../../application/sale/getUnreviewedSales.usecase";
 require("express-async-errors");
 
 const app = express();
@@ -188,11 +189,14 @@ export const http = async ({
 
   app.get("/sales/unreviewed", async (req, res) => {
     const querySchema = z.object({
-      page: z.coerce.number().int().min(1).default(1),
       pageSize: z.coerce.number().int().min(1).max(200).default(20),
+      after: z.string().optional(),
     });
-    const { page, pageSize } = querySchema.parse(req.query);
-    const result = await getUnreviewedSalesUsecase.execute(page, pageSize);
+    const { pageSize, after } = querySchema.parse(req.query);
+    const result = await getUnreviewedSalesUsecase.execute(
+      pageSize,
+      decodeCursor(after)
+    );
 
     res.status(200);
     res.json(result);

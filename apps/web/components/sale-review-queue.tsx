@@ -52,25 +52,40 @@ function cleanTitle(title: string): string {
 
 export function SaleReviewQueue({ initial, pageSize }: Props) {
   const [data, setData] = React.useState(initial);
-  const [page, setPage] = React.useState(initial.page);
+  const [history, setHistory] = React.useState<(string | undefined)[]>([
+    undefined,
+  ]);
   const [loading, setLoading] = React.useState(false);
   const [busyId, setBusyId] = React.useState<string | null>(null);
 
-  const totalPages = Math.max(1, Math.ceil(data.totalCards / pageSize));
+  const page = history.length;
 
-  const loadPage = React.useCallback(
-    async (next: number) => {
+  const load = React.useCallback(
+    async (cursor: string | undefined, nextHistory: (string | undefined)[]) => {
       setLoading(true);
       try {
-        const res = await getUnreviewedSales(next, pageSize);
+        const res = await getUnreviewedSales(pageSize, cursor);
         setData(res);
-        setPage(next);
+        setHistory(nextHistory);
       } finally {
         setLoading(false);
       }
     },
     [pageSize],
   );
+
+  const loadNext = () => {
+    if (!data.nextCursor) return;
+    load(data.nextCursor, [...history, data.nextCursor]);
+  };
+
+  const loadPrevious = () => {
+    if (history.length <= 1) return;
+    const nextHistory = history.slice(0, -1);
+    load(nextHistory[nextHistory.length - 1], nextHistory);
+  };
+
+  const reload = () => load(history[history.length - 1], history);
 
   const removeSale = (cardId: string, saleId: string) => {
     setData((prev) => {
@@ -106,45 +121,51 @@ export function SaleReviewQueue({ initial, pageSize }: Props) {
   const onInvalidate = (cardId: string, saleId: string) =>
     runReview(cardId, saleId, () => invalidateSale(saleId));
 
-  if (data.cards.length === 0) {
-    return (
-      <div className="text-muted-foreground py-16 text-center text-sm">
-        Nothing left to review on this page. 🎉
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-6">
-      {data.cards.map((card) => (
-        <SaleReviewCard
-          key={card.id}
-          card={card}
-          busyId={busyId}
-          onApprove={onApprove}
-          onInvalidate={onInvalidate}
-        />
-      ))}
+      {data.cards.length === 0 ? (
+        <div className="text-muted-foreground py-16 text-center text-sm">
+          Nothing left to review on this page. 🎉
+        </div>
+      ) : (
+        data.cards.map((card) => (
+          <SaleReviewCard
+            key={card.id}
+            card={card}
+            busyId={busyId}
+            onApprove={onApprove}
+            onInvalidate={onInvalidate}
+          />
+        ))
+      )}
 
       <div className="flex items-center justify-between pt-2">
         <span className="text-muted-foreground text-sm">
           {data.totalCards} card{data.totalCards === 1 ? '' : 's'} with
-          unreviewed sales · page {page} of {totalPages}
+          unreviewed sales · page {page}
         </span>
         <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
-            disabled={loading || page <= 1}
-            onClick={() => loadPage(page - 1)}
+            disabled={loading}
+            onClick={reload}
+          >
+            Refresh
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={loading || history.length <= 1}
+            onClick={loadPrevious}
           >
             Previous
           </Button>
           <Button
             variant="outline"
             size="sm"
-            disabled={loading || page >= totalPages}
-            onClick={() => loadPage(page + 1)}
+            disabled={loading || !data.nextCursor}
+            onClick={loadNext}
           >
             Next
           </Button>

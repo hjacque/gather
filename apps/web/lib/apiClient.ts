@@ -121,10 +121,10 @@ export async function invalidateListingByItem(
 }
 
 export async function getUnreviewedSales(
-  page: number,
   pageSize: number,
+  after?: string,
 ): Promise<GetUnreviewedSalesResponse> {
-  return apiFetch(`/sales/unreviewed${toParams({ page, pageSize })}`);
+  return apiFetch(`/sales/unreviewed${toParams({ pageSize, after })}`);
 }
 
 export async function getUnreviewedCount(): Promise<GetUnreviewedCountResponse> {

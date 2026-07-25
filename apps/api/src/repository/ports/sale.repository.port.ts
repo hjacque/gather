@@ -1,5 +1,10 @@
 import { SaleEntity, NewSale, SaleVerification } from "../../entities/sale.entity";
 
+export type UnreviewedSalesCursor = {
+  oldestSoldAt: Date;
+  cardId: string;
+};
+
 export type UnreviewedSalesCard = {
   card: {
     id: string;
@@ -33,9 +38,13 @@ export abstract class SaleRepositoryPort {
   abstract markInvalid(saleId: string): Promise<void>;
 
   abstract getUnreviewedSalesByCard(
-    page: number,
-    pageSize: number
-  ): Promise<{ cards: UnreviewedSalesCard[]; totalCards: number }>;
+    pageSize: number,
+    after?: UnreviewedSalesCursor
+  ): Promise<{
+    cards: UnreviewedSalesCard[];
+    totalCards: number;
+    nextCursor: UnreviewedSalesCursor | null;
+  }>;
 
   abstract markReviewed(
     saleId: string,

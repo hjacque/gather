@@ -1,6 +1,7 @@
 import {
   SaleRepositoryPort,
   UnreviewedSalesCard,
+  UnreviewedSalesCursor,
 } from "../ports/sale.repository.port";
 import { SaleMapper } from "./mappers/sale.mapper.pg";
 import { NewSale, SaleVerification } from "../../entities/sale.entity";
@@ -164,19 +165,27 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
   }
 
   async getUnreviewedSalesByCard(
-    page: number,
-    pageSize: number
-  ): Promise<{ cards: UnreviewedSalesCard[]; totalCards: number }> {
+    pageSize: number,
+    after?: UnreviewedSalesCursor
+  ): Promise<{
+    cards: UnreviewedSalesCard[];
+    totalCards: number;
+    nextCursor: UnreviewedSalesCursor | null;
+  }> {
     const filter = Prisma.sql`"reviewedAt" IS NULL AND "status" = 'pending'`;
+    const afterClause = after
+      ? Prisma.sql`HAVING (MIN("soldAt"), "cardId") > (${after.oldestSoldAt}, ${after.cardId})`
+      : Prisma.empty;
 
     const [pageRows, totalRows] = await Promise.all([
-      this.prisma.$queryRaw<{ cardId: string }[]>`
-        SELECT "cardId"
+      this.prisma.$queryRaw<{ cardId: string; oldestSoldAt: Date }[]>`
+        SELECT "cardId", MIN("soldAt") AS "oldestSoldAt"
         FROM "Sale"
         WHERE ${filter}
         GROUP BY "cardId"
-        ORDER BY MIN("soldAt") ASC
-        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
+        ${afterClause}
+        ORDER BY MIN("soldAt") ASC, "cardId" ASC
+        LIMIT ${pageSize}
       `,
       this.prisma.$queryRaw<{ count: number }[]>`
         SELECT COUNT(DISTINCT "cardId")::int AS count
@@ -186,8 +195,14 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
     ]);
 
     const totalCards = Number(totalRows[0]?.count ?? 0);
+    const last = pageRows[pageRows.length - 1];
+    const nextCursor =
+      pageRows.length === pageSize && last
+        ? { oldestSoldAt: last.oldestSoldAt, cardId: last.cardId }
+        : null;
+
     const cardIds = pageRows.map((r) => r.cardId);
-    if (cardIds.length === 0) return { cards: [], totalCards };
+    if (cardIds.length === 0) return { cards: [], totalCards, nextCursor: null };
 
     const [cards, sales] = await Promise.all([
       this.prisma.card.findMany({
@@ -231,7 +246,7 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
       ];
     });
 
-    return { cards: result, totalCards };
+    return { cards: result, totalCards, nextCursor };
   }
 
   async getUnreviewedCount(): Promise<number> {

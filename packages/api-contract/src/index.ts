@@ -177,8 +177,8 @@ export type UnreviewedSalesCard = {
 export type GetUnreviewedSalesResponse = {
   cards: UnreviewedSalesCard[];
   totalCards: number;
-  page: number;
   pageSize: number;
+  nextCursor: string | null;
 };
 
 export type GetUnreviewedCountResponse = {

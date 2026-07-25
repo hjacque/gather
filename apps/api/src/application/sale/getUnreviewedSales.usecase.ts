@@ -1,4 +1,7 @@
-import { SaleRepositoryPort } from "../../repository/ports/sale.repository.port";
+import {
+  SaleRepositoryPort,
+  UnreviewedSalesCursor,
+} from "../../repository/ports/sale.repository.port";
 import { getUsdToEurRate } from "../sync/helper";
 import { convertToEur } from "./eurConverter";
 import type {
@@ -6,15 +9,32 @@ import type {
   ReviewSaleRecord,
 } from "@gather/api-contract";
 
+const encodeCursor = (cursor: UnreviewedSalesCursor): string =>
+  Buffer.from(`${cursor.oldestSoldAt.toISOString()}|${cursor.cardId}`).toString(
+    "base64url"
+  );
+
+export const decodeCursor = (
+  raw: string | undefined
+): UnreviewedSalesCursor | undefined => {
+  if (!raw) return undefined;
+  const [soldAt, cardId] = Buffer.from(raw, "base64url")
+    .toString("utf8")
+    .split("|");
+  const oldestSoldAt = new Date(soldAt ?? "");
+  if (!cardId || Number.isNaN(oldestSoldAt.getTime())) return undefined;
+  return { oldestSoldAt, cardId };
+};
+
 export class GetUnreviewedSalesUsecase {
   constructor(private readonly saleRepository: SaleRepositoryPort) {}
 
   async execute(
-    page: number,
-    pageSize: number
+    pageSize: number,
+    after?: UnreviewedSalesCursor
   ): Promise<GetUnreviewedSalesResponse> {
-    const [{ cards, totalCards }, usdToEur] = await Promise.all([
-      this.saleRepository.getUnreviewedSalesByCard(page, pageSize),
+    const [{ cards, totalCards, nextCursor }, usdToEur] = await Promise.all([
+      this.saleRepository.getUnreviewedSalesByCard(pageSize, after),
       getUsdToEurRate(),
     ]);
 
@@ -41,8 +61,8 @@ export class GetUnreviewedSalesUsecase {
         ),
       })),
       totalCards,
-      page,
       pageSize,
+      nextCursor: nextCursor ? encodeCursor(nextCursor) : null,
     };
   }
 
