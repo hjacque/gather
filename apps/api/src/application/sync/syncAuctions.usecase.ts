@@ -12,6 +12,7 @@ import { EbayItemPageSource } from "./sources/ebayItemPage.source";
 import { parseItemPageSellerFeedback } from "./sources/listingItemPage";
 import { parseAuctionItemPage } from "./sources/auctionItemPage";
 import { parseListingTitle } from "./sources/listingTitleParser";
+import { RateLimitError } from "./sources/rateLimit";
 
 export type AuctionSyncCounters = {
   scraped: number;
@@ -185,6 +186,7 @@ export class SyncAuctionsUsecase {
       feedback = parseItemPageSellerFeedback(raw.sellerInfoText);
       itemState = parseAuctionItemPage(raw);
     } catch (error) {
+      if (error instanceof RateLimitError) throw error;
       console.log(`[SyncAuctions] item-page read failed for ${itemId}`, error);
     }
     await new Promise((resolve) =>

@@ -152,9 +152,7 @@ async function main() {
         const endDate = Date.now() - back * DAY_MS;
         const startDate = Date.now() - Math.min(back + args.chunkDays, totalDays) * DAY_MS;
 
-        const sales = await source.fetchWindow(card, page, startDate, endDate, {
-          throwOnRateLimit: true,
-        });
+        const sales = await source.fetchWindow(card, page, startDate, endDate);
         totals.scraped += sales.length;
 
         for (const sale of sales) {

@@ -7,6 +7,7 @@ import {
   extractAuctionRow,
 } from "./auctionRowExtractor";
 import { AUCTION_SELLER_ALLOWLIST } from "./auctionSellers";
+import { RateLimitError, isRateLimitedBody } from "./rateLimit";
 
 const MAX_PAGES = 5;
 
@@ -89,12 +90,9 @@ export class EbayAuctionsSource {
       console.log("[EbayAuctions] Cloudflare check detected");
       await this.sleep(5500);
     }
-    if (
-      body.includes("Pardon Our Interruption") ||
-      body.includes("rate limited")
-    ) {
-      console.log("[EbayAuctions] interruption / rate limit detected");
-      await this.sleep(30000);
+    if (isRateLimitedBody(body)) {
+      console.error("[EbayAuctions] rate limit detected — stopping");
+      throw new RateLimitError("eBay", page.url());
     }
   }
 

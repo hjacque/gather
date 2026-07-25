@@ -1,5 +1,6 @@
 import type { Page } from "rebrowser-puppeteer-core";
 import { RawItemPage } from "./listingItemPage";
+import { RateLimitError, isRateLimitedBody } from "./rateLimit";
 
 export class EbayItemPageSource {
   async fetchState(itemId: string, page: Page): Promise<RawItemPage> {
@@ -39,8 +40,9 @@ export class EbayItemPageSource {
     if (body.includes("Checking your browser") || body.includes("Verifying you are human")) {
       await this.sleep(5500);
     }
-    if (body.includes("Pardon Our Interruption") || body.includes("rate limited")) {
-      await this.sleep(30000);
+    if (isRateLimitedBody(body)) {
+      console.error("[EbayItemPage] rate limit detected — stopping");
+      throw new RateLimitError("eBay", page.url());
     }
   }
 }

@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import { CustomError } from "../../../errors/customError";
+import { RateLimitError } from "../../../application/sync/sources/rateLimit";
 
 export const errorHandler = (
   err: Error,
@@ -15,6 +16,11 @@ export const errorHandler = (
         context: { path: issue.path },
       })),
     });
+  }
+
+  if (err instanceof RateLimitError) {
+    console.error(err.message);
+    return res.status(429).send({ errors: [{ message: err.message }] });
   }
 
   if (err instanceof CustomError) {

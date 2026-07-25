@@ -10,6 +10,7 @@ import {
   TerapeakAuthError,
   TERAPEAK_REAUTH_CMD,
 } from "./sources/terapeakSales.source";
+import { RateLimitError } from "./sources/rateLimit";
 import { parseListingTitle } from "./sources/listingTitleParser";
 import { classifyReverification } from "./sources/reverificationClassifier";
 import { MarketSalePriceSnapshotService } from "../sale/marketSalePriceSnapshot";
@@ -132,6 +133,13 @@ export class SyncSalesUsecase {
           await this.sleep(4000 + Math.random() * 4000);
         }
       } catch (error) {
+        if (error instanceof RateLimitError) {
+          console.error(
+            `[SyncSales] aborted after ${ingestOrder.length}/${applicable.length} Cards — ` +
+              `${error.message}. Wait for the limit to reset, then re-run.`
+          );
+          throw error;
+        }
         if (!(error instanceof TerapeakAuthError)) throw error;
         console.error(
           `[SyncSales] Terapeak session expired after ${ingestOrder.length}/${applicable.length} Cards — ` +

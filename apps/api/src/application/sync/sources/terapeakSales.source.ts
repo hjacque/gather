@@ -6,6 +6,7 @@ import {
   TerapeakSale,
   extractTerapeakRow,
 } from "./terapeakRowExtractor";
+import { RateLimitError, isRateLimitedBody } from "./rateLimit";
 
 const PAGE_SIZE = 50;
 const MAX_OFFSET = 500;
@@ -21,15 +22,12 @@ export class TerapeakAuthError extends Error {
   }
 }
 
-export class TerapeakRateLimitError extends Error {
+export class TerapeakRateLimitError extends RateLimitError {
   constructor(where = "") {
-    super(`Terapeak rate limited${where ? ` at ${where}` : ""}`);
+    super("Terapeak", where);
     this.name = "TerapeakRateLimitError";
   }
 }
-
-const RL_MAX_RETRIES = 5;
-const RL_BASE_MS = 60000;
 
 export class TerapeakSalesSource {
   appliesTo(card: CardEntity): boolean {
@@ -47,54 +45,39 @@ export class TerapeakSalesSource {
     card: CardEntity,
     page: Page,
     startDate: number,
-    endDate: number,
-    opts: { throwOnRateLimit?: boolean } = {}
+    endDate: number
   ): Promise<TerapeakSale[]> {
     const query = queryFromLink(card.ebayLink);
     if (!query) return [];
 
     const byItem = new Map<string, TerapeakSale>();
     for (let offset = 0; offset < MAX_OFFSET; offset += PAGE_SIZE) {
-      let blocked = false;
       let navFailed = false;
-      for (let attempt = 0; ; attempt++) {
-        try {
-          await page.goto(this.researchUrl(query, offset, startDate, endDate), {
-            waitUntil: "networkidle2",
-            timeout: 60000,
-          });
-        } catch (error) {
-          console.log(`[Terapeak] navigation failed for ${card.name} @${offset}`, error);
-          navFailed = true;
-          break;
-        }
-
-        await this.sleep(2500);
-        await this.handleCloudflare(page);
-
-        if (await this.isLoggedOut(page)) {
-          console.warn(`[Terapeak] not authenticated at ${card.name}`);
-          throw new TerapeakAuthError();
-        }
-
-        if (await this.isRateLimited(page)) {
-          if (attempt >= RL_MAX_RETRIES) {
-            if (opts.throwOnRateLimit) throw new TerapeakRateLimitError(card.name);
-            console.warn(`[Terapeak] rate limit persisted at ${card.name} @${offset} — giving up page`);
-            blocked = true;
-            break;
-          }
-          const backoff = RL_BASE_MS * 2 ** attempt;
-          console.warn(
-            `[Terapeak] rate limited at ${card.name} @${offset} — backing off ` +
-              `${Math.round(backoff / 1000)}s (attempt ${attempt + 1}/${RL_MAX_RETRIES})`
-          );
-          await this.sleep(backoff);
-          continue;
-        }
-        break;
+      try {
+        await page.goto(this.researchUrl(query, offset, startDate, endDate), {
+          waitUntil: "networkidle2",
+          timeout: 60000,
+        });
+      } catch (error) {
+        console.log(`[Terapeak] navigation failed for ${card.name} @${offset}`, error);
+        navFailed = true;
       }
-      if (navFailed || blocked) break;
+      if (navFailed) break;
+
+      await this.sleep(2500);
+      await this.handleCloudflare(page);
+
+      if (await this.isLoggedOut(page)) {
+        console.warn(`[Terapeak] not authenticated at ${card.name}`);
+        throw new TerapeakAuthError();
+      }
+
+      if (await this.isRateLimited(page)) {
+        console.error(
+          `[Terapeak] rate limited at ${card.name} @${offset} — stopping`
+        );
+        throw new TerapeakRateLimitError(`${card.name} @${offset}`);
+      }
 
       const rows = await this.readRows(page);
       if (rows.length === 0) break;
@@ -117,6 +100,10 @@ export class TerapeakSalesSource {
     });
     await this.sleep(3500);
     if (await this.isLoggedOut(page)) throw new TerapeakAuthError();
+    if (await this.isRateLimited(page)) {
+      console.error("[Terapeak] rate limited on session setup — stopping");
+      throw new TerapeakRateLimitError("session setup");
+    }
 
     const set = await page.evaluate(() => {
       const sel = [...document.querySelectorAll("select")].find((s) =>
@@ -217,7 +204,6 @@ export class TerapeakSalesSource {
   }
 
   private async isRateLimited(page: Page): Promise<boolean> {
-    const body = await this.readBodyText(page);
-    return body.includes("Pardon Our Interruption") || body.includes("rate limited");
+    return isRateLimitedBody(await this.readBodyText(page));
   }
 }

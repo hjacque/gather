@@ -11,6 +11,7 @@ import { EbayListingsSource } from "./sources/ebayListings.source";
 import { EbayItemPageSource } from "./sources/ebayItemPage.source";
 import { parseItemPageSellerFeedback } from "./sources/listingItemPage";
 import { parseListingTitle } from "./sources/listingTitleParser";
+import { RateLimitError } from "./sources/rateLimit";
 
 export type ListingSyncCounters = {
   scraped: number;
@@ -173,6 +174,7 @@ export class SyncListingsUsecase {
       const raw = await this.ebayItemPageSource.fetchState(itemId, page);
       feedbackCount = parseItemPageSellerFeedback(raw.sellerInfoText);
     } catch (error) {
+      if (error instanceof RateLimitError) throw error;
       console.log(`[SyncListings] seller check failed for ${itemId}`, error);
     }
     await new Promise((resolve) =>

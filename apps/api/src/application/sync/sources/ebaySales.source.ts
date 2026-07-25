@@ -9,6 +9,7 @@ import {
 } from "./saleRowExtractor";
 import { parseSellerSlug, qualifiesAsTrusted } from "./trustedSeller";
 import { ItemPageState } from "./reverificationClassifier";
+import { RateLimitError, isRateLimitedBody } from "./rateLimit";
 
 export type SellerQuality = {
   seller: string | null;
@@ -160,9 +161,9 @@ export class EbaySalesSource {
       console.log("[EbaySales] Cloudflare check detected");
       await this.sleep(5500);
     }
-    if (body.includes("Pardon Our Interruption") || body.includes("rate limited")) {
-      console.log("[EbaySales] interruption / rate limit detected");
-      await this.sleep(30000);
+    if (isRateLimitedBody(body)) {
+      console.error("[EbaySales] rate limit detected — stopping");
+      throw new RateLimitError("eBay", page.url());
     }
   }
 

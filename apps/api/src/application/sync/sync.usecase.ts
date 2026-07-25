@@ -9,6 +9,7 @@ import { getUsdToEurRate } from "./helper";
 import { syncCard } from "./syncCard";
 import { SyncSalesUsecase, SaleSyncCounters } from "./syncSales.usecase";
 import { TerapeakAuthError } from "./sources/terapeakSales.source";
+import { RateLimitError } from "./sources/rateLimit";
 import {
   SyncListingsUsecase,
   ListingSyncCounters,
@@ -93,44 +94,54 @@ export class SyncUsecase {
       }
     }
 
-    while (true) {
-      const take = 4;
-      const cards = await this.cardRepository.getCards(filter, {
-        take,
-        page: paginationPage,
-      });
-      if (!cards?.length) {
-        console.log("No cards found");
-        paginationPage = 1;
-        break;
-      }
-      paginationPage++;
+    try {
+      while (true) {
+        const take = 4;
+        const cards = await this.cardRepository.getCards(filter, {
+          take,
+          page: paginationPage,
+        });
+        if (!cards?.length) {
+          console.log("No cards found");
+          paginationPage = 1;
+          break;
+        }
+        paginationPage++;
 
-      for (const card of cards) {
-        await syncCard(
-          card,
-          today,
-          page,
-          usdToEur,
-          this.priceSources,
-          this.listingRepository,
-        );
-        if (!skipSales) {
-          await this.syncSalesUsecase.syncCardOnPage(card, page, saleCounters);
-          await this.syncListingsUsecase.syncCardOnPage(
+        for (const card of cards) {
+          await syncCard(
             card,
+            today,
             page,
-            listingCounters,
+            usdToEur,
+            this.priceSources,
+            this.listingRepository,
+          );
+          if (!skipSales) {
+            await this.syncSalesUsecase.syncCardOnPage(card, page, saleCounters);
+            await this.syncListingsUsecase.syncCardOnPage(
+              card,
+              page,
+              listingCounters,
+            );
+          }
+          await new Promise((resolve) =>
+            setTimeout(resolve, 4000 + Math.random() * 4000),
           );
         }
-        await new Promise((resolve) =>
-          setTimeout(resolve, 4000 + Math.random() * 4000),
+      }
+    } catch (error) {
+      if (error instanceof RateLimitError) {
+        console.error(
+          `[Sync] aborted — ${error.message}. Wait for the limit to reset, then re-run.`,
+          { sales: saleCounters, listings: listingCounters },
         );
       }
+      throw error;
+    } finally {
+      await page.close();
+      await browser.close();
     }
-
-    await page.close();
-    await browser.close();
 
     console.log("end", { sales: saleCounters, listings: listingCounters });
   }

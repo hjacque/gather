@@ -5,6 +5,7 @@ import {
   ListingCandidate,
   extractListingRow,
 } from "./listingRowExtractor";
+import { RateLimitError, isRateLimitedBody } from "./rateLimit";
 
 const MAX_PAGES = 5;
 
@@ -74,12 +75,9 @@ export class EbayListingsSource {
       console.log("[EbayListings] Cloudflare check detected");
       await this.sleep(5500);
     }
-    if (
-      body.includes("Pardon Our Interruption") ||
-      body.includes("rate limited")
-    ) {
-      console.log("[EbayListings] interruption / rate limit detected");
-      await this.sleep(30000);
+    if (isRateLimitedBody(body)) {
+      console.error("[EbayListings] rate limit detected — stopping");
+      throw new RateLimitError("eBay", page.url());
     }
   }
 
