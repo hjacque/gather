@@ -8,6 +8,7 @@ import { PriceSourcePort } from "./sources/priceSource.port";
 import { getEurToUsdRate } from "./helper";
 import { syncCard } from "./syncCard";
 import { SyncSalesUsecase, SaleSyncCounters } from "./syncSales.usecase";
+import { TerapeakAuthError } from "./sources/terapeakSales.source";
 import {
   SyncListingsUsecase,
   ListingSyncCounters,
@@ -85,6 +86,21 @@ export class SyncUsecase {
       width: Math.floor(1024 + Math.random() * 100),
       height: Math.floor(768 + Math.random() * 100),
     });
+
+    // Set Terapeak to All sites once for the whole session so the folded-in Sale
+    // Sync ingests non-US marketplaces too. A lapsed session must not crash the
+    // price/listing Sync — syncCardOnPage already no-ops each Card's sales on
+    // TerapeakAuthError, so just log and carry on US-less here.
+    if (!skipSales) {
+      try {
+        await this.syncSalesUsecase.prepareTerapeakSession(page);
+      } catch (error) {
+        if (!(error instanceof TerapeakAuthError)) throw error;
+        console.warn(
+          "[Sync] Terapeak session expired — sales will be skipped this run",
+        );
+      }
+    }
 
     while (true) {
       const take = 4;

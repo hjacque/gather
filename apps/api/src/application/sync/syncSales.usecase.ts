@@ -102,6 +102,7 @@ export class SyncSalesUsecase {
 
     const { browser, page } = await this.openBrowser();
     try {
+      await this.prepareTerapeakSession(page);
       await this.processCard(card, page, counters);
     } catch (error) {
       if (!(error instanceof TerapeakAuthError)) throw error;
@@ -144,6 +145,7 @@ export class SyncSalesUsecase {
       const ingestedByCard = new Map<string, IngestedSale[]>();
       const ingestOrder: CardEntity[] = [];
       try {
+        await this.prepareTerapeakSession(page);
         for (const card of applicable) {
           ingestedByCard.set(
             card.id,
@@ -455,6 +457,18 @@ export class SyncSalesUsecase {
 
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  // Set Terapeak's Listing Site to "All sites" once per browser session so the
+  // recurring ingest counts non-US marketplaces (.fr/.de/.co.uk/…) too, matching
+  // the historical backfill; Terapeak normalizes every price to USD. Must run
+  // before the first fetch (it is session state, not a URL param — see
+  // TerapeakSalesSource.selectAllSites). Degrades to US-only if the selector
+  // isn't found; a lapsed session surfaces as TerapeakAuthError for the caller to
+  // handle like any other Terapeak auth failure.
+  async prepareTerapeakSession(page: Page): Promise<void> {
+    const all = await this.terapeakSource.selectAllSites(page);
+    if (!all) console.warn("[SyncSales] proceeding US-only (All sites not set)");
   }
 
   private async openBrowser() {
