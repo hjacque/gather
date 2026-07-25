@@ -1,6 +1,6 @@
 # Gather
 
-A price aggregation and performance tracking platform for collectible trading cards and LEGO products. It fetches prices from multiple external marketplaces (Price Sources) and surfaces Derived Prices and Performance metrics to users via a dashboard.
+A price and opportunity tracker for graded Pokémon cards. It scrapes CardMarket asks, eBay sold history, live eBay listings and auctions, and PSA population reports, then surfaces a per-grade Market Sale Price and a ranked list of buying opportunities through a dashboard.
 
 ## Monorepo layout
 
@@ -9,12 +9,12 @@ apps/
   api/   — Node.js + Express HTTP server (price sync, data queries)
   web/   — Next.js dashboard (server actions call the API)
 packages/
-  types/        — canonical domain types (ProductEntity, Franchise, PriceType, …)
+  types/        — canonical domain types (CardEntity, SaleEntity, Region, PriceType, …)
   api-contract/ — typed request/response shapes shared between api and web
 ```
 
 `packages/types` is the single source of truth for domain types.  
-`packages/api-contract` re-exports from types and adds the HTTP contract shapes (`GetProductsResponse`, `GetProductResponse`, etc.) — the web app imports from here, never from types directly.
+`packages/api-contract` re-exports from types and adds the HTTP contract shapes (`GetCardsResponse`, `GetCardResponse`, `GetOpportunitiesResponse`, etc.) — the web app imports from here, never from types directly.
 
 ## API architecture
 
@@ -33,17 +33,33 @@ Repositories are injected into use cases via port interfaces — concrete Prisma
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/products` | List products with today's Derived Prices and Performance |
-| GET | `/products/:id` | Single product with full price history |
-| GET | `/product-of-the-day` | Top-performing product for a given day |
-| GET | `/sync` | Trigger a full Sync (filter by franchise/type/set/tags) |
-| GET | `/sync/product/:id/cardmarket` | Trigger a CardMarket Sync for a single Product |
-| GET | `/sync/product/:id/psa` | Trigger a PSA Pop Report Sync for a single Product |
-| GET | `/sync/set/:set` | Trigger a Sync for an entire Product Set |
-| GET | `/sales/unreviewed` | List unreviewed Sales (grouped by Card, paginated) |
-| GET | `/sales/unreviewed/count` | Count of unreviewed Sales (for sidebar badge) |
-| PATCH | `/sales/:id` | Review a Sale (`action: 'approve' \| 'invalidate'`, optional `psaGrade`/`price`) |
+| GET | `/cards` | List Cards (filter by `set`, `tags`, `region`) |
+| GET | `/cards/:cardid` | Single Card with prices, sales, listings, pop report |
+| PATCH | `/cards/:cardid` | Set or clear a Card's Note (`{ note }`, max 1000 chars) |
 | GET | `/opportunities` | Top buying opportunities (scored, ranked, one grade per Card) |
+| GET | `/sync` | Trigger a full Sync (filter by `set`/`tags`) |
+| GET | `/sync/listings` | Same as `/sync` but skips the Sale Sync |
+| GET | `/sync/set/:set` | Trigger a Sync for an entire Card Set |
+| GET | `/sync/card/:cardid/cardmarket` | CardMarket Sync for a single Card |
+| GET | `/sync/card/:cardid/psa` | PSA Sync for a single Card |
+| GET | `/sync/psa` | PSA Pop Report Sync across all Cards |
+| GET | `/sync/sales`, `/sync/sales/card/:cardid` | Sale Sync (batch / single Card) |
+| GET | `/sync/listings/card/:cardid` | Listings Sync for a single Card |
+| GET | `/sync/listings/:listingid` | Re-scrape one Listing's item page |
+| GET | `/sync/auctions`, `/sync/auctions/card/:cardid` | Auction Sync (batch / single Card) |
+| GET | `/auctions` | Live auctions (filter by `grade`, sort by `ending`/`bid`/`bids`) |
+| GET | `/auctions/:auctionid/refresh-bid` | Re-read one auction's current bid |
+| PATCH | `/auctions/:auctionid` | `invalidate` \| `invalidateByItem` \| `editGrade` |
+| GET | `/sales/unreviewed` | Unreviewed Sales grouped by Card (keyset-paginated) |
+| GET | `/sales/unreviewed/count` | Count of unreviewed Sales (for sidebar badge) |
+| PATCH | `/sales/:saleid` | Review a Sale (`action: 'approve' \| 'invalidate'`, optional `psaGrade`/`price`) |
+| PATCH | `/listings/:listingid` | `invalidate` \| `invalidateByItem` |
+| PUT | `/collection/:cardid` | Upsert a Collection Entry (`{ isOwned, isWanted }`) |
+| DELETE | `/collection/:cardid` | Remove a Collection Entry |
+
+The API binds to `127.0.0.1` unless `API_HOST` says otherwise, and allows one
+CORS origin (`WEB_ORIGIN`, default `http://localhost:42001`). There is no
+authentication — every route above is open to whoever can reach the port.
 
 ## Tech stack
 
@@ -55,92 +71,98 @@ Repositories are injected into use cases via port interfaces — concrete Prisma
 
 ## Language
 
-**Product**:
-A tradeable item tracked by the platform — a single card, sealed box, booster bundle, elite trainer box, or LEGO minifigure.
-_Avoid_: Item, card, article
+**Card**:
+A single graded-tradeable Pokémon card tracked by the platform, identified by
+`(name, cardSetId, releaseDate, number)`. Carries the scrape entry points
+(`cardMarketLink`, `psaLink`, `ebayLink`, `ebayFrLink`), a `regions` list, free
+`tags`, and an optional Note.
+_Avoid_: Product, item, article
 
-**Product Set**:
-A named release grouping Products under a shared franchise and release date (e.g. "Scarlet & Violet Base Set").
-_Avoid_: Set, expansion, collection
-
-**Franchise**:
-The trading card or toy brand a Product belongs to (MTG, Pokémon, One Piece, Riftbound, LEGO).
-_Avoid_: Game, brand, category
+**Card Set**:
+A named release grouping Cards under a shared release date, keyed by a unique
+`code` (e.g. `M-P` → "M-P Promotional"). A Card falls back to its Set's
+`releaseDate` when it has none of its own.
+_Avoid_: Product Set, expansion, collection
 
 **Price Source**:
-An external marketplace from which a Raw Price is scraped for a given Product (e.g. CardMarket, CardKingdom, TCGPlayer, Abugames, BrickLink).
+An external site a Sync scrapes. Today: CardMarket (graded asks), eBay (sold
+history via Terapeak and the completed-listings search, plus live listings and
+auctions), and PSA (pop reports).
 _Avoid_: Marketplace, vendor, site, scraper
 
-**Raw Price**:
-A price value obtained directly from a single Price Source, expressed in EUR after conversion where needed.
-_Avoid_: Scraped price, source price
+**Listing**:
+An active marketplace ask — buyable now — for a Card at a PSA Grade, on eBay or
+CardMarket. Each Listings Sync fully replaces a Card's rows, so vanished asks
+prune themselves; a user-flagged row keeps its `invalidatedAt` across the
+replacement by `itemId`. eBay rows carry a verified-EU `location`.
+_Avoid_: Ask, offer, active sale
 
-**Derived Price**:
-A price computed from one or more Raw Prices — Market Price, Buylist Price, Ratio, or Per Booster.
-_Avoid_: Calculated price, computed price, aggregated price
+**Auction**:
+An ongoing EU-located eBay auction for a Card at a PSA Grade, with a
+`currentBid`, `bidCount`, and an absolute `endTime`. Deliberately a separate
+table from Listing (ADR 0010) so a moving bid can never feed a price.
+_Avoid_: Bid, live listing
 
-**Market Price**:
-The minimum selling price across all applicable Price Sources for a Product on a given day.
-_Avoid_: Spot price, current price, listing price
-
-**Buylist Price**:
-The maximum purchase offer across all buylist Price Sources for a Product on a given day.
-_Avoid_: Buy price, offer price, trade-in price
-
-**Ratio**:
-The percentage spread between Market Price and Buylist Price (or BrickLink Average for minifigures), indicating seller profit margin.
-_Avoid_: Spread, margin, markup
-
-**Performance**:
-The percentage change in Market Price or Buylist Price over a fixed period (daily, weekly, monthly, yearly).
-_Avoid_: Delta, change, trend, gain/loss
+**Collection Entry**:
+The user's own relationship to a Card — `isOwned` and/or `isWanted`. At most one
+per Card.
+_Avoid_: Wishlist, inventory
 
 **Sync**:
-The process of fetching data from external sources for one or more Products and persisting the results. Comes in two targeted forms at the single-Product level: a **CardMarket Sync** (fetches Raw Prices from the applicable CardMarket Price Source only) and a **PSA Sync** (refreshes the PSA Pop Report only).
+Fetching from external sources for one or more Cards and persisting the results.
+Distinct forms: a **CardMarket Sync** (graded asks → Listings), a **Sale Sync**
+(eBay sold history → Sales), a **Listings Sync**, an **Auction Sync**, and a
+**PSA Sync** (pop report only).
 _Avoid_: Scrape, update, refresh, import
-
-**Grade Spread**:
-A dimensionless ratio between the Market Sale Prices of two adjacent PSA Grades for the same Card on a given date (e.g. `marketSalePrice(10) / marketSalePrice(9)`). Stored as its own entity (not a Raw Price — it carries no currency). Computed in the Fair Value Sync from already-stored eBay sold history; absent when either grade has no usable Market Sale Price. Used as an input signal (`gradeSpreadSignal`) in the Opportunity Score to validate cross-grade coherence of Fair Value Ranges.
-_Avoid_: grade premium, grade ratio, price spread
-
-**PSA Grade Price**:
-The lowest CardMarket listing price for a Product at a specific PSA Grade, scraped by parsing the description field of every listing on the Product's CardMarket page (all conditions, no filter). Stored as a Raw Price with type `cardmarketPsa1`…`cardmarketPsa10`. Only tracked for Products that have a `psaLink`.
-_Avoid_: Graded price, PSA market price, grade listing price
 
 ## Price Sources
 
-| Source | Type | Franchises | Notes |
+| Source | Class | Writes | Notes |
 |---|---|---|---|
-| CardMarket | Sell listings | MTG, Pokémon, One Piece, Riftbound | Lowest listing → Market Price |
-| CardMarket Graded | Sell listings | Pokémon | Lowest listing per PSA Grade → PSA Grade Price; only for products with `psaLink` |
-| CardKingdom | Buylist | MTG | Contributes to Buylist Price |
-| ABUGames | Buylist | MTG | Contributes to Buylist Price |
-| TCGPlayer | Sell listings | MTG | Raw Price only, stored as `tcgp` |
-| BrickLink | Sell listings | LEGO | Raw Price for minifigures |
-| BrickLink Average | Market average | LEGO | Used instead of Buylist for minifigure Ratio |
-| FullSet | Sell listings | MTG | Full-set bundle price |
+| CardMarket Graded | Live asks | `Listing` (`platform: cardmarket`) | Parses the description of every article on the Card's CardMarket page to read a PSA Grade; applies to any Card with a `cardMarketLink` |
+| Terapeak | Sold history | `Sale` (`source: terapeak`) | eBay Seller Hub research — the realized transaction price, Best Offers included. Authoritative but lags ~3–4 days, and needs a signed-in session |
+| eBay completed search | Sold history | `Sale` (`source: ebay_search`) | Real-time, fills the Terapeak lag. Shows Best Offers at the *asking* price, hence the `isBestOffer` flag |
+| eBay active listings | Live asks | `Listing` (`platform: ebay`) | EU-located only; item pages re-scraped for seller and location |
+| eBay auctions | Live bids | `Auction` | EU-located only; never feeds a price (ADR 0010) |
+| PSA | Population | `PsaPopReport` | One flat row per Card, scraped from `psaLink` |
 
-## Derived Price computation
+The only rows ever written to `Price` are the daily **Market Sale Price**
+snapshots, typed `marketSalePsa1`…`marketSalePsa10`. There is no separate
+buylist, ratio, or per-booster derivation — those belonged to an earlier
+multi-franchise version of this codebase and no longer exist.
 
-All derivation happens in `priceAggregator.ts` after Raw Prices are collected:
+## Market Sale Price computation
 
-- **Market Price** — `min(cardmarket)` (currently single source; architecture supports multiple)
-- **Buylist Price** — `max(cardkingdom, abugames)`; whichever is higher wins
-- **Ratio** — non-minifigures: `round((market / buylist) * 100) - 100`; minifigures: `round((market / bricklinkAverage) * 100) - 100`
-- **Per Booster** — `market / boosterCount`; only for sealed products with a known booster count
+`marketPrice.ts` owns the whole rule. Callers hand it raw Sales plus today's
+USD→EUR rate and never pre-filter or pre-convert:
+
+- A Sale is dropped if `status === 'invalid'`, if its currency is neither EUR
+  nor USD, or if it is a Best Offer whose price is not yet realized
+  (`isBestOffer && source !== 'terapeak'` — ADR 0011).
+- Surviving Sales are grouped by PSA Grade and reduced to a **recency-weighted
+  median**, each weighted by `0.5 ^ (ageDays / 30)`.
+- Each grade also reports `sampleSize`, `newestSoldAt`, and `salesPerDay` over
+  the span from its oldest Sale to now.
+- Grades with no usable Sales simply have no entry — never a fabricated one.
+
+`MarketSalePriceSnapshotService.recompute` replays that computation for each UTC
+day in a range and writes the results through one chunked transaction. It runs
+after a Sale Sync (today only) and after any Sale review or invalidation (from
+the Sale's `soldAt` forward, since editing an old Sale moves every snapshot
+after it).
 
 ## Sync schedule (UTC, via node-cron)
 
-| Product type | Frequency | Times |
+| Job | Frequency | Times |
 |---|---|---|
-| Singles | Every 2 hours | :00 on even hours (0, 2, 4, … 22) |
-| Sealed products | Every 2 hours | :30 on odd hours (1:30, 3:30, … 23:30) |
-| Minifigures | Every 15 minutes | (defined but not scheduled by default) |
+| Full Sync (CardMarket asks, Sales, Listings) | Every 2 hours | :00 on even hours (0, 2, … 22) |
+| Auction Sync | Every 2 hours | :15 on even hours (0:15, 2:15, … 22:15) |
+| PSA Pop Report Sync | Daily | 03:00 |
 
 ## PSA Pop Report
 
 **PSA Pop Report**:
-A snapshot of the number of cards graded at each PSA grade (1–10) for a given Product, sourced by scraping the Product's `psaLink` (PSA pop report URL). Stored as one flat row per Product (`grade1`…`grade10` integer counts + `syncedAt`). Synced independently from price Syncs on a daily schedule via `/sync/psa`.
+A snapshot of the number of cards graded at each PSA grade (1–10) for a given Card, sourced by scraping the Card's `psaLink` (PSA pop report URL). Stored as one flat row per Card (`grade1`…`grade10` integer counts + `syncedAt`). Synced independently from price Syncs on a daily schedule via `/sync/psa`.
 _Avoid_: PSA data, grading data, certification count
 
 **PSA Grade**:
@@ -148,19 +170,19 @@ A numeric quality rating (1–10) assigned by PSA to a graded card. 10 is gem mi
 _Avoid_: PSA score, condition score
 
 **PSA Total**:
-The sum of all PSA Grade counts (grades 1–10) for a Product — surfaced as a single column in the table. The full per-grade breakdown is only shown in the side panel.
+The sum of all PSA Grade counts (grades 1–10) for a Card — surfaced as a single column in the table. The full per-grade breakdown is only shown in the side panel.
 _Avoid_: Total pop, total graded
 
-**Product Number**:
-An optional string identifier for a Product within its Product Set — e.g. `"SWSH001"` or `"001"` for exclusive promos. Used to disambiguate PSA pop report searches and displayed in the exclusive-promos table and side panel.
+**Card Number**:
+An optional string identifier for a Card within its Card Set — e.g. `"SWSH001"` or `"001"` for exclusive promos. Used to disambiguate PSA pop report searches and displayed in the exclusive-promos table and side panel.
 _Avoid_: Card number, set number, collector number
 
 **Note**:
-A free-text annotation attached to a single Product by the user. At most one Note per Product (stored as a nullable field on Product). Plain text, max 1000 characters. Displayed read-only at the bottom of the Product side panel; editable via a pen icon.
+A free-text annotation attached to a single Card by the user. At most one Note per Card (stored as a nullable field on Card). Plain text, max 1000 characters. Displayed read-only at the bottom of the Card side panel; editable via a pen icon.
 _Avoid_: Comment, annotation, description
 
 **Sale**:
-A single recorded transaction for a Card at a specific PSA Grade on a secondary marketplace. Carries a `platform` field (enum: `ebay`; others may be added later), the PSA grade (1–10), the price in its **original currency** plus a `currency` code, a `status` (`pending` → `confirmed` | `cancelled`), and an `isBestOffer` flag. Prices are stored in original currency (never EUR-normalized at write time, because Sales are immutable history) and converted to EUR at read time using today's rate; only USD and EUR are supported initially, and Sales in other currencies are stored but excluded from EUR views until conversion exists. Since the Sale source is Terapeak (ADR 0007), the stored price is the true accepted price — accepted Best Offers included — so Terapeak-sourced Sales are written with `isBestOffer = false`; the field remains on the model for any future source whose price is an unresolved asking price. Carries a nullable `reviewedAt` timestamp (see Sale Review). Also stores the raw listing title (for debugging and re-classification), the `soldAt` date (drives the Base Range window and re-verification checkpoints), and `createdAt` (when first scraped). Identified globally by `(platform, itemId)` — the eBay item ID is globally unique, so a sale attaches to exactly one Card — and the item URL reconstructed from the item ID is revisited during re-verification.
+A single recorded transaction for a Card at a specific PSA Grade on a secondary marketplace. Carries a `platform` field (enum: `ebay`; others may be added later), the PSA grade (1–10), the price in its **original currency** plus a `currency` code, a `status` (`pending` → `confirmed` | `invalid`), a `source` (`terapeak` | `ebay_search`), and an `isBestOffer` flag. Prices are stored in original currency (never EUR-normalized at write time, because Sales are immutable history) and converted to EUR at read time using today's rate; only USD and EUR are supported, and Sales in other currencies are stored but excluded from EUR views. `isBestOffer` records that the sale was negotiated and is monotonic — once raised by an eBay-search sighting it is never cleared, while `source` tells you whether the price on the row is the realized one (ADR 0011). Carries a nullable `reviewedAt` timestamp (see Sale Review). Also stores the raw listing title (for debugging and re-classification), the `soldAt` date (drives the Base Range window and re-verification checkpoints), and `createdAt` (when first scraped). Identified globally by `(platform, itemId)` — the eBay item ID is globally unique, so a sale attaches to exactly one Card — and the item URL reconstructed from the item ID is revisited during re-verification.
 _Avoid_: eBay sale, sold listing, transaction
 
 **Sold Comp**:
@@ -176,15 +198,15 @@ An eBay seller store whose listings are treated as unconditionally valid at scra
 _Avoid_: verified seller, whitelisted seller, trusted store
 
 **Sale Status**:
-The lifecycle state of a Sale: `pending`, `confirmed`, or `cancelled`. For ordinary Sales, re-verification navigates (via Puppeteer) to the Sale's item URL at two checkpoints — 7 days and 30 days after the Sale was first scraped — and reads the rendered page. A 404 (listing removed) or a live active listing (item relisted) both mean `cancelled`. An ended/sold item page means the sale still looks valid. Crucially, a still-valid sale is **not** confirmed at the 7-day checkpoint — it stays `pending`; the 7-day check exists only to catch early cancellations. A Sale becomes `confirmed` only if it still looks valid at the 30-day checkpoint, because cancellations can occur throughout the 30-day window. Once a Sale reaches a terminal state (`confirmed` or `cancelled`) it is no longer re-verified. A separate `verificationStage` enum (`unverified` → `checked_7d` → `complete`) tracks which checkpoints have run so the daily job re-renders each Sale at most twice, never daily. **Exception — Trusted Sellers:** Sales from Trusted Seller stores skip the entire re-verification pipeline and are born `confirmed` / `verificationStage = complete` (see ADR 0006).
+The lifecycle state of a Sale: `pending`, `confirmed`, or `invalid`. For ordinary Sales, re-verification navigates (via Puppeteer) to the Sale's item URL at two checkpoints — 7 days and 30 days after the Sale was first scraped — and reads the rendered page. A 404 (listing removed) or a live active listing (item relisted) both mean `invalid`. An ended/sold item page means the sale still looks valid. Crucially, a still-valid sale is **not** confirmed at the 7-day checkpoint — it stays `pending`; the 7-day check exists only to catch early cancellations. A Sale becomes `confirmed` only if it still looks valid at the 30-day checkpoint, because cancellations can occur throughout the 30-day window. Once a Sale reaches a terminal state (`confirmed` or `invalid`) it is no longer re-verified. A Sale that a human has reviewed is also never re-verified, whatever its status — otherwise a delisted item page would read as `not-found` at the next checkpoint and quietly overturn the approval. A separate `verificationStage` enum (`unverified` → `checked_7d` → `complete`) tracks which checkpoints have run so the daily job re-renders each Sale at most twice, never daily. **Exception — Trusted Sellers:** Sales from Trusted Seller stores skip the entire re-verification pipeline and are born `confirmed` / `verificationStage = complete` (see ADR 0006).
 _Avoid_: sale state, verification status
 
 **Sale Review**:
-The manual adjudication of a scraped Sale by the admin, recorded as a nullable `reviewedAt` timestamp on the Sale (null = unreviewed). Orthogonal to both Sale Status (the automated `pending → confirmed | cancelled` verification axis) and `verificationStage`: a Sale can be auto-`confirmed` yet unreviewed, or reviewed while still `pending`. Review serves two purposes: (a) **classification correctness** — confirm or correct that the Sale is the right Card at the right PSA Grade and is a genuine single-card sale (a bad listing is set to `invalid`), and (b) **Best-Offer price enrichment** — entering the true accepted price for a Best-Offer Sale, whose scraped price is only the listing price. Setting `status = invalid` (from this page or the chart's moderation control) implies reviewed, so it also stamps `reviewedAt`. A Best-Offer whose true price can't be determined is left unreviewed (it stays excluded from Market Sale Price). Skipped listings (rejected by the Listing Title Parser at scrape time) are never persisted and are out of scope for Review. **Trusted Seller Sales never enter the review queue** — they are persisted with `reviewedAt` already set and count toward Market Sale Price immediately (see Trusted Seller). The **review queue** (`/backoffice/sales-review`) is grouped by Card, ordered by oldest unreviewed Sale first, paginated by Card, and scoped to `reviewedAt IS NULL AND status NOT IN ('cancelled', 'invalid')` — i.e. only `pending`/`confirmed` Sales whose review can still affect Market Sale Price. Once a Sale is reviewed it is **frozen against re-scrape**: the Sale Sync upsert no-ops its scraped fields, though re-verification still applies to a reviewed-but-`pending` Sale. Corrections overwrite scraped fields in place with no audit trail (see ADR 0005).
+The manual adjudication of a scraped Sale by the admin, recorded as a nullable `reviewedAt` timestamp on the Sale (null = unreviewed). Orthogonal to both Sale Status (the automated `pending → confirmed | invalid` verification axis) and `verificationStage`: a Sale can be auto-`confirmed` yet unreviewed, or reviewed while still `pending`. Review serves two purposes: (a) **classification correctness** — confirm or correct that the Sale is the right Card at the right PSA Grade and is a genuine single-card sale (a bad listing is set to `invalid`), and (b) **price correction** — overriding a scraped price that is wrong. Setting `status = invalid` (from this page or the chart's moderation control) implies reviewed, so it also stamps `reviewedAt`. Best-Offer recovery is *not* a review task: an `ebay_search` best offer re-enters pricing automatically once Terapeak supplies the realized price (ADR 0011), and the queue shows the Best-Offer badge as display only. Skipped listings (rejected by the Listing Title Parser at scrape time) are never persisted and are out of scope for Review. **Trusted Seller Sales never enter the review queue** — they are persisted with `reviewedAt` already set and count toward Market Sale Price immediately (see Trusted Seller). The **review queue** (`/backoffice/sales-review`) is grouped by Card, scoped to `reviewedAt IS NULL AND status = 'pending'`, and **keyset-paginated** on `(MIN(soldAt), cardId)` so that reviewing a page — which removes those Cards from the set — cannot shift the window and skip the Cards behind it. Once a Sale is reviewed it is **frozen against re-scrape**: the Sale Sync upsert leaves `psaGrade` and `price` alone, including on the Terapeak-over-`ebay_search` upgrade path, which may still refresh the fields no human edits (title, `soldAt`, `currency`, `source`). Corrections overwrite scraped fields in place with no audit trail (see ADR 0005).
 _Avoid_: moderation, verification, approval
 
 **Market Sale Price**:
-The price a Card actually sells for today at a specific PSA Grade: a recency-weighted median of that grade's eBay Sales in EUR, each Sale weighted by exponential age decay (30-day half-life). A Sale counts only if `!isBestOffer || reviewedAt != null`: non-Best-Offer sales count immediately (a buy-it-now price is the real price), but a Best-Offer counts only once Sale Review has enriched it with the true accepted price. `cancelled`/`invalid` are always excluded. Distinct from **Market Price** (lowest live listing) — it reflects realized eBay transactions, not asking prices. Computed on read in `marketPrice.ts`, which owns the full eligibility rule — callers pass raw Sales plus today's USD→EUR rate, never pre-filtering or pre-converting; unconvertible currencies are excluded and no automatic outlier rejection is applied (manual `invalid` moderation handles bad listings). Grades with no usable Sales have none. The PSA 10 figure carries a 7-day Performance delta, comparing it against the same median recomputed as of a week earlier.
+The price a Card actually sells for today at a specific PSA Grade: a recency-weighted median of that grade's eBay Sales in EUR, each Sale weighted by exponential age decay (30-day half-life). A Sale counts unless it is `invalid`, unconvertible, or a Best Offer whose price is not yet realized (`isBestOffer && source !== 'terapeak'` — ADR 0011): a buy-it-now price is the real price immediately, a negotiated one counts once Terapeak supplies what it actually sold for. Distinct from **Market Price** (lowest live listing) — it reflects realized eBay transactions, not asking prices. Computed on read in `marketPrice.ts`, which owns the full eligibility rule — callers pass raw Sales plus today's USD→EUR rate, never pre-filtering or pre-converting; unconvertible currencies are excluded and no automatic outlier rejection is applied (manual `invalid` moderation handles bad listings). Grades with no usable Sales have none. The PSA 10 figure carries a 7-day Performance delta, comparing it against the same median recomputed as of a week earlier.
 _Avoid_: market price, sold price, average sale price
 
 **Listing Deal**:
@@ -197,34 +219,35 @@ _Avoid_: sale rate, volume, liquidity
 
 ## Relationships
 
-- A **Product** belongs to exactly one **Product Set**
-- A **Product** has at most one **Note** (nullable)
-- A **Product** has zero or more **Raw Prices**, one per **Price Source** per day
-- **Derived Prices** are computed from a Product's **Raw Prices** for a given day
-- **Performance** is computed from a Product's **Market Price** or **Buylist Price** across two dates
-- A **Sync** produces **Raw Prices** for each applicable **Price Source**, then derives **Derived Prices** and **Performance**
-- A **Product** has at most one **PSA Pop Report** (latest snapshot); a PSA Sync updates it via `/sync/psa`
+- A **Card** belongs to exactly one **Card Set**
+- A **Card** has at most one **Note** (nullable) and at most one **Collection Entry**
+- A **Card** has zero or more **Listings** and **Auctions**, fully replaced on each Sync
+- A **Card** has zero or more daily **Market Sale Price** snapshots, one per PSA Grade per day
+- A **Card** has at most one **PSA Pop Report** (latest snapshot); a PSA Sync updates it via `/sync/psa`
 - A **Card** has zero or more **Sales**, one per platform item ID; each Sale carries a PSA Grade and a Sale Status
 - A **Sale** with status `confirmed` and `isBestOffer = false` is a **Sold Comp** usable in Base Range computation
-- A **Card**'s **Market Sale Price** at a PSA Grade is the recency-weighted median of that grade's non-cancelled/invalid **Sales**; absent when the grade has no Sales
+- A **Card**'s **Market Sale Price** at a PSA Grade is the recency-weighted median of that grade's priceable **Sales**; absent when the grade has none
 - A **Listing Deal** pairs a Card's PSA 10 **Market Sale Price** with its PSA 10 **PSA Grade Price** to flag under-priced listings
 
 ## Example dialogue
 
-> **Dev:** "When we add a new Price Source, do we need to change the Market Price calculation?"
-> **Domain expert:** "No — Market Price is always the minimum across whichever Raw Prices exist. A new Price Source just adds another candidate to that minimum."
+> **Dev:** "A sale shows up in both Terapeak and the eBay search with different prices. Which wins?"
+> **Domain expert:** "Terapeak, always — it reports what the card actually sold for. The search only knows the asking price."
 
-> **Dev:** "Is the Ratio a Raw Price or a Derived Price?"
-> **Domain expert:** "Derived — it's computed from Market Price and Buylist Price, never scraped directly."
+> **Dev:** "So does a Best Offer count toward Market Sale Price?"
+> **Domain expert:** "Only once Terapeak has priced it. The flag says the sale was negotiated, which stays true forever; whether we can price it depends on whether the realized number has arrived."
+
+> **Dev:** "Can a live auction's current bid move a Card's price?"
+> **Domain expert:** "No. Auctions live in their own table precisely so a bid can never leak into a price."
 
 ## Fair Value Range
 
 **Fair Value Range**:
-A `(low, mid, high)` price band computed per Product per PSA Grade, derived from multiple signals (see below). Represents the range within which a card is fairly priced. Null for grades with insufficient sold history.
+A `(low, mid, high)` price band computed per Card per PSA Grade, derived from multiple signals (see below). Represents the range within which a card is fairly priced. Null for grades with insufficient sold history.
 _Avoid_: fair price, price estimate, valuation
 
 **Grade Fair Value**:
-The `(low, mid, high)` triplet for a specific PSA Grade of a Product. Computed independently per grade — grades with insufficient sold comps produce a null Grade Fair Value rather than a fabricated one.
+The `(low, mid, high)` triplet for a specific PSA Grade of a Card. Computed independently per grade — grades with insufficient sold comps produce a null Grade Fair Value rather than a fabricated one.
 _Avoid_: graded fair value, PSA fair value
 
 **Base Range**:
@@ -236,7 +259,7 @@ The lookback period used to gather eBay sold prices for Base Range computation. 
 _Avoid_: lookback window, time window, history window
 
 **Grade Liquidity Share**:
-The fraction of a Product's total eBay sold volume at a specific PSA Grade over the Sold Comp Window. High share = this grade is where the card actually trades. Low share = illiquid grade. Both relative share (within the card) and absolute floor count matter — a card with 2 total sales spread across grades is not liquid at any grade.
+The fraction of a Card's total eBay sold volume at a specific PSA Grade over the Sold Comp Window. High share = this grade is where the card actually trades. Low share = illiquid grade. Both relative share (within the card) and absolute floor count matter — a card with 2 total sales spread across grades is not liquid at any grade.
 _Avoid_: grade volume, grade activity
 
 **Opportunity Score**:
@@ -280,7 +303,7 @@ A bonus demand signal for cards carrying exclusive symbols or markings — indic
 _Avoid_: symbol bonus, badge signal, promo stamp signal
 
 **Card Popularity Score**:
-A composite demand-side weight per Product aggregating three sub-signals: Pokémon Popularity Score, Multi-Pokémon Card Signal, and Premium Card Symbol Signal. Supports a price premium and increases floor confidence in the Opportunity Score. Combination weights require empirical calibration.
+A composite demand-side weight per Card aggregating three sub-signals: Pokémon Popularity Score, Multi-Pokémon Card Signal, and Premium Card Symbol Signal. Supports a price premium and increases floor confidence in the Opportunity Score. Combination weights require empirical calibration.
 _Avoid_: card popularity, popularity score, demand score
 
 **Listing Depth**:
@@ -388,16 +411,16 @@ Adjacent issues (enabled by the same foundation, not blocking #91):
 
 A dedicated page surfacing the top buying opportunities across all tracked Cards for the day. Shows up to 20 Cards ranked by Opportunity Score descending, no score floor. One entry per Card (best-scoring grade only).
 
-Each opportunity row shows: card image, card name + Product Set + PSA Grade, overall score badge, and five signal cells (Discount, 52-Week, Pop, Grade, Age). Each cell is coloured by its `SignalLevel` (`green-strong` → `yellow-light` → `orange-light` → `red-strong`). Clicking a row opens a side panel with the full card detail (chart, PSA pop breakdown, CardMarket link, card note). Arrow-key navigation moves between rows while the panel is open.
+Each opportunity row shows: card image, card name + Card Set + PSA Grade, overall score badge, and five signal cells (Discount, 52-Week, Pop, Grade, Age). Each cell is coloured by its `SignalLevel` (`green-strong` → `yellow-light` → `orange-light` → `red-strong`). Clicking a row opens a side panel with the full card detail (chart, PSA pop breakdown, CardMarket link, card note). Arrow-key navigation moves between rows while the panel is open.
 
 ## Live Auctions
 
 **Auction**:
-A single ongoing eBay auction listing for a Card at a specific PSA Grade, located in the EU. A distinct concept from a **Listing** (a live Buy-It-Now ask) and from a **Sale** (a completed transaction): an Auction carries a **current bid** (a moving asking price, not a buyable price) and an immutable **end time**. Stored in its own `Auction` table — deliberately *not* on `Listing` — so an Auction's current bid is structurally incapable of feeding the buy-side minimum (Market Price / Opportunity Score); the buy-side aggregation only ever reads `Listing`. Reuses the pure scrape helpers (Listing Title Parser for grade/Card attribution, `euLocation` for EU enforcement, the seller gate) but is sourced from an auctions-only eBay.fr search (`LH_Auction=1`, not `LH_BIN=1`). Surfaced on the cross-card **Live Auctions** page, never folded into any Derived Price. **Ephemeral, no history:** reads filter to `endTime > now` (a freshly-ended auction vanishes immediately); the sync does full per-card replacement (like Listings) and past-end rows are pruned. **User moderation:** from the feed's per-row kebab an admin can flag an Auction as not matching its Card (sets `invalidatedAt` — dropped from the feed) or correct its scraped PSA grade (sets `gradeEditedAt`); both edits are carried forward by itemId across the full-replacement sync so a re-sync that still sees the item keeps the moderation (the corrected grade is not re-overwritten by the re-parsed one). The realized outcome of an auction that sells is captured by the existing Sale pipeline via Terapeak, so the `Auction` table keeps no closed-auction history and is not reconciled to `Sale` (that would revive the item-id join ADR 0007 abandoned, and add a status machine the plain feed doesn't need).
+A single ongoing eBay auction listing for a Card at a specific PSA Grade, located in the EU. A distinct concept from a **Listing** (a live Buy-It-Now ask) and from a **Sale** (a completed transaction): an Auction carries a **current bid** (a moving asking price, not a buyable price) and an immutable **end time**. Stored in its own `Auction` table — deliberately *not* on `Listing` — so an Auction's current bid is structurally incapable of feeding the buy-side minimum behind the Opportunity Score; the buy-side aggregation only ever reads `Listing`. Reuses the pure scrape helpers (Listing Title Parser for grade/Card attribution, `euLocation` for EU enforcement, the seller gate) but is sourced from an auctions-only eBay.fr search (`LH_Auction=1`, not `LH_BIN=1`). Surfaced on the cross-card **Live Auctions** page, never folded into any price. **Ephemeral, no history:** reads filter to `endTime > now` (a freshly-ended auction vanishes immediately); the sync does full per-card replacement (like Listings) and past-end rows are pruned. **User moderation:** from the feed's per-row kebab an admin can flag an Auction as not matching its Card (sets `invalidatedAt` — dropped from the feed) or correct its scraped PSA grade (sets `gradeEditedAt`); both edits are carried forward by itemId across the full-replacement sync so a re-sync that still sees the item keeps the moderation (the corrected grade is not re-overwritten by the re-parsed one). The realized outcome of an auction that sells is captured by the existing Sale pipeline via Terapeak, so the `Auction` table keeps no closed-auction history and is not reconciled to `Sale` (that would revive the item-id join ADR 0007 abandoned, and add a status machine the plain feed doesn't need).
 _Avoid_: auction listing, bid, live listing
 
 **Live Auctions page**:
-A cross-card global feed of all ongoing EU Auctions across tracked Cards — a plain browsable list (no opportunity scoring, no pricing impact). Lives under the dashboard alongside the Opportunities and Pokémon pages. Default sort is **ending-soonest**; each row shows the Card (image + name + Product Set), PSA Grade, current bid (with its "as of" timestamp and a per-row refresh control), bid count, time left (computed client-side from the immutable end time, so the countdown is always accurate even when the stored current bid is stale), EU country, and a link out to the auction. Controls: a **PSA grade filter** and **sort toggles** (re-sort by current bid or bid count, not only ending-soonest). No Product Set filter. The feed only ever contains auctions with active bidding — the Auction Sync stores bid auctions only (zero-bid auctions are never ingested), so there is no zero-bid filter. Freshness is **hybrid**: a scheduled sync stores each Auction's durable shell, and a lazy "refresh bids" action re-scrapes the current bid + bid count for the visible rows on demand.
+A cross-card global feed of all ongoing EU Auctions across tracked Cards — a plain browsable list (no opportunity scoring, no pricing impact). Lives under the dashboard alongside the Opportunities and Pokémon pages. Default sort is **ending-soonest**; each row shows the Card (image + name + Card Set), PSA Grade, current bid (with its "as of" timestamp and a per-row refresh control), bid count, time left (computed client-side from the immutable end time, so the countdown is always accurate even when the stored current bid is stale), EU country, and a link out to the auction. Controls: a **PSA grade filter** and **sort toggles** (re-sort by current bid or bid count, not only ending-soonest). No Card Set filter. The feed only ever contains auctions with active bidding — the Auction Sync stores bid auctions only (zero-bid auctions are never ingested), so there is no zero-bid filter. Freshness is **hybrid**: a scheduled sync stores each Auction's durable shell, and a lazy "refresh bids" action re-scrapes the current bid + bid count for the visible rows on demand.
 _Avoid_: auctions list, live listings page
 
 **Auction Sync**:
@@ -406,6 +429,6 @@ _Avoid_: auction scrape, auctions refresh
 
 ## Flagged ambiguities
 
-- "price" alone is ambiguous — always qualify as Raw Price, Derived Price, Market Price, Buylist Price, or a specific source name (e.g. "the CardMarket price").
-- **Market Price** (lowest live listing — `min(cardmarket)`) and **Market Sale Price** (recency-weighted median of eBay Sold Comps) are different concepts: the first is an asking price, the second a realized one. Never conflate them.
+- "price" alone is ambiguous — always qualify as Market Sale Price, a Listing price, an Auction's current bid, or a specific source name (e.g. "the CardMarket ask").
+- The **lowest live Listing** (an asking price, computed on read by `mergeListingOffers`) and the **Market Sale Price** (recency-weighted median of realized Sales) are different concepts. Never conflate them. Older notes call the former "Market Price"; that term is retired, along with the whole Raw Price / Derived Price / Buylist vocabulary from the pre-Pokémon codebase.
 - "liquidity" without qualification is ambiguous — use Grade Liquidity Share (relative, per grade) or specify absolute sold count.
