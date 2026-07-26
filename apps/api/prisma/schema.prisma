@@ -69,6 +69,7 @@ enum VerificationStage {
 enum SaleSource {
   terapeak
   ebay_search
+  terapeak_verified
 }
 
 model Card {

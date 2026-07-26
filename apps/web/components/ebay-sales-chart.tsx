@@ -11,6 +11,7 @@ import {
   YAxis,
 } from 'recharts';
 import type { SaleRecord } from '@gather/api-contract';
+import type { SaleSource } from '@gather/types';
 import { ChartContainer } from '@/components/ui/chart';
 import {
   Card,
@@ -47,6 +48,13 @@ type Point = {
   y: number;
   pending: boolean;
   bestOffer: boolean;
+  source: SaleSource;
+};
+
+const SOURCE_LABELS: Record<SaleSource, string> = {
+  terapeak: 'Terapeak',
+  ebay_search: 'eBay search',
+  terapeak_verified: 'eBay search · Terapeak-verified',
 };
 
 type PinnedPoint = Point & { grade: number };
@@ -97,6 +105,7 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
         y: sale.priceEur,
         pending: sale.status === 'pending',
         bestOffer: sale.isBestOffer,
+        source: sale.source,
       });
     }
 
@@ -350,6 +359,9 @@ export function EbaySalesChart({ sales, cardId, onSyncEbay, isSyncingEbay, onRem
               {pinned.point.bestOffer && (
                 <div className="text-muted-foreground">Best Offer accepted</div>
               )}
+              <div className="text-muted-foreground">
+                {SOURCE_LABELS[pinned.point.source]}
+              </div>
               <div className="mt-2 flex items-center justify-between gap-2">
                 <a
                   href={pinned.point.url}

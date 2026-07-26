@@ -210,5 +210,18 @@ describe("computeMarketPrices", () => {
       ];
       expect(computeMarketPrices(sales, RATE, now)[0].sampleSize).toBe(1);
     });
+
+    it("counts a Best-Offer sale Terapeak verified after an ebay_search sighting", () => {
+      const sales = [
+        sale({
+          psaGrade: 10,
+          price: 820,
+          soldAt: now,
+          isBestOffer: true,
+          source: "terapeak_verified",
+        }),
+      ];
+      expect(computeMarketPrices(sales, RATE, now)[0].sampleSize).toBe(1);
+    });
   });
 });

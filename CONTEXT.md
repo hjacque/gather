@@ -121,7 +121,7 @@ _Avoid_: Scrape, update, refresh, import
 |---|---|---|---|
 | CardMarket Graded | Live asks | `Listing` (`platform: cardmarket`) | Parses the description of every article on the Card's CardMarket page to read a PSA Grade; applies to any Card with a `cardMarketLink` |
 | Terapeak | Sold history | `Sale` (`source: terapeak`) | eBay Seller Hub research — the realized transaction price, Best Offers included. Authoritative but lags ~3–4 days, and needs a signed-in session |
-| eBay completed search | Sold history | `Sale` (`source: ebay_search`) | Real-time, fills the Terapeak lag. Shows Best Offers at the *asking* price, hence the `isBestOffer` flag |
+| eBay completed search | Sold history | `Sale` (`source: ebay_search`) | Real-time, fills the Terapeak lag. Shows Best Offers at the *asking* price, hence the `isBestOffer` flag. A row Terapeak later re-supplies becomes `terapeak_verified` (ADR 0012) |
 | eBay active listings | Live asks | `Listing` (`platform: ebay`) | EU-located only; item pages re-scraped for seller and location |
 | eBay auctions | Live bids | `Auction` | EU-located only; never feeds a price (ADR 0010) |
 | PSA | Population | `PsaPopReport` | One flat row per Card, scraped from `psaLink` |
@@ -138,7 +138,7 @@ USD→EUR rate and never pre-filter or pre-convert:
 
 - A Sale is dropped if `status === 'invalid'`, if its currency is neither EUR
   nor USD, or if it is a Best Offer whose price is not yet realized
-  (`isBestOffer && source !== 'terapeak'` — ADR 0011).
+  (`isBestOffer && !isTerapeakPriced(source)` — ADR 0011, ADR 0012).
 - Surviving Sales are grouped by PSA Grade and reduced to a **recency-weighted
   median**, each weighted by `0.5 ^ (ageDays / 30)`.
 - Each grade also reports `sampleSize`, `newestSoldAt`, and `salesPerDay` over
@@ -182,7 +182,7 @@ A free-text annotation attached to a single Card by the user. At most one Note p
 _Avoid_: Comment, annotation, description
 
 **Sale**:
-A single recorded transaction for a Card at a specific PSA Grade on a secondary marketplace. Carries a `platform` field (enum: `ebay`; others may be added later), the PSA grade (1–10), the price in its **original currency** plus a `currency` code, a `status` (`pending` → `confirmed` | `invalid`), a `source` (`terapeak` | `ebay_search`), and an `isBestOffer` flag. Prices are stored in original currency (never EUR-normalized at write time, because Sales are immutable history) and converted to EUR at read time using today's rate; only USD and EUR are supported, and Sales in other currencies are stored but excluded from EUR views. `isBestOffer` records that the sale was negotiated and is monotonic — once raised by an eBay-search sighting it is never cleared, while `source` tells you whether the price on the row is the realized one (ADR 0011). Carries a nullable `reviewedAt` timestamp (see Sale Review). Also stores the raw listing title (for debugging and re-classification), the `soldAt` date (drives the Base Range window and re-verification checkpoints), and `createdAt` (when first scraped). Identified globally by `(platform, itemId)` — the eBay item ID is globally unique, so a sale attaches to exactly one Card — and the item URL reconstructed from the item ID is revisited during re-verification.
+A single recorded transaction for a Card at a specific PSA Grade on a secondary marketplace. Carries a `platform` field (enum: `ebay`; others may be added later), the PSA grade (1–10), the price in its **original currency** plus a `currency` code, a `status` (`pending` → `confirmed` | `invalid`), a `source` (`terapeak` | `ebay_search` | `terapeak_verified`), and an `isBestOffer` flag. Prices are stored in original currency (never EUR-normalized at write time, because Sales are immutable history) and converted to EUR at read time using today's rate; only USD and EUR are supported, and Sales in other currencies are stored but excluded from EUR views. `isBestOffer` records that the sale was negotiated and is monotonic — once raised by an eBay-search sighting it is never cleared, while `source` tells you whether the price on the row is the realized one (ADR 0011) and, for `terapeak_verified`, that the eBay search caught the sale first and Terapeak later corroborated it (ADR 0012). Carries a nullable `reviewedAt` timestamp (see Sale Review). Also stores the raw listing title (for debugging and re-classification), the `soldAt` date (drives the Base Range window and re-verification checkpoints), and `createdAt` (when first scraped). Identified globally by `(platform, itemId)` — the eBay item ID is globally unique, so a sale attaches to exactly one Card — and the item URL reconstructed from the item ID is revisited during re-verification.
 _Avoid_: eBay sale, sold listing, transaction
 
 **Sold Comp**:
@@ -206,7 +206,7 @@ The manual adjudication of a scraped Sale by the admin, recorded as a nullable `
 _Avoid_: moderation, verification, approval
 
 **Market Sale Price**:
-The price a Card actually sells for today at a specific PSA Grade: a recency-weighted median of that grade's eBay Sales in EUR, each Sale weighted by exponential age decay (30-day half-life). A Sale counts unless it is `invalid`, unconvertible, or a Best Offer whose price is not yet realized (`isBestOffer && source !== 'terapeak'` — ADR 0011): a buy-it-now price is the real price immediately, a negotiated one counts once Terapeak supplies what it actually sold for. Distinct from **Market Price** (lowest live listing) — it reflects realized eBay transactions, not asking prices. Computed on read in `marketPrice.ts`, which owns the full eligibility rule — callers pass raw Sales plus today's USD→EUR rate, never pre-filtering or pre-converting; unconvertible currencies are excluded and no automatic outlier rejection is applied (manual `invalid` moderation handles bad listings). Grades with no usable Sales have none. The PSA 10 figure carries a 7-day Performance delta, comparing it against the same median recomputed as of a week earlier.
+The price a Card actually sells for today at a specific PSA Grade: a recency-weighted median of that grade's eBay Sales in EUR, each Sale weighted by exponential age decay (30-day half-life). A Sale counts unless it is `invalid`, unconvertible, or a Best Offer whose price is not yet realized (`isBestOffer && !isTerapeakPriced(source)` — ADR 0011, ADR 0012): a buy-it-now price is the real price immediately, a negotiated one counts once Terapeak supplies what it actually sold for. Distinct from **Market Price** (lowest live listing) — it reflects realized eBay transactions, not asking prices. Computed on read in `marketPrice.ts`, which owns the full eligibility rule — callers pass raw Sales plus today's USD→EUR rate, never pre-filtering or pre-converting; unconvertible currencies are excluded and no automatic outlier rejection is applied (manual `invalid` moderation handles bad listings). Grades with no usable Sales have none. The PSA 10 figure carries a 7-day Performance delta, comparing it against the same median recomputed as of a week earlier.
 _Avoid_: market price, sold price, average sale price
 
 **Listing Deal**:

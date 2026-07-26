@@ -5,6 +5,7 @@ import {
 } from "../ports/sale.repository.port";
 import { SaleMapper } from "./mappers/sale.mapper.pg";
 import { NewSale, SaleVerification } from "../../entities/sale.entity";
+import { isTerapeakPriced } from "@gather/types";
 import { Prisma, PrismaClient } from "@prisma/client";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -53,7 +54,7 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
       return true;
     }
 
-    if (sale.source === "ebay_search" && existing.source === "terapeak") {
+    if (sale.source === "ebay_search" && isTerapeakPriced(existing.source)) {
       if (sale.isBestOffer && !existing.isBestOffer) {
         await this.prisma.sale.update({
           where: { id: existing.id },
@@ -68,6 +69,11 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
 
     if (existing.reviewedAt && !terapeakUpgrade) return false;
 
+    const resolvedSource =
+      sale.source === "terapeak" && existing.source !== "terapeak"
+        ? "terapeak_verified"
+        : sale.source;
+
     const reviewedEdits = existing.reviewedAt
       ? {}
       : { psaGrade: sale.psaGrade, price: sale.price };
@@ -80,7 +86,7 @@ export class SaleRepositoryPg implements SaleRepositoryPort {
         title: sale.title,
         isBestOffer: sale.isBestOffer || existing.isBestOffer,
         seller: sale.seller,
-        source: sale.source,
+        source: resolvedSource,
         soldAt: sale.soldAt,
         ...trustedFields,
       },

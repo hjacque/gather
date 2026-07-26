@@ -40,8 +40,11 @@ export type SaleStatus = typeof SALE_STATUSES[number];
 export const VERIFICATION_STAGES = ['unverified', 'checked_7d', 'complete'] as const;
 export type VerificationStage = typeof VERIFICATION_STAGES[number];
 
-export const SALE_SOURCES = ['terapeak', 'ebay_search'] as const;
+export const SALE_SOURCES = ['terapeak', 'ebay_search', 'terapeak_verified'] as const;
 export type SaleSource = typeof SALE_SOURCES[number];
+
+export const isTerapeakPriced = (source: SaleSource): boolean =>
+  source === 'terapeak' || source === 'terapeak_verified';
 
 export type CollectionEntryEntity = {
   id: string;

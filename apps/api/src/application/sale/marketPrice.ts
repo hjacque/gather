@@ -1,4 +1,5 @@
 import { SaleEntity } from "../../entities/sale.entity";
+import { isTerapeakPriced } from "@gather/types";
 import { convertToEur } from "./eurConverter";
 
 type SaleForPricing = {
@@ -13,7 +14,7 @@ const toSalesForPricing = (
 ): SaleForPricing[] =>
   sales.flatMap((sale) => {
     if (sale.status === "invalid") return [];
-    if (sale.isBestOffer && sale.source !== "terapeak") return [];
+    if (sale.isBestOffer && !isTerapeakPriced(sale.source)) return [];
     const priceEur = convertToEur(sale.price, sale.currency, usdToEur);
     if (priceEur === null) return [];
     return [

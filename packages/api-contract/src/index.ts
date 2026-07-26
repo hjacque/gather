@@ -2,6 +2,7 @@ import type {
   CardEntity,
   CardSetEntity,
   Region,
+  SaleSource,
   SaleStatus,
 } from '@gather/types';
 
@@ -24,6 +25,7 @@ export type SaleRecord = {
   soldAt: Date;
   status: SaleStatus;
   isBestOffer: boolean;
+  source: SaleSource;
   url: string;
 };
 
