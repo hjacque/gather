@@ -11,6 +11,7 @@ import {
   TERAPEAK_REAUTH_CMD,
 } from "../application/sync/sources/terapeakSales.source";
 import { parseListingTitle } from "../application/sync/sources/listingTitleParser";
+import { clearStaleProfileLock } from "../application/sync/sources/browserProfile";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -72,6 +73,13 @@ async function openBrowser() {
     process.env.EBAY_PROFILE_DIR ??
     `${process.env.HOME ?? "."}/.gather/ebay-profile`;
   mkdirSync(userDataDir, { recursive: true });
+  const lock = clearStaleProfileLock(userDataDir);
+  if (lock.cleared) console.log(`[backfill] cleared ${lock.reason}`);
+  if (!lock.cleared && lock.reason.startsWith("Chrome still running"))
+    throw new Error(
+      `Another Chrome owns the profile ${userDataDir} — ${lock.reason}. ` +
+        `Close that window (or kill the pid) and re-run.`
+    );
   const { browser, page } = await connect({
     headless: false,
     disableXvfb: false,
@@ -154,6 +162,29 @@ async function main() {
 
   const { browser, page } = await openBrowser();
   const totals = { scraped: 0, ingested: 0, multiSale: 0, parseSkip: 0, doneSkip: 0 };
+
+  let shuttingDown = false;
+  const shutdown = async () => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    await page.close().catch(() => undefined);
+    await browser.close().catch(() => undefined);
+    await prisma.$disconnect().catch(() => undefined);
+  };
+
+  const onSignal = (signal: NodeJS.Signals) => {
+    void (async () => {
+      console.log(
+        `\n[backfill] ${signal} — closing Chrome so the profile lock is released; ` +
+          `re-run the same command to resume`
+      );
+      await shutdown();
+      process.exit(130);
+    })();
+  };
+  process.once("SIGINT", onSignal);
+  process.once("SIGTERM", onSignal);
+  process.once("SIGHUP", onSignal);
 
   try {
     const all = await source.selectAllSites(page);
@@ -241,9 +272,10 @@ async function main() {
       throw error;
     }
   } finally {
-    await page.close();
-    await browser.close();
-    await prisma.$disconnect();
+    process.off("SIGINT", onSignal);
+    process.off("SIGTERM", onSignal);
+    process.off("SIGHUP", onSignal);
+    await shutdown();
   }
 
   console.log("[backfill] done:", totals);
