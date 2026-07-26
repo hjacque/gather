@@ -15,7 +15,8 @@ import { parseListingTitle } from "../application/sync/sources/listingTitleParse
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 type Args = {
-  card?: string;
+  cards: string[];
+  paddedNumbers: boolean;
   years: number;
   chunkDays: number;
   dryRun: boolean;
@@ -26,6 +27,8 @@ type Args = {
 
 function parseArgs(argv: string[]): Args {
   const args: Args = {
+    cards: [],
+    paddedNumbers: false,
     years: 3,
     chunkDays: 60,
     dryRun: false,
@@ -35,7 +38,9 @@ function parseArgs(argv: string[]): Args {
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === "--card") args.card = argv[++i];
+    if (a === "--card")
+      args.cards.push(...argv[++i].split(",").map((c) => c.trim()).filter(Boolean));
+    else if (a === "--padded-numbers") args.paddedNumbers = true;
     else if (a === "--years") args.years = Number(argv[++i]);
     else if (a === "--chunk-days") args.chunkDays = Number(argv[++i]);
     else if (a === "--dry-run") args.dryRun = true;
@@ -84,11 +89,25 @@ async function openBrowser() {
   return { browser, page };
 }
 
+async function paddedNumberCardIds(prisma: PrismaClient): Promise<string[]> {
+  const cards = await prisma.card.findMany({
+    where: { ebayLink: { not: null } },
+    select: { id: true, number: true },
+  });
+  return cards
+    .filter((c) => c.number?.match(/\d{2,3}/)?.[0]?.startsWith("0"))
+    .map((c) => c.id);
+}
+
 async function collectCards(
   repo: CardRepositoryPg,
-  cardId?: string
+  cardIds: string[]
 ): Promise<CardEntity[]> {
-  if (cardId) return [await repo.getCard(cardId)];
+  if (cardIds.length) {
+    const cards: CardEntity[] = [];
+    for (const id of cardIds) cards.push(await repo.getCard(id));
+    return cards;
+  }
   const all: CardEntity[] = [];
   for (let page = 1; ; page++) {
     const cards = await repo.getCards({}, { take: 50, page });
@@ -105,9 +124,12 @@ async function main() {
   const saleRepository = new SaleRepositoryPg(prisma);
   const source = new TerapeakSalesSource();
 
-  const done = args.card ? new Set<string>() : loadDone(args.state);
+  if (args.paddedNumbers) args.cards.push(...(await paddedNumberCardIds(prisma)));
+  const explicit = args.cards.length > 0;
 
-  if (args.seedFromDb && !args.card) {
+  const done = loadDone(args.state);
+
+  if (args.seedFromDb && !explicit) {
     const seeded = await prisma.sale.findMany({
       where: {
         source: "terapeak",
@@ -123,7 +145,7 @@ async function main() {
     console.log(`[backfill] seeded ${seeded.length} done Card(s) from DB`);
   }
 
-  const cards = await collectCards(cardRepository, args.card);
+  const cards = await collectCards(cardRepository, [...new Set(args.cards)]);
   console.log(
     `[backfill] ${cards.length} Card(s); years=${args.years} chunk=${args.chunkDays}d ` +
       `${done.size ? `(resuming, ${done.size} done) ` : ""}` +
@@ -140,7 +162,7 @@ async function main() {
     const totalDays = Math.round(args.years * 365);
 
     for (const card of cards) {
-      if (!args.force && done.has(card.id)) {
+      if (!args.force && !explicit && done.has(card.id)) {
         totals.doneSkip++;
         continue;
       }
