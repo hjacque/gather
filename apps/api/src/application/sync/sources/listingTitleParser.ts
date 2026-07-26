@@ -23,13 +23,18 @@ function extractGrades(title: string): number[] {
   return grades;
 }
 
+function stripLeadingZeros(n: string): string {
+  return n.replace(/^0+(?=\d)/, "");
+}
+
 function extractCardNumbers(title: string): Set<string> {
   const cleaned = title
     .replace(/psa\s*\d+/gi, " ")
     .replace(/auto\s*\d+/gi, " ")
     .replace(/\b\d{4,}\b/g, " ");
   const numbers = new Set<string>();
-  for (const m of cleaned.matchAll(CARD_NUMBER)) numbers.add(m[1]);
+  for (const m of cleaned.matchAll(CARD_NUMBER))
+    numbers.add(stripLeadingZeros(m[1]));
   return numbers;
 }
 
@@ -46,7 +51,8 @@ export function parseListingTitle(
   if (BUNDLE_KEYWORD.test(title) || title.includes("&"))
     return { kind: "skipped", reason: "bundle" };
 
-  const targetNumber = target.number?.match(/\d{2,3}/)?.[0] ?? null;
+  const matched = target.number?.match(/\d{2,3}/)?.[0] ?? null;
+  const targetNumber = matched === null ? null : stripLeadingZeros(matched);
   if (targetNumber) {
     const numbers = extractCardNumbers(title);
     for (const n of numbers) {

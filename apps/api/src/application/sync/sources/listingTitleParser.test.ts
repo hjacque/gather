@@ -113,6 +113,27 @@ describe("parseListingTitle", () => {
       });
     });
 
+    it.each([
+      ["033", "PSA 10 Celebratory Fanfare 33 Championship Point Reward"],
+      ["033", "PSA 10 Celebratory Fanfare 033 Championship Point Reward"],
+      ["33", "PSA 10 Celebratory Fanfare 033 Championship Point Reward"],
+      ["33", "PSA 10 Celebratory Fanfare #33 Championship Point Reward"],
+    ])("matches zero-padded number %s against %s", (number, title) => {
+      expect(parseListingTitle(title, { number })).toEqual({
+        kind: "accepted",
+        grade: 10,
+      });
+    });
+
+    it("still rejects a genuinely different number", () => {
+      expect(
+        parseListingTitle(
+          "PSA 10 Celebratory Fanfare 034 Championship Point Reward",
+          { number: "033" }
+        )
+      ).toEqual({ kind: "skipped", reason: "foreign-card" });
+    });
+
     it("skips the foreign check when the target Card has no number", () => {
       expect(
         parseListingTitle(
