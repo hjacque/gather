@@ -38,6 +38,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { GRADE_COLORS } from '@/lib/grade-colors';
 
 const askPriceFmt = new Intl.NumberFormat('fr-FR', {
   style: 'currency',
@@ -239,7 +240,10 @@ export function CardListingsTable({
               <TableBody>
                 {sorted.map((listing) => (
                   <TableRow key={listing.id} title={listing.title}>
-                    <TableCell className="font-medium">
+                    <TableCell
+                      className="font-medium"
+                      style={{ color: GRADE_COLORS[listing.psaGrade] }}
+                    >
                       PSA {listing.psaGrade}
                     </TableCell>
                     <TableCell className="text-right tabular-nums font-semibold">
